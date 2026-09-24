@@ -1,0 +1,390 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resumen general · Panel Entre Platos y Copas</title>
+<link rel="icon" href="{% static 'images/logo.jpg' %}">
+<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+</head>
+<body>
+
+<div class="admin-shell">
+
+  <aside class="admin-sidebar" id="admin-sidebar">
+    <div class="sidebar-brand">
+      <a href="{% url 'inicio' %}">
+        <img src="{% static 'images/logo2.jpg' %}" alt="Entre Platos y Copas">
+      </a>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="{% url 'inicio' %}" class="sidebar-link is-active">
+        <span class="nav-icon">▦</span>
+        <span class="nav-label">Resumen</span>
+      </a>
+
+      <span class="sidebar-group-label">Operación</span>
+
+      <a href="{% url 'gestion_clientes' %}" class="sidebar-link">
+        <span class="nav-icon">👥</span>
+        <span class="nav-label">Clientes</span>
+      </a>
+
+      <a href="{% url 'gestion_inventario' %}" class="sidebar-link">
+        <span class="nav-icon">📦</span>
+        <span class="nav-label">Inventario</span>
+        {% if alertas_inventario_count %}
+        <span class="badge-count">{{ alertas_inventario_count }}</span>
+        {% endif %}
+      </a>
+
+      <a href="{% url 'gestion_cotizaciones' %}" class="sidebar-link">
+        <span class="nav-icon">📄</span>
+        <span class="nav-label">Cotizaciones</span>
+      </a>
+
+      <a href="{% url 'gestion_reservas' %}" class="sidebar-link">
+        <span class="nav-icon">📅</span>
+        <span class="nav-label">Reservas</span>
+      </a>
+
+      <a href="{% url 'gestion_preparacion' %}" class="sidebar-link">
+        <span class="nav-icon">📋</span>
+        <span class="nav-label">Preparación de pedidos</span>
+      </a>
+
+      <a href="{% url 'gestion_despachos' %}" class="sidebar-link">
+        <span class="nav-icon">🚚</span>
+        <span class="nav-label">Despachos</span>
+      </a>
+
+      <a href="{% url 'gestion_devoluciones' %}" class="sidebar-link">
+        <span class="nav-icon">↩</span>
+        <span class="nav-label">Devoluciones</span>
+      </a>
+
+      <a href="{% url 'gestion_mermas' %}" class="sidebar-link">
+        <span class="nav-icon">⚠</span>
+        <span class="nav-label">Mermas</span>
+      </a>
+
+      <a href="{% url 'gestion_calendario' %}" class="sidebar-link">
+        <span class="nav-icon">🗓</span>
+        <span class="nav-label">Calendario</span>
+      </a>
+
+      <span class="sidebar-group-label">Análisis</span>
+
+      <a href="{% url 'gestion_reportes' %}" class="sidebar-link">
+        <span class="nav-icon">📊</span>
+        <span class="nav-label">Reportes</span>
+      </a>
+
+      <span class="sidebar-group-label">Sistema</span>
+
+      <a href="{% url 'gestion_usuarios' %}" class="sidebar-link">
+        <span class="nav-icon">🛡</span>
+        <span class="nav-label">Usuarios</span>
+      </a>
+
+      <a href="{% url 'gestion_configuracion' %}" class="sidebar-link">
+        <span class="nav-icon">⚙</span>
+        <span class="nav-label">Configuración</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="{% url 'index' %}" class="sidebar-link" target="_blank" rel="noopener">
+        <span class="nav-icon">↗</span>
+        <span class="nav-label">Ver sitio público</span>
+      </a>
+
+      <a href="{% url 'gestion_login' %}" class="sidebar-link">
+        <span class="nav-icon">⇥</span>
+        <span class="nav-label">Cerrar sesión</span>
+      </a>
+    </div>
+  </aside>
+
+  <div class="admin-main">
+    <header class="admin-topbar">
+      <div style="display:flex;align-items:center;gap:1rem;">
+        <button class="nav-toggle-admin" id="sidebar-toggle" aria-label="Abrir menú">☰</button>
+
+        <div class="topbar-title">
+          <span class="eyebrow">{{ fecha_hoy|date:"l, d \\d\\e F" }}</span>
+          <h1>Resumen general</h1>
+        </div>
+      </div>
+
+      <div class="topbar-search">
+        <span class="icon">🔍</span>
+        <input type="search" id="global-search" placeholder="Buscar productos, clientes, cotizaciones, reservas...">
+      </div>
+
+      <div class="topbar-actions">
+        <div class="topbar-user">
+          <div class="user-avatar">{{ usuario_iniciales|default:"EP" }}</div>
+          <div class="user-info">
+            <strong>{{ usuario_nombre|default:"Entre Platos y Copas" }}</strong>
+            <span>{{ usuario_rol|default:"Administración" }}</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="admin-content">
+
+      <div class="hero-banner">
+        <div>
+          <span class="eyebrow" style="display:block;font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;">
+            Panel de hoy
+          </span>
+
+          <h2>Todo bajo control{% if usuario_nombre %}, {{ usuario_nombre }}{% endif %}.</h2>
+
+          <p>
+            Tienes {{ reservas_activas }} reserva{{ reservas_activas|pluralize:"s" }} activa{{ reservas_activas|pluralize:"s" }},
+            {{ cotizaciones_pendientes }} cotización{{ cotizaciones_pendientes|pluralize:"es" }} pendiente{{ cotizaciones_pendientes|pluralize:"s" }}
+            y {{ alertas_inventario_count }} alerta{{ alertas_inventario_count|pluralize:"s" }} de inventario.
+          </p>
+        </div>
+
+        <a href="{% url 'gestion_cotizaciones' %}?nueva=1" class="btn btn-accent">
+          + Nueva cotización
+        </a>
+      </div>
+
+      <div class="kpi-grid">
+
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-label">Reservas activas</span>
+          </div>
+          <div class="kpi-value">{{ reservas_activas }}</div>
+          <span class="kpi-delta">{{ reservas_proximas_7_dias }} en los próximos 7 días</span>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-label">Artículos trabajables</span>
+          </div>
+          <div class="kpi-value">{{ articulos_disponibles }}</div>
+          <span class="kpi-delta">{{ articulos_totales }} unidades totales</span>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-label">Cotizaciones pendientes</span>
+          </div>
+          <div class="kpi-value">{{ cotizaciones_pendientes }}</div>
+          <span class="kpi-delta">{{ cotizaciones_mes }} creadas este mes</span>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-label">Monto cotizado del mes</span>
+          </div>
+          <div class="kpi-value" style="font-size:1.6rem;">
+            ${{ monto_cotizado_mes|floatformat:0 }}
+          </div>
+          <span class="kpi-delta is-positive">Total de cotizaciones del mes</span>
+        </div>
+
+      </div>
+
+      <div class="section-row">
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <span class="eyebrow">Agenda</span>
+              <h2>Próximos eventos</h2>
+            </div>
+            <a href="{% url 'gestion_reservas' %}" class="link">Ver todos →</a>
+          </div>
+
+          <div class="stack">
+            {% for servicio in proximos_eventos %}
+            <a href="{% url 'gestion_reserva' servicio.id %}" class="list-row" style="text-decoration:none;color:inherit;">
+              <div>
+                <strong>{{ servicio.codigo }}</strong>
+                <div class="cell-muted">
+                  {{ servicio.cliente.nombre }} {{ servicio.cliente.apellido }}
+                  · {{ servicio.tipo_servicio|default:"Evento" }}
+                </div>
+              </div>
+              <div style="text-align:right;">
+                <strong>{{ servicio.fecha_evento|date:"d/m/Y" }}</strong>
+                <div class="cell-muted">{{ servicio.comuna_evento|default:"Sin comuna" }}</div>
+              </div>
+            </a>
+            {% empty %}
+            <p class="empty-state">No hay eventos próximos.</p>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <span class="eyebrow">Atención</span>
+              <h2>Alertas de inventario</h2>
+            </div>
+          </div>
+
+          <div class="stack">
+            {% for articulo in alertas_inventario %}
+            <a href="{% url 'gestion_producto' articulo.id %}" class="list-row" style="text-decoration:none;color:inherit;">
+              <div>
+                <strong>{{ articulo.nombre }}</strong>
+                <div class="cell-muted">{{ articulo.codigo }} · {{ articulo.categoria.nombre }}</div>
+              </div>
+              <span class="status-pill {% if articulo.stock_trabajable == 0 %}is-danger{% else %}is-warning{% endif %}">
+                {{ articulo.stock_trabajable }} trabajables
+              </span>
+            </a>
+            {% empty %}
+            <p class="empty-state">No hay alertas de inventario.</p>
+            {% endfor %}
+          </div>
+
+          <a href="{% url 'gestion_inventario' %}" class="link" style="display:block;margin-top:0.8rem;">
+            Revisar inventario →
+          </a>
+        </div>
+
+      </div>
+
+      <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));">
+
+        <div class="kpi-card">
+          <span class="kpi-label">Entregas hoy</span>
+          <div class="kpi-value" style="font-size:1.6rem;">{{ entregas_hoy }}</div>
+        </div>
+
+        <div class="kpi-card">
+          <span class="kpi-label">Retiros hoy</span>
+          <div class="kpi-value" style="font-size:1.6rem;">{{ retiros_hoy }}</div>
+        </div>
+
+        <div class="kpi-card">
+          <span class="kpi-label">Pendientes de preparar</span>
+          <div class="kpi-value" style="font-size:1.6rem;">{{ pendientes_preparar }}</div>
+        </div>
+
+        <div class="kpi-card">
+          <span class="kpi-label">Devoluciones pendientes</span>
+          <div class="kpi-value" style="font-size:1.6rem;">{{ devoluciones_pendientes }}</div>
+        </div>
+
+        <div class="kpi-card">
+          <span class="kpi-label">En mantención</span>
+          <div class="kpi-value" style="font-size:1.6rem;">{{ en_mantencion }}</div>
+        </div>
+
+        <div class="kpi-card">
+          <span class="kpi-label">Registros de merma</span>
+          <div class="kpi-value" style="font-size:1.6rem;">{{ registros_merma }}</div>
+        </div>
+
+      </div>
+
+      <div class="section-row">
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <span class="eyebrow">Tendencia</span>
+              <h2>Ingresos por mes</h2>
+            </div>
+          </div>
+
+          <div class="stack">
+            {% for item in ingresos_mensuales %}
+            <div class="list-row">
+              <span>{{ item.mes }}</span>
+              <strong>${{ item.total|floatformat:0 }}</strong>
+            </div>
+            {% empty %}
+            <p class="empty-state">Aún no hay datos de ingresos.</p>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <span class="eyebrow">Ranking</span>
+              <h2>Categorías más solicitadas</h2>
+            </div>
+          </div>
+
+          <div class="stack">
+            {% for item in categorias_solicitadas %}
+            <div class="list-row">
+              <span>{{ item.categoria }}</span>
+              <strong>{{ item.cantidad }}</strong>
+            </div>
+            {% empty %}
+            <p class="empty-state">Aún no hay datos.</p>
+            {% endfor %}
+          </div>
+        </div>
+
+      </div>
+
+      <div class="section-row">
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <span class="eyebrow">Ranking</span>
+              <h2>Productos más arrendados</h2>
+            </div>
+          </div>
+
+          <div class="stack">
+            {% for item in productos_mas_arrendados %}
+            <div class="list-row">
+              <span>{{ item.nombre }}</span>
+              <strong>{{ item.cantidad }}</strong>
+            </div>
+            {% empty %}
+            <p class="empty-state">Aún no hay datos.</p>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <span class="eyebrow">Fidelización</span>
+              <h2>Clientes con más reservas</h2>
+            </div>
+          </div>
+
+          <div class="stack">
+            {% for item in clientes_frecuentes %}
+            <div class="list-row">
+              <span>{{ item.nombre }} {{ item.apellido }}</span>
+              <strong>{{ item.cantidad }}</strong>
+            </div>
+            {% empty %}
+            <p class="empty-state">Aún no hay datos.</p>
+            {% endfor %}
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="{% static 'js/admin-nav.js' %}"></script>
+<script src="{% static 'js/admin-search.js' %}"></script>
+</body>
+</html>

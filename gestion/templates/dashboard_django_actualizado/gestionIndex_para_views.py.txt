@@ -1,0 +1,267 @@
+def gestionIndex(request):
+    negocio = obtener_negocio()
+    hoy = date.today()
+
+    if negocio is None:
+        return render(
+            request,
+            "inicio.html",
+            {
+                "fecha_hoy": hoy,
+                "error": "No existe un negocio activo configurado.",
+            },
+        )
+
+    estados_activos = [
+        "Confirmado",
+        "Preparacion",
+        "Despachado",
+        "Devolucion parcial",
+    ]
+
+    servicios_negocio = Servicio.objects.filter(
+        negocio=negocio
+    )
+
+    reservas_activas = servicios_negocio.filter(
+        estado__in=estados_activos
+    ).count()
+
+    proximos_eventos = list(
+        servicios_negocio
+        .filter(
+            estado__in=estados_activos,
+            fecha_evento__gte=hoy,
+        )
+        .select_related("cliente")
+        .order_by("fecha_evento")[:5]
+    )
+
+    from datetime import timedelta
+    proximos_7 = hoy + timedelta(days=7)
+
+    reservas_proximas_7_dias = servicios_negocio.filter(
+        estado__in=estados_activos,
+        fecha_evento__gte=hoy,
+        fecha_evento__lte=proximos_7,
+    ).count()
+
+    articulos_qs = Articulo.objects.filter(
+        negocio=negocio,
+        activo=True,
+    )
+
+    articulos_totales = (
+        articulos_qs.aggregate(total=Sum("stock_total"))["total"]
+        or 0
+    )
+
+    articulos_disponibles = (
+        articulos_qs.aggregate(total=Sum("stock_trabajable"))["total"]
+        or 0
+    )
+
+    alertas_inventario = list(
+        articulos_qs
+        .filter(stock_trabajable__lte=10)
+        .select_related("categoria")
+        .order_by("stock_trabajable", "nombre")[:6]
+    )
+
+    alertas_inventario_count = articulos_qs.filter(
+        stock_trabajable__lte=10
+    ).count()
+
+    cotizaciones_qs = servicios_negocio.filter(
+        estado="Cotizacion"
+    )
+
+    cotizaciones_pendientes = cotizaciones_qs.count()
+
+    cotizaciones_mes = cotizaciones_qs.filter(
+        fecha_creacion__year=hoy.year,
+        fecha_creacion__month=hoy.month,
+    ).count()
+
+    monto_cotizado_mes = (
+        cotizaciones_qs
+        .filter(
+            fecha_creacion__year=hoy.year,
+            fecha_creacion__month=hoy.month,
+        )
+        .aggregate(total=Sum("total"))["total"]
+        or 0
+    )
+
+    entregas_hoy = Despacho.objects.filter(
+        servicio__negocio=negocio,
+        fecha_despacho__date=hoy,
+    ).count()
+
+    # "Retiros hoy" se interpreta como servicios cuyo arriendo termina hoy.
+    retiros_hoy = servicios_negocio.filter(
+        fecha_termino=hoy,
+    ).exclude(
+        estado__in=["Cotizacion", "Cancelado"]
+    ).count()
+
+    pendientes_preparar = Preparacion.objects.filter(
+        servicio__negocio=negocio,
+    ).exclude(
+        estado__iexact="Completada"
+    ).count()
+
+    devoluciones_pendientes = servicios_negocio.filter(
+        estado__in=[
+            "Despachado",
+            "Devolucion parcial",
+        ]
+    ).count()
+
+    # No existe una tabla específica de mantención en el modelo actual.
+    en_mantencion = 0
+
+    registros_merma = Merma.objects.filter(
+        articulo__negocio=negocio
+    ).count()
+
+    productos_mas_arrendados = list(
+        DetalleServicio.objects
+        .filter(servicio__negocio=negocio)
+        .values(
+            nombre=F("articulo__nombre")
+        )
+        .annotate(
+            cantidad=Sum("cantidad")
+        )
+        .order_by("-cantidad")[:5]
+    )
+
+    categorias_solicitadas = list(
+        DetalleServicio.objects
+        .filter(servicio__negocio=negocio)
+        .values(
+            categoria=F("articulo__categoria__nombre")
+        )
+        .annotate(
+            cantidad=Sum("cantidad")
+        )
+        .order_by("-cantidad")[:5]
+    )
+
+    # Evitamos depender de un related_name particular entre Cliente y Servicio.
+    clientes_base = {
+        c.id: {
+            "nombre": c.nombre,
+            "apellido": c.apellido,
+            "cantidad": 0,
+        }
+        for c in Cliente.objects.filter(negocio=negocio)
+    }
+
+    conteos_clientes = (
+        servicios_negocio
+        .exclude(estado="Cotizacion")
+        .values("cliente_id")
+        .annotate(cantidad=Count("id"))
+        .order_by("-cantidad")[:5]
+    )
+
+    clientes_frecuentes = []
+
+    for fila in conteos_clientes:
+        dato = clientes_base.get(fila["cliente_id"])
+        if dato:
+            dato = dato.copy()
+            dato["cantidad"] = fila["cantidad"]
+            clientes_frecuentes.append(dato)
+
+    # Ingresos finalizados agrupados en Python para mantener compatibilidad.
+    servicios_finalizados = (
+        servicios_negocio
+        .filter(
+            estado="Finalizado",
+            fecha_evento__isnull=False,
+        )
+        .values("fecha_evento", "total")
+        .order_by("fecha_evento")
+    )
+
+    meses = {}
+
+    for item in servicios_finalizados:
+        fecha_evento = item["fecha_evento"]
+        clave = fecha_evento.strftime("%Y-%m")
+        etiqueta = fecha_evento.strftime("%m/%Y")
+        meses.setdefault(
+            clave,
+            {
+                "mes": etiqueta,
+                "total": 0,
+            },
+        )
+        meses[clave]["total"] += item["total"] or 0
+
+    ingresos_mensuales = [
+        meses[k]
+        for k in sorted(meses.keys())[-6:]
+    ]
+
+    usuario_nombre = request.session.get(
+        "usuario_nombre",
+        "",
+    )
+
+    usuario_rol = request.session.get(
+        "usuario_rol",
+        "",
+    )
+
+    usuario_iniciales = ""
+
+    if usuario_nombre:
+        palabras = usuario_nombre.split()
+        usuario_iniciales = "".join(
+            palabra[0].upper()
+            for palabra in palabras[:2]
+            if palabra
+        )
+
+    return render(
+        request,
+        "inicio.html",
+        {
+            "fecha_hoy": hoy,
+
+            "reservas_activas": reservas_activas,
+            "reservas_proximas_7_dias": reservas_proximas_7_dias,
+
+            "articulos_totales": articulos_totales,
+            "articulos_disponibles": articulos_disponibles,
+
+            "cotizaciones_pendientes": cotizaciones_pendientes,
+            "cotizaciones_mes": cotizaciones_mes,
+            "monto_cotizado_mes": monto_cotizado_mes,
+
+            "proximos_eventos": proximos_eventos,
+
+            "alertas_inventario": alertas_inventario,
+            "alertas_inventario_count": alertas_inventario_count,
+
+            "entregas_hoy": entregas_hoy,
+            "retiros_hoy": retiros_hoy,
+            "pendientes_preparar": pendientes_preparar,
+            "devoluciones_pendientes": devoluciones_pendientes,
+            "en_mantencion": en_mantencion,
+            "registros_merma": registros_merma,
+
+            "ingresos_mensuales": ingresos_mensuales,
+            "categorias_solicitadas": categorias_solicitadas,
+            "productos_mas_arrendados": productos_mas_arrendados,
+            "clientes_frecuentes": clientes_frecuentes,
+
+            "usuario_nombre": usuario_nombre,
+            "usuario_rol": usuario_rol,
+            "usuario_iniciales": usuario_iniciales,
+        },
+    )

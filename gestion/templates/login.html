@@ -1,0 +1,165 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iniciar sesión · Panel Entre Platos y Copas</title>
+<link rel="icon" href="{% static 'images/logo.jpg' %}">
+<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+<style>
+  html, body { height: 100%; }
+  html { overflow-x: hidden; }
+  body {
+    display: flex;
+    min-height: 100vh;
+    max-width: 100vw;
+    overflow-x: hidden;
+    background-color: var(--color-black);
+  }
+
+  .login-visual {
+    position: relative;
+    flex: 1.1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: var(--space-lg);
+    background:
+      linear-gradient(180deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.3) 45%, rgba(0,0,0,0.82) 100%),
+      linear-gradient(100deg, rgba(196,18,48,0.35) 0%, rgba(0,0,0,0.1) 40%),
+      url('{% static 'images/montaje-01.jpg' %}') center 55%/cover no-repeat;
+    color: var(--color-white-warm);
+  }
+  .login-visual .visual-copy { max-width: 420px; min-width: 0; }
+  .login-visual .eyebrow {
+    display: inline-block;
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-white-warm);
+    opacity: 0.75;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+  }
+  .login-visual h1 {
+    font-family: var(--font-display);
+    color: var(--color-white-warm);
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    line-height: 1.2;
+    margin-bottom: 0.6rem;
+    max-width: 100%;
+    overflow-wrap: break-word;
+  }
+  .login-visual h1 span { color: var(--color-accent); }
+  .login-visual p {
+    font-size: 0.95rem;
+    opacity: 0.85;
+    max-width: 100%;
+  }
+
+  .login-panel {
+    flex: 1;
+    min-width: 400px;
+    max-width: 552px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-white-warm);
+    padding: var(--space-lg);
+  }
+  .login-form-wrap { width: 100%; max-width: 340px; }
+  .panel-logo { height: 88px; width: auto; margin-bottom: var(--space-md); }
+  .login-form-wrap .eyebrow {
+    display: block;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-accent-dark);
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+  }
+  .login-form-wrap h2 { font-size: 1.5rem; margin-bottom: 0.3rem; }
+  .login-form-wrap p.sub { opacity: 0.65; font-size: 0.86rem; margin-bottom: var(--space-md); }
+
+  .login-remember {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.84rem;
+    color: var(--color-gray-dark);
+    margin: 0.2rem 0 var(--space-md);
+  }
+  .login-remember input { accent-color: var(--color-accent); width: 16px; height: 16px; }
+
+  .password-field { position: relative; }
+  .password-field input { width: 100%; padding-right: 2.6rem; }
+  .toggle-password {
+    position: absolute;
+    right: 0.6rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    color: var(--color-gray-dark);
+    opacity: 0.55;
+    transition: opacity var(--transition);
+  }
+  .toggle-password:hover { opacity: 0.9; }
+  .toggle-password svg { width: 100%; height: 100%; }
+  .toggle-password .icon-eye-off { display: none; }
+  .toggle-password.is-visible .icon-eye { display: none; }
+  .toggle-password.is-visible .icon-eye-off { display: block; }
+
+  @media (max-width: 860px) {
+    body { flex-direction: column; }
+    .login-visual { min-height: 260px; flex: none; width: 100%; padding: var(--space-md); }
+    .login-visual .visual-copy { max-width: 100%; }
+    .login-visual h1 { font-size: 1.3rem; }
+    .login-panel { width: 100%; max-width: none; min-width: 0; }
+    .login-form-wrap { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="login-visual">
+    <div class="visual-copy">
+      <span class="eyebrow">Panel administrativo</span>
+      <h1>Gestiona cada <span>evento</span> desde un solo lugar.</h1>
+      <p>Inventario, cotizaciones, reservas y despachos de Entre Platos y Copas, siempre a mano.</p>
+    </div>
+  </div>
+
+  <div class="login-panel">
+    <div class="login-form-wrap">
+      <img src="{% static 'images/logo2.jpg' %}" alt="Entre Platos y Copas" class="panel-logo">
+      <span class="eyebrow">Bienvenid@ de nuevo</span>
+      <h2>Iniciar sesión</h2>
+      <p class="sub">Ingresa tus credenciales para acceder a la gestión.</p>
+
+      <form id="form-login" method="post" action="{% url 'gestion_login' %}">
+{% csrf_token %}
+{% if error %}<p class="field-error" style="display:block;margin-bottom:1rem;">{{ error }}</p>{% endif %}
+<div class="form-field"><label>Correo</label><input type="email" id="login-correo" name="email" required autocomplete="username"></div>
+<div class="form-field"><label>Contraseña</label><div class="password-field"><input type="password" id="login-clave" name="password" required autocomplete="current-password"><button type="button" class="toggle-password" id="toggle-password" aria-label="Mostrar contraseña">👁</button></div></div>
+<label class="login-remember"><input type="checkbox" name="recordarme"> Recordarme en este equipo</label>
+<button type="submit" class="btn btn-accent btn-block">Iniciar sesión</button>
+</form>
+      <p class="form-hint" style="text-align:center;margin-top:1rem;">Prototipo de frontend — el inicio de sesión es simulado, no hay autenticación real todavía.</p>
+    </div>
+  </div>
+
+<script>
+const toggleBtn = document.getElementById('toggle-password');
+const claveInput = document.getElementById('login-clave');
+if (toggleBtn && claveInput) toggleBtn.addEventListener('click', () => {
+  claveInput.type = claveInput.type === 'password' ? 'text' : 'password';
+});
+</script>
+</body>
+</html>

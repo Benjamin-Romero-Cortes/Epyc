@@ -1,0 +1,162 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clientes · Panel Entre Platos y Copas</title>
+<link rel="icon" href="{% static 'images/logo.jpg' %}">
+<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+</head>
+<body>
+
+<div class="admin-shell">
+
+  <aside class="admin-sidebar" id="admin-sidebar">
+    <div class="sidebar-brand">
+      <a href="{% url 'index' %}"><img src="{% static 'images/logo2.jpg' %}" alt="Entre Platos y Copas"></a>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="{% url 'inicio' %}" class="sidebar-link"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.3"/><rect x="14" y="3" width="7" height="7" rx="1.3"/><rect x="3" y="14" width="7" height="7" rx="1.3"/><rect x="14" y="14" width="7" height="7" rx="1.3"/></svg></span><span class="nav-label">Resumen</span></a>
+
+      <span class="sidebar-group-label">Operación</span>
+      <a href="{% url 'gestion_clientes' %}" class="sidebar-link"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M15.5 3.13a4 4 0 0 1 0 7.75"/></svg></span><span class="nav-label">Clientes</span></a>
+      <a href="{% url 'gestion_inventario' %}" class="sidebar-link"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg></span><span class="nav-label">Inventario</span><span class="badge-count" id="badge-inventario" hidden>0</span></a>
+      <a href="{% url 'gestion_cotizaciones' %}" class="sidebar-link"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8l-5-5z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg></span><span class="nav-label">Cotizaciones</span></a>
+      <a href="{% url 'gestion_reservas' %}" class="sidebar-link"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg></span><span class="nav-label">Reservas</span></a>
+      <a href="{% url 'gestion_preparacion' %}" class="sidebar-link"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="17" rx="2"/><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M9 11h6M9 15h6"/></svg></span><span class="nav-label">Preparación de pedidos</span></a>
+      <a href="{% url 'gestion_despachos' %}" class="sidebar-link"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="13" height="9"/><path d="M15 10h4l3 3v3h-7z"/><circle cx="6.5" cy="18.5" r="1.6"/><circle cx="17.5" cy="18.5" r="1.6"/></svg></span><span class="nav-label">Despachos</span></a>
+      <a href="{% url 'gestion_devoluciones' %}" class="sidebar-link"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 1 3 6.7"/><path d="M3 17v-5h5"/></svg></span><span class="nav-label">Devoluciones</span></a>
+      <a href="{% url 'gestion_mermas' %}" class="sidebar-link"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l10 18H2L12 3z"/><path d="M12 10v4M12 17h.01"/></svg></span><span class="nav-label">Mermas</span></a>
+      <a href="{% url 'gestion_calendario' %}" class="sidebar-link"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/><rect x="7" y="13.3" width="3" height="3" rx="0.5" fill="currentColor" stroke="none"/><rect x="14" y="13.3" width="3" height="3" rx="0.5" fill="currentColor" stroke="none"/></svg></span><span class="nav-label">Calendario</span></a>
+
+      <span class="sidebar-group-label">Análisis</span>
+      <a href="{% url 'gestion_reportes' %}" class="sidebar-link"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M12 20V4M20 20v-7"/></svg></span><span class="nav-label">Reportes</span></a>
+
+      <span class="sidebar-group-label">Sistema</span>
+      <a href="{% url 'gestion_usuarios' %}" class="sidebar-link"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 3v6c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V5l7-3z"/><circle cx="12" cy="10" r="2.2"/><path d="M8.7 16a3.6 3.6 0 0 1 6.6 0"/></svg></span><span class="nav-label">Usuarios</span></a>
+      <a href="{% url 'gestion_configuracion' %}" class="sidebar-link"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span class="nav-label">Configuración</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="{% url 'index' %}" class="sidebar-link" target="_blank" rel="noopener"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg></span><span class="nav-label">Ver sitio público</span></a>
+      <a href="{% url 'gestion_login' %}" class="sidebar-link"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg></span><span class="nav-label">Cerrar sesión</span></a>
+    </div>
+  </aside>
+
+  <div class="admin-main">
+    <header class="admin-topbar">
+      <div style="display:flex;align-items:center;gap:1rem;">
+        <button class="nav-toggle-admin" id="sidebar-toggle" aria-label="Abrir menú">☰</button>
+        <div class="topbar-title">
+          <span class="eyebrow">Operación</span>
+          <h1>Clientes</h1>
+        </div>
+      </div>
+      <div class="topbar-search">
+        <span class="icon">🔍</span>
+        <input type="search" id="global-search" placeholder="Buscar productos, clientes, cotizaciones, reservas...">
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-btn" aria-label="Notificaciones"><span class="dot"></span>🔔</button>
+        <div class="topbar-user">
+          <div class="user-avatar">HC</div>
+          <div class="user-info"><strong>Helen Cortés</strong><span>Administradora</span></div>
+        </div>
+      </div>
+    </header>
+
+    <main class="admin-content">
+      <div class="page-head">
+        <div>
+          <span class="eyebrow">Clientes</span>
+          <h1>Todos los clientes</h1>
+          <p>Historial y contacto de las personas y empresas que arriendan con nosotros.</p>
+        </div>
+        <div class="page-head-actions">
+          <button class="btn btn-primary" id="btn-nuevo-cliente">+ Nuevo cliente</button>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="search-field">
+          <span class="icon">🔍</span>
+          <input type="search" id="cli-search" placeholder="Buscar por nombre o RUT...">
+        </div>
+        <div class="toolbar-filters">
+          <select class="select-filter" id="cli-tipo">
+            <option value="">Particulares y empresas</option>
+            <option value="Particular">Particular</option>
+            <option value="Empresa">Empresa</option>
+          </select>
+          <select class="select-filter" id="cli-estado">
+            <option value="">Todos los estados</option>
+            <option value="Activo">Activo</option>
+            <option value="Prospecto">Prospecto</option>
+          </select>
+        </div>
+      </div>
+
+      <p class="result-count" id="cli-result-count"></p>
+
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Cliente</th><th>RUT</th><th>Teléfono</th><th>Comuna</th>
+              <th class="cell-num">Reservas</th><th>Última reserva</th><th>Estado</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="cli-tbody">
+
+{% for cliente in clientes %}
+<tr data-cliente data-nombre="{{ cliente.nombre }} {{ cliente.apellido }}" data-rut="{{ cliente.rut }}" data-estado="{% if cliente.activo %}Activo{% else %}Inactivo{% endif %}">
+  <td><a class="cell-strong" href="{% url 'gestion_cliente' cliente.id %}">{{ cliente.nombre }} {{ cliente.apellido }}</a><div class="cell-muted">{{ cliente.email }}</div></td>
+  <td>{{ cliente.rut|default:"—" }}</td>
+  <td>{{ cliente.telefono|default:"—" }}</td>
+  <td>{{ cliente.comuna|default:"—" }}</td>
+  <td class="cell-num">{{ cliente.servicios_count|default:"0" }}</td>
+  <td>{{ cliente.ultima_reserva|date:"d/m/Y"|default:"—" }}</td>
+  <td><span class="status-pill {% if cliente.activo %}is-success{% else %}is-muted{% endif %}">{% if cliente.activo %}Activo{% else %}Inactivo{% endif %}</span></td>
+  <td><a class="icon-btn" href="{% url 'gestion_cliente' cliente.id %}" title="Ver cliente">👁</a></td>
+</tr>
+{% empty %}
+<tr><td colspan="8" class="empty-state">No hay clientes registrados.</td></tr>
+{% endfor %}
+
+</tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-nuevo-cliente" hidden>
+  <div class="modal-panel" style="max-width:560px;">
+    <button class="modal-close" data-close-modal>✕</button>
+    <span class="eyebrow" style="color:var(--color-accent-dark);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;font-weight:700;">Clientes</span>
+    <h2 style="margin-top:0.2rem;">Nuevo cliente</h2>
+    <form id="form-nuevo-cliente" method="post" action="{% url 'gestion_clientes' %}">
+{% csrf_token %}
+<input type="hidden" name="accion" value="crear">
+<div class="form-grid" style="margin-top:1rem;">
+  <div class="form-field"><label>Nombre</label><input type="text" name="nombre" required></div>
+  <div class="form-field"><label>Apellido</label><input type="text" name="apellido"></div>
+  <div class="form-field"><label>RUT</label><input type="text" name="rut" required placeholder="12.345.678-9"></div>
+  <div class="form-field"><label>Teléfono</label><input type="tel" name="telefono" required></div>
+  <div class="form-field"><label>Correo</label><input type="email" name="email" required></div>
+  <div class="form-field"><label>Comuna</label><input type="text" name="comuna"></div>
+  <div class="form-field full"><label>Dirección</label><input type="text" name="direccion"></div>
+  <div class="form-field full"><label>Observaciones <span class="optional">(opcional)</span></label><textarea name="observaciones"></textarea></div>
+  <div class="form-field full"><label><input type="checkbox" name="activo" checked> Cliente activo</label></div>
+</div>
+<div class="modal-actions"><span class="spacer"></span><button type="button" class="btn btn-outline" data-close-modal>Cancelar</button><button type="submit" class="btn btn-primary">Guardar cliente</button></div>
+</form>
+  </div>
+</div>
+
+<script src="{% static 'js/admin-nav.js' %}"></script>
+<script src="{% static 'js/admin-search.js' %}"></script>
+
+<script src="{% static 'js/gestion-django.js' %}"></script>
+</body>
+</html>
