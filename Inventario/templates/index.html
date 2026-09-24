@@ -1,0 +1,314 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Entre Platos y Copas · Arriendo para Matrimonios y Eventos</title>
+<meta name="description" content="Arriendo de vajilla, cristalería, mobiliario y equipamiento para matrimonios, celebraciones y eventos empresariales. Solicita tu cotización sin compromiso.">
+<link rel="icon" href="{% static 'images/logo.jpg' %}">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-top">
+    <div class="container header-top-inner">
+      <a href="{% url 'index' %}" class="brand" aria-label="Entre Platos y Copas - Inicio">
+        <img src="{% static 'images/logo2.jpg' %}" alt="Entre Platos y Copas" class="brand-logo">
+      </a>
+
+      <div class="header-actions header-actions--desktop">
+        <a href="{% url 'cotizador' %}" class="btn btn-accent btn-sm">Cotizar mi evento</a>
+      </div>
+
+      <button class="nav-toggle" aria-label="Abrir menú" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <nav class="main-nav" id="main-nav">
+    <div class="container nav-inner">
+      <ul class="nav-links">
+        <li><a href="{% url 'index' %}">Inicio</a></li>
+        <li><a href="{% url 'catalogo' %}">Catálogo</a></li>
+        <li><a href="{% url 'index' %}#como-funciona">Cómo funciona</a></li>
+        <li><a href="{% url 'nosotros' %}">Nosotros</a></li>
+        <li><a href="{% url 'contacto' %}#faq">Preguntas frecuentes</a></li>
+        <li><a href="{% url 'contacto' %}">Contacto</a></li>
+      </ul>
+      <div class="header-actions header-actions--mobile">
+        <a href="{% url 'cotizador' %}" class="btn btn-primary btn-sm">Cotizar mi evento</a>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<main>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container hero-content">
+      <span class="hero-eyebrow">Arriendo para eventos</span>
+      <h1>Entre Platos y Copas</h1>
+      <p class="hero-lead">Todo lo que necesitas para montar tu evento.</p>
+      <p class="hero-sub">Arrendamos vajilla, cristalería, mobiliario y equipamiento para matrimonios, celebraciones y eventos empresariales, con atención cercana en cada detalle.</p>
+      <div class="hero-actions">
+        <a href="{% url 'catalogo' %}" class="btn btn-accent">Ver catálogo</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Categorías -->
+  <section class="section" id="categorias">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="eyebrow">Nuestro catálogo</span>
+        <h2>Todo para cada rincón de tu evento</h2>
+        <p>Explora por categoría y arma la selección que mejor se ajuste a tu montaje.</p>
+      </div>
+
+      <div class="category-grid" id="category-grid">
+        <article class="category-card reveal">
+          <a href="{% url 'catalogo' %}?categoria=vajilla" class="category-card-img">
+            <img src="{% static 'images/loza1.jpg' %}" alt="Vajilla" loading="lazy">
+          </a>
+          <div class="category-card-body">
+            <h3>Vajilla</h3>
+            <p>Platos y piezas de porcelana para todo tipo de montaje.</p>
+            <a href="{% url 'catalogo' %}?categoria=vajilla" class="btn btn-ghost btn-sm">Ver productos</a>
+          </div>
+        </article>
+
+        <article class="category-card reveal">
+          <a href="{% url 'catalogo' %}?categoria=cristaleria" class="category-card-img">
+            <img src="{% static 'images/copas1.jpg' %}" alt="Cristalería" loading="lazy">
+          </a>
+          <div class="category-card-body">
+            <h3>Cristalería</h3>
+            <p>Copas y vasos de cristal para brindis y servicio de bebestibles.</p>
+            <a href="{% url 'catalogo' %}?categoria=cristaleria" class="btn btn-ghost btn-sm">Ver productos</a>
+          </div>
+        </article>
+
+        <article class="category-card reveal">
+          <a href="{% url 'catalogo' %}?categoria=cubiertos" class="category-card-img">
+            <img src="{% static 'images/cubiertos1.jpg' %}" alt="Cubiertos y servicio" loading="lazy">
+          </a>
+          <div class="category-card-body">
+            <h3>Cubiertos y servicio</h3>
+            <p>Sets de cubiertos y utensilios de servicio para tu banquete.</p>
+            <a href="{% url 'catalogo' %}?categoria=cubiertos" class="btn btn-ghost btn-sm">Ver productos</a>
+          </div>
+        </article>
+
+        <article class="category-card reveal">
+          <a href="{% url 'catalogo' %}?categoria=mesas-sillas" class="category-card-img">
+            <img src="{% static 'images/silla1.jpg' %}" alt="Mesas y sillas" loading="lazy">
+          </a>
+          <div class="category-card-body">
+            <h3>Mesas y sillas</h3>
+            <p>Mobiliario para banquetes, ceremonias y zonas de recepción.</p>
+            <a href="{% url 'catalogo' %}?categoria=mesas-sillas" class="btn btn-ghost btn-sm">Ver productos</a>
+          </div>
+        </article>
+
+        <article class="category-card reveal">
+          <a href="{% url 'catalogo' %}?categoria=manteleria" class="category-card-img">
+            <img src="{% static 'images/manteleria1.jpg' %}" alt="Mantelería" loading="lazy">
+          </a>
+          <div class="category-card-body">
+            <h3>Mantelería</h3>
+            <p>Manteles, caminos y servilletas para vestir tus mesas.</p>
+            <a href="{% url 'catalogo' %}?categoria=manteleria" class="btn btn-ghost btn-sm">Ver productos</a>
+          </div>
+        </article>
+
+        <article class="category-card reveal">
+          <a href="{% url 'catalogo' %}?categoria=carpas-exteriores" class="category-card-img">
+            <img src="{% static 'images/carpa1.jpg' %}" alt="Carpas y exteriores" loading="lazy">
+          </a>
+          <div class="category-card-body">
+            <h3>Carpas y exteriores</h3>
+            <p>Estructuras y pistas para montajes al aire libre.</p>
+            <a href="{% url 'catalogo' %}?categoria=carpas-exteriores" class="btn btn-ghost btn-sm">Ver productos</a>
+          </div>
+        </article>
+
+        <article class="category-card reveal">
+          <a href="{% url 'catalogo' %}?categoria=equipamiento" class="category-card-img">
+            <img src="{% static 'images/equipamiento1.jpg' %}" alt="Equipamiento" loading="lazy">
+          </a>
+          <div class="category-card-body">
+            <h3>Equipamiento</h3>
+            <p>Estufas, iluminación y sonido para complementar tu evento.</p>
+            <a href="{% url 'catalogo' %}?categoria=equipamiento" class="btn btn-ghost btn-sm">Ver productos</a>
+          </div>
+        </article>
+
+        <article class="category-card reveal">
+          <a href="{% url 'catalogo' %}?categoria=decoracion" class="category-card-img">
+            <img src="{% static 'images/deco1.jpg' %}" alt="Decoración" loading="lazy">
+          </a>
+          <div class="category-card-body">
+            <h3>Decoración</h3>
+            <p>Centros de mesa, flores y detalles para ambientar tu evento.</p>
+            <a href="{% url 'catalogo' %}?categoria=decoracion" class="btn btn-ghost btn-sm">Ver productos</a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cómo funciona -->
+  <section class="section section--beige" id="como-funciona">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="eyebrow">Proceso simple</span>
+        <h2>Cómo funciona</h2>
+        <p>De la idea al montaje, te acompañamos en cuatro pasos.</p>
+      </div>
+
+      <div class="steps-grid">
+        <div class="step-card reveal">
+          <span class="step-number">1</span>
+          <h3>Cuéntanos sobre tu evento</h3>
+          <p>Completa el cotizador con la fecha, cantidad de invitados y lo que tienes en mente.</p>
+        </div>
+        <div class="step-card reveal">
+          <span class="step-number">2</span>
+          <h3>Recibe tu cotización</h3>
+          <p>Nuestro equipo prepara una propuesta según tus necesidades y disponibilidad.</p>
+        </div>
+        <div class="step-card reveal">
+          <span class="step-number">3</span>
+          <h3>Confirma tu reserva</h3>
+          <p>Ajustamos productos y cantidades hasta dejar todo listo para tu evento.</p>
+        </div>
+        <div class="step-card reveal">
+          <span class="step-number">4</span>
+          <h3>Coordinamos despacho y retiro</h3>
+          <p>Nos encargamos de la logística el día del evento y el retiro posterior.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cotizador destacado -->
+  <section class="section">
+    <div class="container">
+      <div class="quote-banner reveal">
+        <h2>Cotiza tu evento</h2>
+        <p>Cuéntanos qué estás organizando y te ayudaremos a preparar una propuesta según tus necesidades.</p>
+        <a href="{% url 'cotizador' %}" class="btn btn-accent">Cotizar mi evento</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonios -->
+  <section class="section section--beige">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="eyebrow">Confían en nosotros</span>
+        <h2>Lo que dicen nuestros clientes</h2>
+      </div>
+
+      <div class="testimonial-grid">
+        <article class="testimonial-card reveal">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-quote">"El equipo nos ayudó a definir todo lo que necesitábamos para el matrimonio, incluso cuando no teníamos claro por dónde empezar."</p>
+          <div class="testimonial-author">
+            <img class="testimonial-avatar" src="https://placehold.co/100x100/F3EDE4/333333?font=montserrat&text=MJ" alt="">
+            <div><strong>María José R.</strong><span>Matrimonio en Maipú</span></div>
+          </div>
+        </article>
+        <article class="testimonial-card reveal">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-quote">"Excelente atención y puntualidad en la entrega. La vajilla llegó impecable para nuestro evento corporativo."</p>
+          <div class="testimonial-author">
+            <img class="testimonial-avatar" src="https://placehold.co/100x100/E7E5E1/333333?font=montserrat&text=CT" alt="">
+            <div><strong>Carlos T.</strong><span>Evento empresarial</span></div>
+          </div>
+        </article>
+        <article class="testimonial-card reveal">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-quote">"Súper flexibles con los cambios de última hora. Todo el proceso de cotización fue simple y rápido."</p>
+          <div class="testimonial-author">
+            <img class="testimonial-avatar" src="https://placehold.co/100x100/F3EDE4/333333?font=montserrat&text=PA" alt="">
+            <div><strong>Paulina A.</strong><span>Cumpleaños familiar</span></div>
+          </div>
+        </article>
+        <article class="testimonial-card reveal">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-quote">"El montaje de la carpa y la pista de baile quedó espectacular. Recomendados 100%."</p>
+          <div class="testimonial-author">
+            <img class="testimonial-avatar" src="https://placehold.co/100x100/E7E5E1/333333?font=montserrat&text=RF" alt="">
+            <div><strong>Rodrigo F.</strong><span>Celebración exterior</span></div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA final -->
+  <section class="cta-final">
+    <div class="container">
+      <h2>¿List@ para organizar tu evento?</h2>
+      <p>Cuéntanos los detalles y prepararemos una propuesta a tu medida, sin compromiso.</p>
+      <a href="{% url 'cotizador' %}" class="btn btn-accent">Cotizar mi evento</a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <img src="{% static 'images/logo2.jpg' %}" alt="Entre Platos y Copas" class="brand-logo">
+        <p>Arriendo de vajilla, cristalería, mobiliario y equipamiento para matrimonios, celebraciones y eventos empresariales.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Navegación</h4>
+        <ul>
+          <li><a href="{% url 'index' %}">Inicio</a></li>
+          <li><a href="{% url 'catalogo' %}">Catálogo</a></li>
+          <li><a href="{% url 'nosotros' %}">Nosotros</a></li>
+          <li><a href="{% url 'contacto' %}">Contacto</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Ayuda</h4>
+        <ul>
+          <li><a href="{% url 'cotizador' %}">Cotizar mi evento</a></li>
+          <li><a href="{% url 'contacto' %}#faq">Preguntas frecuentes</a></li>
+          <li><a href="{% url 'index' %}#como-funciona">Cómo funciona</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contacto</h4>
+        <ul>
+          <li><a href="https://wa.me/56942058820" target="_blank" rel="noopener">WhatsApp</a></li>
+          <li><a href="mailto:contacto@entreplatosycopas.cl">arriendo@entreplatosycopas.cl</a></li>
+          <li><address>Nueva San Martín 233-A, Maipú</address></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; <span data-year></span> Entre Platos y Copas. Todos los derechos reservados.</span>
+      <span>Sitio en desarrollo — próximamente conectado a nuestro sistema de reservas.</span>
+    </div>
+  </div>
+</footer>
+
+<a class="whatsapp-float" href="https://wa.me/56942058820?text=Hola%2C%20me%20gustar%C3%ADa%20cotizar%20un%20evento" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">
+  <span class="whatsapp-tooltip">¿Necesitas ayuda?</span>
+  <span class="whatsapp-icon">
+    <svg viewBox="0 0 448 512" fill="#FFFFFF"><path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/></svg>
+  </span>
+</a>
+
+<script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

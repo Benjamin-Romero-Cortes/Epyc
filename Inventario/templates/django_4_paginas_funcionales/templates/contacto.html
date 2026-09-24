@@ -1,0 +1,78 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contacto · Entre Platos y Copas</title>
+<meta name="description" content="Contáctanos por WhatsApp, correo o teléfono. Encuéntranos en Nueva San Martín 233-A, Maipú.">
+<link rel="icon" href="{% static 'images/logo.jpg' %}">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="{% static 'css/paginas.css' %}">
+</head>
+<body>
+<header class="site-header">
+  <div class="header-top"><div class="container header-top-inner">
+    <a href="{% url 'inicio' %}" class="brand"><img src="{% static 'images/logo2.jpg' %}" alt="Entre Platos y Copas" class="brand-logo"></a>
+    <div class="header-actions header-actions--desktop"><a href="{% url 'cotizador' %}" class="btn btn-accent btn-sm">Cotizar mi evento</a></div>
+    <button class="nav-toggle" aria-label="Abrir menú" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div></div>
+  <nav class="main-nav" id="main-nav"><div class="container nav-inner">
+    <ul class="nav-links">
+      <li><a href="{% url 'inicio' %}">Inicio</a></li>
+      <li><a href="{% url 'catalogo' %}">Catálogo</a></li>
+      <li><a href="{% url 'inicio' %}#como-funciona">Cómo funciona</a></li>
+      <li><a href="{% url 'nosotros' %}">Nosotros</a></li>
+      <li><a href="{% url 'contacto' %}#faq">Preguntas frecuentes</a></li>
+      <li><a href="{% url 'contacto' %}">Contacto</a></li>
+    </ul>
+  </div></nav>
+</header>
+
+<main>
+<section class="page-hero"><div class="container">
+  <span class="eyebrow">Contacto</span><h1>Conversemos sobre tu evento</h1>
+  <p>Escríbenos por el canal que prefieras o visítanos en nuestra dirección.</p>
+</div></section>
+
+<section class="section"><div class="container contact-layout">
+  <div class="contact-card reveal">
+    <div class="contact-list">
+      <div class="contact-item"><span class="icon">💬</span><div><h4>WhatsApp</h4><a href="https://wa.me/56942058820" target="_blank">+56 9 4205 8820</a></div></div>
+      <div class="contact-item"><span class="icon">✉️</span><div><h4>Correo electrónico</h4><a href="mailto:contacto@entreplatosycopas.cl">contacto@entreplatosycopas.cl</a></div></div>
+      <div class="contact-item"><span class="icon">📞</span><div><h4>Teléfono</h4><a href="tel:+56942058820">+56 9 4205 8820</a></div></div>
+      <div class="contact-item"><span class="icon">📷</span><div><h4>Instagram</h4><a href="https://instagram.com/entreplatosycopas" target="_blank">@entreplatosycopas</a></div></div>
+      <div class="contact-item"><span class="icon">📍</span><div><h4>Dirección</h4><p>Nueva San Martín 233-A, Maipú</p></div></div>
+      <div class="contact-item"><span class="icon">🕒</span><div><h4>Horario de atención</h4><p>Lunes a viernes: 9:30 a 18:30 hrs<br>Sábado: 10:00 a 14:00 hrs</p></div></div>
+    </div>
+    <a href="{% url 'cotizador' %}" class="btn btn-primary btn-block mt-lg">Cotizar mi evento</a>
+  </div>
+  <div class="map-wrap reveal"><iframe src="https://www.google.com/maps?q=Nueva+San+Mart%C3%ADn+233-A,+Maip%C3%BA,+Regi%C3%B3n+Metropolitana&output=embed" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Ubicación de Entre Platos y Copas"></iframe></div>
+</div></section>
+
+<section class="section section--beige" id="faq"><div class="container">
+  <div class="section-header reveal"><span class="eyebrow">Resolvemos tus dudas</span><h2>Preguntas frecuentes</h2></div>
+  <div class="faq-list">
+    <div class="faq-item"><button class="faq-question" aria-expanded="false">¿Con cuánto tiempo debo reservar?<span class="plus">+</span></button><div class="faq-answer"><p>Recomendamos reservar con al menos 3 a 4 semanas de anticipación, especialmente para matrimonios en temporada alta.</p></div></div>
+    <div class="faq-item"><button class="faq-question" aria-expanded="false">¿Realizan despacho?<span class="plus">+</span></button><div class="faq-answer"><p>Sí, contamos con servicio de despacho y retiro. El costo y disponibilidad dependen de la comuna y la fecha del evento.</p></div></div>
+    <div class="faq-item"><button class="faq-question" aria-expanded="false">¿En qué comunas trabajan?<span class="plus">+</span></button><div class="faq-answer"><p>Trabajamos principalmente en Maipú y comunas cercanas de la Región Metropolitana.</p></div></div>
+    <div class="faq-item"><button class="faq-question" aria-expanded="false">¿Qué ocurre si un producto se rompe o pierde?<span class="plus">+</span></button><div class="faq-answer"><p>En caso de daño o pérdida, se cobra el valor de reposición de la pieza afectada.</p></div></div>
+    <div class="faq-item"><button class="faq-question" aria-expanded="false">¿Cómo funciona la devolución?<span class="plus">+</span></button><div class="faq-answer"><p>Coordinamos el retiro de los productos al finalizar el evento o al día siguiente, según lo acordado.</p></div></div>
+    <div class="faq-item"><button class="faq-question" aria-expanded="false">¿Puedo modificar mi reserva?<span class="plus">+</span></button><div class="faq-answer"><p>Sí, puedes ajustar tu solicitud hasta unos días antes del evento, sujeto a disponibilidad.</p></div></div>
+    <div class="faq-item"><button class="faq-question" aria-expanded="false">¿Cómo sé si un producto está disponible?<span class="plus">+</span></button><div class="faq-answer"><p>La disponibilidad depende de la fecha y cantidad solicitada. Nuestro equipo la confirma al revisar tu cotización.</p></div></div>
+  </div>
+</div></section>
+</main>
+
+<footer class="site-footer"><div class="container">
+  <div class="footer-grid">
+    <div class="footer-brand"><img src="{% static 'images/logo2.jpg' %}" alt="Entre Platos y Copas" class="brand-logo"><p>Arriendo de vajilla, cristalería, mobiliario y equipamiento para eventos.</p></div>
+    <div class="footer-col"><h4>Navegación</h4><ul><li><a href="{% url 'inicio' %}">Inicio</a></li><li><a href="{% url 'catalogo' %}">Catálogo</a></li><li><a href="{% url 'nosotros' %}">Nosotros</a></li><li><a href="{% url 'contacto' %}">Contacto</a></li></ul></div>
+    <div class="footer-col"><h4>Ayuda</h4><ul><li><a href="{% url 'cotizador' %}">Cotizar mi evento</a></li><li><a href="{% url 'contacto' %}#faq">Preguntas frecuentes</a></li></ul></div>
+  </div>
+</div></footer>
+
+<script src="{% static 'js/main.js' %}"></script>
+<script src="{% static 'js/faq.js' %}"></script>
+</body>
+</html>

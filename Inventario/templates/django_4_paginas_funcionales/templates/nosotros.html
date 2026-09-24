@@ -1,0 +1,61 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nosotros · Entre Platos y Copas</title>
+<meta name="description" content="Conoce al equipo detrás de Entre Platos y Copas.">
+<link rel="icon" href="{% static 'images/logo.jpg' %}">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="{% static 'css/paginas.css' %}">
+</head>
+<body>
+<header class="site-header">
+  <div class="header-top"><div class="container header-top-inner">
+    <a href="{% url 'inicio' %}" class="brand"><img src="{% static 'images/logo2.jpg' %}" alt="Entre Platos y Copas" class="brand-logo"></a>
+    <div class="header-actions header-actions--desktop"><a href="{% url 'cotizador' %}" class="btn btn-accent btn-sm">Cotizar mi evento</a></div>
+    <button class="nav-toggle" aria-label="Abrir menú" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div></div>
+  <nav class="main-nav"><div class="container nav-inner">
+    <ul class="nav-links">
+      <li><a href="{% url 'inicio' %}">Inicio</a></li><li><a href="{% url 'catalogo' %}">Catálogo</a></li>
+      <li><a href="{% url 'inicio' %}#como-funciona">Cómo funciona</a></li><li><a href="{% url 'nosotros' %}">Nosotros</a></li>
+      <li><a href="{% url 'contacto' %}#faq">Preguntas frecuentes</a></li><li><a href="{% url 'contacto' %}">Contacto</a></li>
+    </ul>
+  </div></nav>
+</header>
+<main>
+<section class="page-hero"><div class="container"><span class="eyebrow">Nosotros</span><h1>Cercanía y experiencia en cada evento</h1><p>Detrás de cada mesa montada hay un equipo que se preocupa de los detalles.</p></div></section>
+<section class="section"><div class="container about-grid">
+  <img src="{% static 'images/nosotros.jpg' %}" alt="Montaje de mesa" class="about-photo reveal">
+  <div class="about-text reveal"><span class="eyebrow">Nuestra historia</span><h2>Hacemos que organizar tu evento sea más simple</h2>
+    <p>Entre Platos y Copas nació con un objetivo claro: que arrendar vajilla, cristalería, mobiliario y equipamiento para un evento no sea una fuente de estrés, sino una parte más de la organización que se resuelve con confianza.</p>
+    <p>Hemos acompañado matrimonios, celebraciones familiares y eventos empresariales, entendiendo que cada ocasión tiene su propio carácter.</p>
+    <p>Más que un servicio de arriendo, buscamos ser un aliado durante todo el proceso.</p>
+  </div>
+</div></section>
+<section class="section section--beige"><div class="container">
+  <div class="section-header reveal"><span class="eyebrow">Lo que nos representa</span><h2>Nuestros valores</h2></div>
+  <div class="values-grid">
+    <div class="value-card reveal"><div class="icon">🤝</div><h3>Atención personalizada</h3><p>Cada evento es distinto, por eso escuchamos antes de proponer.</p></div>
+    <div class="value-card reveal"><div class="icon">✨</div><h3>Cuidado en los detalles</h3><p>Revisamos cada pieza antes de que llegue a tu evento.</p></div>
+    <div class="value-card reveal"><div class="icon">⏱️</div><h3>Compromiso con los plazos</h3><p>Coordinamos despacho y retiro con puntualidad.</p></div>
+    <div class="value-card reveal"><div class="icon">💬</div><h3>Comunicación cercana</h3><p>Te acompañamos con respuestas claras en cada etapa.</p></div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-item reveal"><strong>+500</strong><span>Eventos realizados</span></div>
+    <div class="stat-item reveal"><strong>+10</strong><span>Años de experiencia</span></div>
+    <div class="stat-item reveal"><strong>+200</strong><span>Productos disponibles</span></div>
+    <div class="stat-item reveal"><strong>+15</strong><span>Comunas atendidas</span></div>
+  </div>
+</div></section>
+<section class="cta-final"><div class="container"><h2>Conversemos sobre tu evento</h2><p>Cuéntanos qué estás organizando y te ayudamos a definir lo que necesitas.</p><a href="{% url 'cotizador' %}" class="btn btn-accent">Cotizar mi evento</a></div></section>
+</main>
+<footer class="site-footer"><div class="container"><div class="footer-grid">
+  <div class="footer-brand"><img src="{% static 'images/logo2.jpg' %}" alt="Entre Platos y Copas" class="brand-logo"><p>Arriendo de vajilla, cristalería, mobiliario y equipamiento para eventos.</p></div>
+  <div class="footer-col"><h4>Navegación</h4><ul><li><a href="{% url 'inicio' %}">Inicio</a></li><li><a href="{% url 'catalogo' %}">Catálogo</a></li><li><a href="{% url 'nosotros' %}">Nosotros</a></li><li><a href="{% url 'contacto' %}">Contacto</a></li></ul></div>
+</div></div></footer>
+<script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

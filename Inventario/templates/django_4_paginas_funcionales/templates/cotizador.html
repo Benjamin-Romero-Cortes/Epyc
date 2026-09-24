@@ -1,0 +1,202 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cotiza tu evento · Entre Platos y Copas</title>
+<meta name="description" content="Cuéntanos sobre tu evento y te ayudaremos a preparar una propuesta según tus necesidades, sin compromiso.">
+<link rel="icon" href="{% static 'images/logo.jpg' %}">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="{% static 'css/cotizador.css' %}">
+</head>
+<body>
+<header class="site-header">
+  <div class="header-top"><div class="container header-top-inner">
+    <a href="{% url 'inicio' %}" class="brand"><img src="{% static 'images/logo2.jpg' %}" alt="Entre Platos y Copas" class="brand-logo"></a>
+    <div class="header-actions header-actions--desktop"><a href="{% url 'cotizador' %}" class="btn btn-accent btn-sm">Cotizar mi evento</a></div>
+    <button class="nav-toggle" aria-label="Abrir menú" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div></div>
+  <nav class="main-nav"><div class="container nav-inner">
+    <ul class="nav-links">
+      <li><a href="{% url 'inicio' %}">Inicio</a></li>
+      <li><a href="{% url 'catalogo' %}">Catálogo</a></li>
+      <li><a href="{% url 'inicio' %}#como-funciona">Cómo funciona</a></li>
+      <li><a href="{% url 'nosotros' %}">Nosotros</a></li>
+      <li><a href="{% url 'contacto' %}#faq">Preguntas frecuentes</a></li>
+      <li><a href="{% url 'contacto' %}">Contacto</a></li>
+    </ul>
+  </div></nav>
+</header>
+
+<main>
+<section class="page-hero"><div class="container">
+  <span class="eyebrow">Cotizador</span><h1>Cotiza tu evento</h1>
+  <p>Cuéntanos qué estás organizando y te ayudaremos a preparar una propuesta según tus necesidades.</p>
+</div></section>
+
+<section class="section" style="padding-top: var(--space-lg);"><div class="container">
+<div class="quote-wizard" id="quote-wizard">
+
+{% if error %}
+<div class="form-error-global" style="margin-bottom:1rem;">{{ error }}</div>
+{% endif %}
+
+{% if enviado %}
+<div class="wizard-confirmation" id="wizard-confirmation">
+  <div class="confirmation-icon">✓</div>
+  <h2>¡Recibimos tu solicitud!</h2>
+  <p>Tu solicitud fue registrada con el código <strong>{{ codigo_servicio }}</strong>.</p>
+  <p>Revisaremos los antecedentes de tu evento y nos pondremos en contacto contigo.</p>
+  <div class="confirmation-actions">
+    <a href="{{ whatsapp_url }}" class="btn btn-primary" target="_blank" rel="noopener">Continuar por WhatsApp</a>
+    <a href="{% url 'inicio' %}" class="btn btn-outline">Volver al inicio</a>
+  </div>
+</div>
+{% else %}
+
+<div id="wizard-progress" class="progress-track">
+  <div class="progress-step is-active" data-step="1"><span class="dot">1</span><span class="label">Tu evento</span></div>
+  <div class="progress-line" data-after="1"></div>
+  <div class="progress-step" data-step="2"><span class="dot">2</span><span class="label">¿Qué necesitas?</span></div>
+  <div class="progress-line" data-after="2"></div>
+  <div class="progress-step" data-step="3"><span class="dot">3</span><span class="label">Contacto</span></div>
+</div>
+
+<form id="quote-form" method="post" action="{% url 'cotizador' %}" novalidate>
+{% csrf_token %}
+{% if articulo_preseleccionado %}
+<input type="hidden" name="articulo_id" value="{{ articulo_preseleccionado.id }}">
+{% endif %}
+
+<div class="wizard-step is-active" data-step="1">
+  <h2>Tu evento</h2>
+  <p class="step-intro">Cuéntanos lo básico para entender el contexto de tu celebración.</p>
+
+  <div data-field="tipoEvento">
+    <label style="font-size:0.85rem;font-weight:600;">Tipo de evento</label>
+    <div class="option-grid" style="margin-top:0.5rem;">
+      <label class="option-card"><input type="radio" name="tipoEvento" value="Matrimonio">Matrimonio</label>
+      <label class="option-card"><input type="radio" name="tipoEvento" value="Cumpleaños">Cumpleaños</label>
+      <label class="option-card"><input type="radio" name="tipoEvento" value="Evento empresarial">Evento empresarial</label>
+      <label class="option-card"><input type="radio" name="tipoEvento" value="Cena / Banquete">Cena / Banquete</label>
+      <label class="option-card"><input type="radio" name="tipoEvento" value="Evento familiar">Evento familiar</label>
+      <label class="option-card"><input type="radio" name="tipoEvento" value="Celebración">Celebración</label>
+      <label class="option-card"><input type="radio" name="tipoEvento" value="Otro">Otro</label>
+    </div>
+    <p class="field-error"></p>
+  </div>
+
+  <div class="form-grid">
+    <div class="form-field" data-field="fecha">
+      <label for="fecha-evento">Fecha del evento</label>
+      <input type="date" id="fecha-evento" name="fecha" required>
+      <p class="field-error"></p>
+    </div>
+    <div class="form-field" data-field="invitados">
+      <label for="num-invitados">Cantidad aproximada de invitados</label>
+      <input type="number" id="num-invitados" name="invitados" min="1" placeholder="Ej: 80" required>
+      <p class="field-error"></p>
+    </div>
+    <div class="form-field" data-field="comuna">
+      <label for="comuna">Comuna del evento</label>
+      <input type="text" id="comuna" name="comuna" placeholder="Ej: Maipú" required>
+      <p class="field-error"></p>
+    </div>
+    <div class="form-field" data-field="despacho">
+      <label>¿Requieres despacho?</label>
+      <div class="option-grid" style="grid-template-columns: 1fr 1fr;">
+        <label class="option-card"><input type="radio" name="despacho" value="Sí">Sí</label>
+        <label class="option-card"><input type="radio" name="despacho" value="No, retiro yo">No, retiro yo</label>
+      </div>
+      <p class="field-error"></p>
+    </div>
+  </div>
+
+  <div class="wizard-nav"><span class="spacer"></span><button type="button" class="btn btn-primary" data-next>Siguiente</button></div>
+</div>
+
+<div class="wizard-step" data-step="2">
+  <h2>¿Qué necesitas?</h2>
+  {% if articulo_preseleccionado %}
+    <p class="helper-note"><strong>Artículo seleccionado:</strong> {{ articulo_preseleccionado.nombre }}</p>
+  {% endif %}
+  <p class="step-intro">Selecciona las categorías que te interesan.</p>
+
+  <div class="checkbox-grid">
+    {% for categoria in categorias %}
+      <label class="checkbox-card"><input type="checkbox" name="categorias" value="{{ categoria.nombre }}">{{ categoria.nombre }}</label>
+    {% endfor %}
+    <label class="checkbox-card"><input type="checkbox" name="categorias" value="Aún no estoy seguro/a">Aún no estoy seguro/a</label>
+  </div>
+
+  <div class="wizard-nav">
+    <button type="button" class="btn btn-outline" data-back>Atrás</button>
+    <span class="spacer"></span>
+    <button type="button" class="btn btn-primary" data-next>Siguiente</button>
+  </div>
+</div>
+
+<div class="wizard-step" data-step="3">
+  <h2>Tus datos de contacto</h2>
+  <p class="step-intro">Así podremos enviarte tu propuesta y coordinar los siguientes pasos.</p>
+
+  <div class="form-grid">
+    <div class="form-field" data-field="nombre">
+      <label for="nombre">Nombre</label>
+      <input type="text" id="nombre" name="nombre" placeholder="Tu nombre completo" required>
+      <p class="field-error"></p>
+    </div>
+    <div class="form-field" data-field="empresa">
+      <label for="empresa">Empresa <span class="optional">(opcional)</span></label>
+      <input type="text" id="empresa" name="empresa">
+      <p class="field-error"></p>
+    </div>
+    <div class="form-field" data-field="telefono">
+      <label for="telefono">Teléfono</label>
+      <input type="tel" id="telefono" name="telefono" placeholder="+56 9 1234 5678" required>
+      <p class="field-error"></p>
+    </div>
+    <div class="form-field" data-field="correo">
+      <label for="correo">Correo electrónico</label>
+      <input type="email" id="correo" name="correo" placeholder="tucorreo@ejemplo.cl" required>
+      <p class="field-error"></p>
+    </div>
+  </div>
+
+  <div data-field="medioContacto">
+    <label style="font-size:0.85rem;font-weight:600;">Medio de contacto preferido</label>
+    <div class="contact-pref-group" style="margin-top:0.5rem;">
+      <label class="option-card"><input type="radio" name="medioContacto" value="WhatsApp">WhatsApp</label>
+      <label class="option-card"><input type="radio" name="medioContacto" value="Correo">Correo</label>
+      <label class="option-card"><input type="radio" name="medioContacto" value="Llamada">Llamada</label>
+    </div>
+    <p class="field-error"></p>
+  </div>
+
+  <div class="form-field full" data-field="comentarios">
+    <label for="comentarios">Comentarios adicionales <span class="optional">(opcional)</span></label>
+    <textarea id="comentarios" name="comentarios"></textarea>
+  </div>
+
+  <div class="wizard-nav">
+    <button type="button" class="btn btn-outline" data-back>Atrás</button>
+    <span class="spacer"></span>
+    <button type="submit" class="btn btn-primary" id="btn-submit-quote">Solicitar cotización</button>
+  </div>
+</div>
+</form>
+{% endif %}
+</div>
+</div></section>
+</main>
+
+<footer class="site-footer"><div class="container"><div class="footer-grid">
+  <div class="footer-brand"><img src="{% static 'images/logo2.jpg' %}" alt="Entre Platos y Copas" class="brand-logo"><p>Arriendo de vajilla, cristalería, mobiliario y equipamiento para eventos.</p></div>
+  <div class="footer-col"><h4>Navegación</h4><ul><li><a href="{% url 'inicio' %}">Inicio</a></li><li><a href="{% url 'catalogo' %}">Catálogo</a></li><li><a href="{% url 'nosotros' %}">Nosotros</a></li><li><a href="{% url 'contacto' %}">Contacto</a></li></ul></div>
+</div></div></footer>
+
+<script src="{% static 'js/main.js' %}"></script>
+{% if not enviado %}<script src="{% static 'js/cotizador-django.js' %}"></script>{% endif %}
+</body>
+</html>
