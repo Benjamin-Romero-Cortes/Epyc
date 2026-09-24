@@ -1,0 +1,221 @@
+/* =========================================================
+   Estilos específicos: cotizador por pasos
+   ========================================================= */
+
+.quote-wizard {
+  max-width: 760px;
+  margin: 0 auto;
+  background-color: var(--color-white-warm);
+  border: 1px solid var(--color-gray-light);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl) var(--space-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Barra de progreso */
+.progress-track {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--space-xl);
+}
+.progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  text-align: center;
+}
+.progress-step .dot {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background-color: var(--color-gray-light);
+  color: var(--color-gray-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: background-color var(--transition), color var(--transition);
+}
+.progress-step .label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-gray-dark);
+  opacity: 0.6;
+}
+.progress-step.is-active .dot,
+.progress-step.is-done .dot {
+  background-color: var(--color-accent);
+  color: var(--color-white-warm);
+}
+.progress-step.is-active .label,
+.progress-step.is-done .label { opacity: 1; }
+.progress-line {
+  flex: 0.5;
+  height: 2px;
+  background-color: var(--color-gray-light);
+  margin-bottom: 1.6rem;
+}
+.progress-line.is-done { background-color: var(--color-accent); }
+
+/* Pasos del formulario */
+.wizard-step { display: none; }
+.wizard-step.is-active { display: block; animation: fadeIn 0.35s ease; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.wizard-step h2 { font-size: 1.5rem; margin-bottom: 0.3rem; }
+.wizard-step > .step-intro { opacity: 0.75; font-size: 0.92rem; margin-bottom: var(--space-lg); }
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+.form-field { display: flex; flex-direction: column; gap: 0.4rem; }
+.form-field.full { grid-column: 1 / -1; }
+
+.form-field label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-gray-dark);
+}
+.form-field .optional { font-weight: 400; opacity: 0.55; }
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-gray-light);
+  background-color: var(--color-white-warm);
+  transition: border-color var(--transition);
+}
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+.form-field textarea { resize: vertical; min-height: 90px; }
+
+.field-error {
+  font-size: 0.78rem;
+  color: #a4443a;
+  min-height: 1em;
+}
+.form-field.has-error input,
+.form-field.has-error select,
+.form-field.has-error textarea {
+  border-color: #a4443a;
+}
+
+/* Tipo de evento / radios como tarjetas */
+.option-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.6rem;
+  margin-bottom: var(--space-md);
+}
+.option-card {
+  position: relative;
+  border: 1px solid var(--color-gray-light);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 0.7rem;
+  text-align: center;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color var(--transition), background-color var(--transition);
+}
+.option-card input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+.option-card:hover { border-color: var(--color-accent); }
+.option-card.is-checked {
+  border-color: var(--color-accent);
+  background-color: var(--color-beige-soft);
+  color: var(--color-accent-dark);
+}
+
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 0.6rem;
+  margin-bottom: var(--space-md);
+}
+.checkbox-card {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  border: 1px solid var(--color-gray-light);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 0.9rem;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: border-color var(--transition), background-color var(--transition);
+}
+.checkbox-card:hover { border-color: var(--color-accent); }
+.checkbox-card input { accent-color: var(--color-accent); width: 16px; height: 16px; flex-shrink: 0; }
+.checkbox-card.is-checked { border-color: var(--color-accent); background-color: var(--color-beige-soft); }
+
+.helper-note {
+  background-color: var(--color-beige-soft);
+  border-left: 3px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  font-size: 0.88rem;
+  margin-bottom: var(--space-md);
+}
+
+.contact-pref-group {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: var(--space-md);
+}
+.contact-pref-group .option-card { flex: 1; min-width: 120px; }
+
+.wizard-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-gray-light);
+}
+.wizard-nav .spacer { flex: 1; }
+
+/* Confirmación */
+.wizard-confirmation {
+  text-align: center;
+  padding: var(--space-lg) 0;
+}
+.confirmation-icon {
+  width: 76px; height: 76px;
+  border-radius: 50%;
+  background-color: var(--color-beige-soft);
+  color: var(--color-accent-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--space-md);
+  font-size: 2rem;
+}
+.wizard-confirmation h2 { margin-bottom: var(--space-sm); }
+.wizard-confirmation p { opacity: 0.85; max-width: 480px; margin: 0 auto var(--space-lg); }
+.confirmation-actions {
+  display: flex;
+  gap: 0.7rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .quote-wizard { padding: var(--space-lg) var(--space-sm); }
+  .form-grid { grid-template-columns: 1fr; }
+  .progress-step .label { display: none; }
+}

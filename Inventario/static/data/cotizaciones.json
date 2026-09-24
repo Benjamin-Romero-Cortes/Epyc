@@ -1,0 +1,438 @@
+[
+  {
+    "id": "COT-2026-001",
+    "clienteId": "CLI-007",
+    "clienteNombre": "Fundación Evento Ejemplo",
+    "tipoEvento": "Evento",
+    "fechaEvento": "2026-09-05",
+    "fechaCreacion": "2026-08-12",
+    "monto": 660450,
+    "estado": "Aceptada",
+    "responsable": "Helen Cortés",
+    "origen": "interno",
+    "lineas": [
+      {
+        "codigo": "MOB-002",
+        "nombre": "Silla Crossback miel",
+        "precio": 3500,
+        "cantidad": 80
+      },
+      {
+        "codigo": "MOB-001",
+        "nombre": "Mesa redonda 150 cm",
+        "precio": 18000,
+        "cantidad": 10
+      }
+    ],
+    "transporte": 95000,
+    "descuento": 0,
+    "garantia": 150000,
+    "comuna": "Santiago",
+    "invitados": 65,
+    "venue": "Centro de eventos Los Aromos",
+    "direccion": "Camino principal 2450, Santiago",
+    "horario": "18:00 - 01:00 hrs",
+    "observaciones": "Montaje coordinado dos horas antes del inicio del evento.",
+    "subtotal": 460000,
+    "iva": 105450
+  },
+  {
+    "id": "COT-2026-002",
+    "clienteId": "CLI-001",
+    "clienteNombre": "Fernanda Soto",
+    "tipoEvento": "Evento",
+    "fechaEvento": "2026-08-19",
+    "fechaCreacion": "2026-07-02",
+    "monto": 1287580,
+    "estado": "Aceptada",
+    "responsable": "Helen Cortés",
+    "origen": "interno",
+    "lineas": [
+      {
+        "codigo": "CRIS-001",
+        "nombre": "Copa vino Cabernet",
+        "precio": 780,
+        "cantidad": 150
+      },
+      {
+        "codigo": "CRIS-002",
+        "nombre": "Copa flauta Champagne",
+        "precio": 850,
+        "cantidad": 150
+      },
+      {
+        "codigo": "VAJ-001",
+        "nombre": "Plato llano Línea Blanca",
+        "precio": 650,
+        "cantidad": 150
+      },
+      {
+        "codigo": "CUB-001",
+        "nombre": "Set cubiertos línea clásica",
+        "precio": 700,
+        "cantidad": 150
+      },
+      {
+        "codigo": "MOB-002",
+        "nombre": "Silla Crossback miel",
+        "precio": 3500,
+        "cantidad": 150
+      },
+      {
+        "codigo": "EQU-001",
+        "nombre": "Estufa cónica a gas",
+        "precio": 25000,
+        "cantidad": 4
+      }
+    ],
+    "transporte": 60000,
+    "descuento": 50000,
+    "garantia": 300000,
+    "comuna": "Maipú",
+    "invitados": 120,
+    "venue": "Club de Campo Los Aromos",
+    "direccion": "Camino Santa Rosa s/n, Maipú",
+    "horario": "17:00 - 02:00 hrs",
+    "observaciones": "Ceremonia y recepción en el mismo recinto.",
+    "subtotal": 1072000,
+    "iva": 205580
+  },
+  {
+    "id": "COT-2026-003",
+    "clienteId": "CLI-002",
+    "clienteNombre": "BCI Corporativo",
+    "tipoEvento": "Evento",
+    "fechaEvento": "2026-08-22",
+    "fechaCreacion": "2026-07-28",
+    "monto": 297084,
+    "estado": "Aceptada",
+    "responsable": "Ignacio Vera",
+    "origen": "interno",
+    "lineas": [
+      {
+        "codigo": "CRIS-001",
+        "nombre": "Copa vino Cabernet",
+        "precio": 780,
+        "cantidad": 65
+      },
+      {
+        "codigo": "VAJ-001",
+        "nombre": "Plato llano Línea Blanca",
+        "precio": 650,
+        "cantidad": 65
+      },
+      {
+        "codigo": "CUB-001",
+        "nombre": "Set cubiertos línea clásica",
+        "precio": 700,
+        "cantidad": 65
+      },
+      {
+        "codigo": "MAN-001",
+        "nombre": "Mantel lino blanco 3x2",
+        "precio": 8900,
+        "cantidad": 8
+      }
+    ],
+    "transporte": 40000,
+    "descuento": 0,
+    "garantia": 120000,
+    "comuna": "Las Condes",
+    "invitados": 65,
+    "venue": "BCI Corporativo · Salón principal",
+    "direccion": "Av. El Golf 125, Las Condes",
+    "horario": "19:30 - 23:00 hrs",
+    "observaciones": "Requiere factura a nombre de la empresa.",
+    "subtotal": 209650,
+    "iva": 47434
+  },
+  {
+    "id": "COT-2026-004",
+    "clienteId": "CLI-003",
+    "clienteNombre": "Paula Rojas",
+    "tipoEvento": "Evento",
+    "fechaEvento": "2026-08-26",
+    "fechaCreacion": "2026-08-01",
+    "monto": 346290,
+    "estado": "Aceptada",
+    "responsable": "Helen Cortés",
+    "origen": "interno",
+    "lineas": [
+      {
+        "codigo": "CRIS-003",
+        "nombre": "Vaso Old Fashioned",
+        "precio": 450,
+        "cantidad": 80
+      },
+      {
+        "codigo": "VAJ-002",
+        "nombre": "Plato de postre Línea Blanca",
+        "precio": 500,
+        "cantidad": 80
+      },
+      {
+        "codigo": "DEC-001",
+        "nombre": "Centro de mesa floral",
+        "precio": 18000,
+        "cantidad": 10
+      }
+    ],
+    "transporte": 35000,
+    "descuento": 0,
+    "garantia": 80000,
+    "comuna": "Colina",
+    "invitados": 80,
+    "venue": "Parcela Los Nogales",
+    "direccion": "Camino Chicureo 4820, Colina",
+    "horario": "20:00 - 01:00 hrs",
+    "observaciones": "",
+    "subtotal": 256000,
+    "iva": 55290
+  },
+  {
+    "id": "COT-2026-005",
+    "clienteId": "CLI-006",
+    "clienteNombre": "Rodrigo Fuentes",
+    "tipoEvento": "Evento",
+    "fechaEvento": "2026-09-12",
+    "fechaCreacion": "2026-08-14",
+    "monto": 1363740,
+    "estado": "Pendiente",
+    "responsable": "Helen Cortés",
+    "origen": "web",
+    "lineas": [
+      {
+        "codigo": "CAR-001",
+        "nombre": "Carpa blanca 10x10 m",
+        "precio": 350000,
+        "cantidad": 1
+      },
+      {
+        "codigo": "MOB-002",
+        "nombre": "Silla Crossback miel",
+        "precio": 3500,
+        "cantidad": 100
+      },
+      {
+        "codigo": "MOB-001",
+        "nombre": "Mesa redonda 150 cm",
+        "precio": 18000,
+        "cantidad": 12
+      },
+      {
+        "codigo": "EQU-001",
+        "nombre": "Estufa cónica a gas",
+        "precio": 25000,
+        "cantidad": 6
+      }
+    ],
+    "transporte": 180000,
+    "descuento": 100000,
+    "garantia": 500000,
+    "comuna": "Pirque",
+    "invitados": 90,
+    "venue": "Fundo Santa Elena",
+    "direccion": "Camino Real 890, Pirque",
+    "horario": "16:00 - 23:00 hrs",
+    "observaciones": "Evento al aire libre, requiere carpa y estufas por posible baja de temperatura.",
+    "subtotal": 1066000,
+    "iva": 217740
+  },
+  {
+    "id": "COT-2026-006",
+    "clienteId": "CLI-008",
+    "clienteNombre": "Andrea Muñoz",
+    "tipoEvento": "Evento",
+    "fechaEvento": "2026-09-20",
+    "fechaCreacion": "2026-08-15",
+    "monto": 149048,
+    "estado": "Pendiente",
+    "responsable": "Ignacio Vera",
+    "origen": "web",
+    "lineas": [
+      {
+        "codigo": "VAJ-002",
+        "nombre": "Plato de postre Línea Blanca",
+        "precio": 500,
+        "cantidad": 35
+      },
+      {
+        "codigo": "CRIS-003",
+        "nombre": "Vaso Old Fashioned",
+        "precio": 450,
+        "cantidad": 35
+      },
+      {
+        "codigo": "DEC-001",
+        "nombre": "Centro de mesa floral",
+        "precio": 18000,
+        "cantidad": 4
+      }
+    ],
+    "transporte": 20000,
+    "descuento": 0,
+    "garantia": 40000,
+    "comuna": "Peñaflor",
+    "invitados": 35,
+    "venue": "Domicilio particular",
+    "direccion": "Los Naranjos 340, Peñaflor",
+    "horario": "16:00 - 20:00 hrs",
+    "observaciones": "Primera vez que arrienda, coordinar visita previa si es necesario.",
+    "subtotal": 105250,
+    "iva": 23798
+  },
+  {
+    "id": "COT-2026-007",
+    "clienteId": "CLI-004",
+    "clienteNombre": "María José Reyes",
+    "tipoEvento": "Evento",
+    "fechaEvento": "2026-10-03",
+    "fechaCreacion": "2026-08-16",
+    "monto": 131792,
+    "estado": "Enviada",
+    "responsable": "Helen Cortés",
+    "origen": "interno",
+    "lineas": [
+      {
+        "codigo": "VAJ-001",
+        "nombre": "Plato llano Línea Blanca",
+        "precio": 650,
+        "cantidad": 45
+      },
+      {
+        "codigo": "CUB-001",
+        "nombre": "Set cubiertos línea clásica",
+        "precio": 700,
+        "cantidad": 45
+      },
+      {
+        "codigo": "MAN-002",
+        "nombre": "Camino de mesa lino natural",
+        "precio": 5000,
+        "cantidad": 5
+      }
+    ],
+    "transporte": 25000,
+    "descuento": 0,
+    "garantia": 60000,
+    "comuna": "Maipú",
+    "invitados": 45,
+    "venue": "Domicilio particular",
+    "direccion": "Los Aromos 210, Maipú",
+    "horario": "13:00 - 18:00 hrs",
+    "observaciones": "",
+    "subtotal": 85750,
+    "iva": 21042
+  },
+  {
+    "id": "COT-2026-008",
+    "clienteId": "CLI-005",
+    "clienteNombre": "Carlos Tapia",
+    "tipoEvento": "Evento",
+    "fechaEvento": "2026-10-15",
+    "fechaCreacion": "2026-08-10",
+    "monto": 575484,
+    "estado": "Rechazada",
+    "responsable": "Ignacio Vera",
+    "origen": "interno",
+    "lineas": [
+      {
+        "codigo": "MOB-003",
+        "nombre": "Silla Tiffany transparente",
+        "precio": 2500,
+        "cantidad": 120
+      },
+      {
+        "codigo": "CRIS-001",
+        "nombre": "Copa vino Cabernet",
+        "precio": 780,
+        "cantidad": 120
+      }
+    ],
+    "transporte": 90000,
+    "descuento": 0,
+    "garantia": 250000,
+    "comuna": "Las Condes",
+    "invitados": 110,
+    "venue": "Salón de eventos corporativo",
+    "direccion": "Av. Apoquindo 4501, Las Condes",
+    "horario": "19:00 - 23:30 hrs",
+    "observaciones": "Cliente rechazó la propuesta por presupuesto.",
+    "subtotal": 393600,
+    "iva": 91884
+  },
+  {
+    "id": "COT-2026-009",
+    "clienteId": "CLI-001",
+    "clienteNombre": "Fernanda Soto",
+    "tipoEvento": "Evento",
+    "fechaEvento": "2026-06-01",
+    "fechaCreacion": "2026-05-02",
+    "monto": 215390,
+    "estado": "Vencida",
+    "responsable": "Helen Cortés",
+    "origen": "interno",
+    "lineas": [
+      {
+        "codigo": "VAJ-001",
+        "nombre": "Plato llano Línea Blanca",
+        "precio": 650,
+        "cantidad": 40
+      },
+      {
+        "codigo": "MOB-002",
+        "nombre": "Silla Crossback miel",
+        "precio": 3500,
+        "cantidad": 40
+      }
+    ],
+    "transporte": 15000,
+    "descuento": 0,
+    "garantia": 50000,
+    "comuna": "Maipú",
+    "invitados": 35,
+    "venue": "Fundo Santa Rosa",
+    "direccion": "Fundo Santa Rosa s/n, Maipú",
+    "horario": "20:00 - 00:00 hrs",
+    "observaciones": "Cotización vencida sin respuesta del cliente.",
+    "subtotal": 166000,
+    "iva": 34390
+  },
+  {
+    "id": "COT-2026-010",
+    "clienteId": "CLI-003",
+    "clienteNombre": "Paula Rojas",
+    "tipoEvento": "Evento",
+    "fechaEvento": "2026-09-28",
+    "fechaCreacion": "2026-08-17",
+    "monto": 74970,
+    "estado": "Borrador",
+    "responsable": "Helen Cortés",
+    "origen": "interno",
+    "lineas": [
+      {
+        "codigo": "CRIS-003",
+        "nombre": "Vaso Old Fashioned",
+        "precio": 450,
+        "cantidad": 20
+      },
+      {
+        "codigo": "DEC-001",
+        "nombre": "Centro de mesa floral",
+        "precio": 18000,
+        "cantidad": 3
+      }
+    ],
+    "transporte": 0,
+    "descuento": 0,
+    "garantia": 30000,
+    "comuna": "Colina",
+    "invitados": 20,
+    "venue": "Domicilio particular",
+    "direccion": "Camino Chicureo 4820, Colina",
+    "horario": "17:00 - 21:00 hrs",
+    "observaciones": "Aún en preparación, falta confirmar cantidad final de invitados.",
+    "subtotal": 63000,
+    "iva": 11970
+  }
+]

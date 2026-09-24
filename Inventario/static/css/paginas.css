@@ -1,0 +1,153 @@
+/* =========================================================
+   Estilos específicos: Nosotros, Contacto y FAQ
+   ========================================================= */
+
+/* ---------- Nosotros ---------- */
+.about-grid {
+  display: grid;
+  grid-template-columns: 0.95fr 1.05fr;
+  gap: var(--space-xl);
+  align-items: center;
+}
+.about-grid img {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+.about-photo {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  object-position: center 28%;
+}
+.about-text .eyebrow {
+  color: var(--color-accent-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.about-text h2 { margin: 0.4rem 0 var(--space-sm); font-size: clamp(1.7rem, 3vw, 2.2rem); }
+.about-text p { margin-bottom: var(--space-sm); opacity: 0.85; }
+
+.values-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-md);
+  margin-top: var(--space-xl);
+}
+.value-card {
+  text-align: center;
+  padding: var(--space-lg) var(--space-md);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-white-warm);
+  border: 1px solid var(--color-gray-light);
+}
+.value-card .icon { font-size: 1.8rem; margin-bottom: 0.6rem; }
+.value-card h3 { font-size: 1.05rem; margin-bottom: 0.3rem; }
+.value-card p { font-size: 0.88rem; opacity: 0.8; }
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--space-md);
+  text-align: center;
+  margin-top: var(--space-xl);
+}
+.stat-item strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  color: var(--color-accent-dark);
+}
+.stat-item span { font-size: 0.85rem; opacity: 0.75; }
+
+/* ---------- Contacto ---------- */
+.contact-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-xl);
+  align-items: flex-start;
+}
+
+.contact-card {
+  background-color: var(--color-white-warm);
+  border: 1px solid var(--color-gray-light);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+}
+.contact-list { display: flex; flex-direction: column; gap: var(--space-md); }
+.contact-item { display: flex; gap: 0.9rem; align-items: flex-start; }
+.contact-item .icon {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background-color: var(--color-beige-soft);
+  color: var(--color-accent-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.1rem;
+}
+.contact-item h4 { font-size: 0.95rem; margin-bottom: 0.15rem; }
+.contact-item p, .contact-item a { font-size: 0.9rem; opacity: 0.85; }
+.contact-item a:hover { color: var(--color-accent-dark); opacity: 1; }
+
+.map-wrap {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--color-gray-light);
+  box-shadow: var(--shadow-sm);
+  height: 100%;
+  min-height: 380px;
+}
+.map-wrap iframe { width: 100%; height: 100%; min-height: 380px; border: 0; display: block; }
+
+/* ---------- FAQ ---------- */
+.faq-list {
+  max-width: 780px;
+  margin: 0 auto;
+}
+.faq-item {
+  border-bottom: 1px solid var(--color-gray-light);
+}
+.faq-question {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-md) 0.2rem;
+  text-align: left;
+  font-family: var(--font-display);
+  font-size: 1.08rem;
+  color: var(--color-black);
+}
+.faq-question .plus {
+  flex-shrink: 0;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--color-gray-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  transition: transform var(--transition), background-color var(--transition), color var(--transition);
+}
+.faq-item.is-open .faq-question .plus {
+  transform: rotate(45deg);
+  background-color: var(--color-accent);
+  color: var(--color-white-warm);
+  border-color: var(--color-accent);
+}
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease, padding var(--transition);
+}
+.faq-answer p { padding: 0 0.2rem var(--space-md); opacity: 0.82; font-size: 0.95rem; max-width: 620px; }
+.faq-item.is-open .faq-answer { max-height: 320px; }
+
+@media (max-width: 860px) {
+  .about-grid, .contact-layout { grid-template-columns: 1fr; }
+  .about-grid { text-align: left; }
+}

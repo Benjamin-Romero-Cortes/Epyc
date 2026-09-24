@@ -1,0 +1,448 @@
+[
+  {
+    "id": "RES-0152",
+    "clienteId": "CLI-001",
+    "clienteNombre": "Fernanda Soto",
+    "tipoEvento": "Evento",
+    "fechaEvento": "2026-08-19",
+    "fechaDespacho": "2026-08-19",
+    "fechaRetiro": "2026-08-20",
+    "direccion": "Club de Campo Los Aromos",
+    "comuna": "Maipú",
+    "responsable": "Helen Cortés",
+    "estado": "En arriendo",
+    "monto": 1287580,
+    "cotizacionId": "COT-2026-002",
+    "productos": [
+      {
+        "codigo": "CRIS-001",
+        "nombre": "Copa vino Cabernet",
+        "cantidad": 150,
+        "preparado": 150,
+        "despachado": 150,
+        "devuelto": 0
+      },
+      {
+        "codigo": "CRIS-002",
+        "nombre": "Copa flauta Champagne",
+        "cantidad": 150,
+        "preparado": 150,
+        "despachado": 150,
+        "devuelto": 0
+      },
+      {
+        "codigo": "VAJ-001",
+        "nombre": "Plato llano Línea Blanca",
+        "cantidad": 150,
+        "preparado": 150,
+        "despachado": 150,
+        "devuelto": 0
+      },
+      {
+        "codigo": "CUB-001",
+        "nombre": "Set cubiertos línea clásica",
+        "cantidad": 150,
+        "preparado": 150,
+        "despachado": 150,
+        "devuelto": 0
+      },
+      {
+        "codigo": "MOB-001",
+        "nombre": "Mesa redonda 150 cm",
+        "cantidad": 15,
+        "preparado": 15,
+        "despachado": 15,
+        "devuelto": 0
+      },
+      {
+        "codigo": "MOB-002",
+        "nombre": "Silla Crossback miel",
+        "cantidad": 150,
+        "preparado": 150,
+        "despachado": 150,
+        "devuelto": 0
+      },
+      {
+        "codigo": "EQU-001",
+        "nombre": "Estufa cónica a gas",
+        "cantidad": 4,
+        "preparado": 4,
+        "despachado": 4,
+        "devuelto": 0
+      }
+    ],
+    "invitados": 120
+  },
+  {
+    "id": "RES-0241",
+    "clienteId": "CLI-004",
+    "clienteNombre": "María José Reyes",
+    "tipoEvento": "Evento",
+    "fechaEvento": "2026-08-10",
+    "fechaDespacho": "2026-08-10",
+    "fechaRetiro": "2026-08-11",
+    "direccion": "Los Aromos 210",
+    "comuna": "Maipú",
+    "responsable": "Ignacio Vera",
+    "estado": "En devolución",
+    "monto": 410000,
+    "cotizacionId": null,
+    "productos": [
+      {
+        "codigo": "MOB-002",
+        "nombre": "Silla Crossback miel",
+        "cantidad": 40,
+        "preparado": 40,
+        "despachado": 40,
+        "devuelto": 0
+      },
+      {
+        "codigo": "MOB-001",
+        "nombre": "Mesa redonda 150 cm",
+        "cantidad": 5,
+        "preparado": 5,
+        "despachado": 5,
+        "devuelto": 5
+      }
+    ],
+    "invitados": 35
+  },
+  {
+    "id": "RES-0244",
+    "clienteId": "CLI-002",
+    "clienteNombre": "BCI Corporativo",
+    "tipoEvento": "Evento",
+    "fechaEvento": "2026-08-22",
+    "fechaDespacho": "2026-08-22",
+    "fechaRetiro": "2026-08-23",
+    "direccion": "Av. El Golf 125",
+    "comuna": "Las Condes",
+    "responsable": "Ignacio Vera",
+    "estado": "Despachada",
+    "monto": 297084,
+    "cotizacionId": "COT-2026-003",
+    "productos": [
+      {
+        "codigo": "CRIS-001",
+        "nombre": "Copa vino Cabernet",
+        "cantidad": 65,
+        "preparado": 65,
+        "despachado": 65,
+        "devuelto": 0
+      },
+      {
+        "codigo": "VAJ-001",
+        "nombre": "Plato llano Línea Blanca",
+        "cantidad": 65,
+        "preparado": 65,
+        "despachado": 65,
+        "devuelto": 0
+      },
+      {
+        "codigo": "CUB-001",
+        "nombre": "Set cubiertos línea clásica",
+        "cantidad": 65,
+        "preparado": 65,
+        "despachado": 65,
+        "devuelto": 0
+      },
+      {
+        "codigo": "MAN-001",
+        "nombre": "Mantel lino blanco 3x2",
+        "cantidad": 8,
+        "preparado": 8,
+        "despachado": 8,
+        "devuelto": 0
+      }
+    ],
+    "invitados": 65
+  },
+  {
+    "id": "RES-0247",
+    "clienteId": "CLI-003",
+    "clienteNombre": "Paula Rojas",
+    "tipoEvento": "Evento",
+    "fechaEvento": "2026-08-26",
+    "fechaDespacho": "2026-08-26",
+    "fechaRetiro": "2026-08-27",
+    "direccion": "Camino Chicureo 4820",
+    "comuna": "Colina",
+    "responsable": "Helen Cortés",
+    "estado": "Preparada",
+    "monto": 346290,
+    "cotizacionId": "COT-2026-004",
+    "productos": [
+      {
+        "codigo": "CRIS-003",
+        "nombre": "Vaso Old Fashioned",
+        "cantidad": 80,
+        "preparado": 80,
+        "despachado": 0,
+        "devuelto": 0
+      },
+      {
+        "codigo": "VAJ-002",
+        "nombre": "Plato de postre Línea Blanca",
+        "cantidad": 80,
+        "preparado": 80,
+        "despachado": 0,
+        "devuelto": 0
+      },
+      {
+        "codigo": "DEC-001",
+        "nombre": "Centro de mesa floral",
+        "cantidad": 10,
+        "preparado": 10,
+        "despachado": 0,
+        "devuelto": 0
+      }
+    ],
+    "invitados": 80
+  },
+  {
+    "id": "RES-0250",
+    "clienteId": "CLI-006",
+    "clienteNombre": "Rodrigo Fuentes",
+    "tipoEvento": "Evento",
+    "fechaEvento": "2026-09-12",
+    "fechaDespacho": "2026-09-12",
+    "fechaRetiro": "2026-09-13",
+    "direccion": "Camino Real 890",
+    "comuna": "Pirque",
+    "responsable": "Helen Cortés",
+    "estado": "En preparación",
+    "monto": 1363740,
+    "cotizacionId": "COT-2026-005",
+    "productos": [
+      {
+        "codigo": "CAR-001",
+        "nombre": "Carpa blanca 10x10 m",
+        "cantidad": 1,
+        "preparado": 0,
+        "despachado": 0,
+        "devuelto": 0
+      },
+      {
+        "codigo": "MOB-002",
+        "nombre": "Silla Crossback miel",
+        "cantidad": 100,
+        "preparado": 60,
+        "despachado": 0,
+        "devuelto": 0
+      },
+      {
+        "codigo": "MOB-001",
+        "nombre": "Mesa redonda 150 cm",
+        "cantidad": 12,
+        "preparado": 8,
+        "despachado": 0,
+        "devuelto": 0
+      },
+      {
+        "codigo": "EQU-001",
+        "nombre": "Estufa cónica a gas",
+        "cantidad": 6,
+        "preparado": 6,
+        "despachado": 0,
+        "devuelto": 0
+      }
+    ],
+    "invitados": 90
+  },
+  {
+    "id": "RES-0252",
+    "clienteId": "CLI-005",
+    "clienteNombre": "Carlos Tapia",
+    "tipoEvento": "Evento",
+    "fechaEvento": "2026-09-18",
+    "fechaDespacho": "2026-09-18",
+    "fechaRetiro": "2026-09-19",
+    "direccion": "Av. Apoquindo 4501",
+    "comuna": "Las Condes",
+    "responsable": "Ignacio Vera",
+    "estado": "Confirmada",
+    "monto": 1720000,
+    "cotizacionId": null,
+    "productos": [
+      {
+        "codigo": "CRIS-001",
+        "nombre": "Copa vino Cabernet",
+        "cantidad": 120,
+        "preparado": 0,
+        "despachado": 0,
+        "devuelto": 0
+      },
+      {
+        "codigo": "MOB-003",
+        "nombre": "Silla Tiffany transparente",
+        "cantidad": 120,
+        "preparado": 0,
+        "despachado": 0,
+        "devuelto": 0
+      }
+    ],
+    "invitados": 110
+  },
+  {
+    "id": "RES-0146",
+    "clienteId": "CLI-001",
+    "clienteNombre": "Fernanda Soto",
+    "tipoEvento": "Evento",
+    "fechaEvento": "2026-06-01",
+    "fechaDespacho": "2026-06-01",
+    "fechaRetiro": "2026-06-02",
+    "direccion": "Fundo Santa Rosa s/n",
+    "comuna": "Maipú",
+    "responsable": "Helen Cortés",
+    "estado": "Finalizada",
+    "monto": 280000,
+    "cotizacionId": null,
+    "productos": [
+      {
+        "codigo": "VAJ-001",
+        "nombre": "Plato llano Línea Blanca",
+        "cantidad": 40,
+        "preparado": 40,
+        "despachado": 40,
+        "devuelto": 40
+      }
+    ],
+    "invitados": 35
+  },
+  {
+    "id": "RES-0255",
+    "clienteId": "CLI-003",
+    "clienteNombre": "Paula Rojas",
+    "tipoEvento": "Evento",
+    "fechaEvento": "2026-08-19",
+    "fechaDespacho": "2026-08-19",
+    "fechaRetiro": "2026-08-20",
+    "direccion": "Camino Chicureo 4820",
+    "comuna": "Colina",
+    "responsable": "Ignacio Vera",
+    "estado": "Preparada",
+    "monto": 320000,
+    "cotizacionId": null,
+    "productos": [
+      {
+        "codigo": "CRIS-003",
+        "nombre": "Vaso Old Fashioned",
+        "cantidad": 40,
+        "preparado": 40,
+        "despachado": 0,
+        "devuelto": 0
+      },
+      {
+        "codigo": "MOB-003",
+        "nombre": "Silla Tiffany transparente",
+        "cantidad": 40,
+        "preparado": 40,
+        "despachado": 0,
+        "devuelto": 0
+      },
+      {
+        "codigo": "DEC-001",
+        "nombre": "Centro de mesa floral",
+        "cantidad": 6,
+        "preparado": 6,
+        "despachado": 0,
+        "devuelto": 0
+      }
+    ],
+    "invitados": 35
+  },
+  {
+    "id": "RES-0256",
+    "clienteId": "CLI-002",
+    "clienteNombre": "BCI Corporativo",
+    "tipoEvento": "Evento",
+    "fechaEvento": "2026-08-19",
+    "fechaDespacho": "2026-08-19",
+    "fechaRetiro": "2026-08-20",
+    "direccion": "Av. El Golf 125",
+    "comuna": "Las Condes",
+    "responsable": "Ignacio Vera",
+    "estado": "En preparación",
+    "monto": 210000,
+    "cotizacionId": null,
+    "productos": [
+      {
+        "codigo": "CRIS-001",
+        "nombre": "Copa vino Cabernet",
+        "cantidad": 50,
+        "preparado": 30,
+        "despachado": 0,
+        "devuelto": 0
+      },
+      {
+        "codigo": "VAJ-002",
+        "nombre": "Plato de postre Línea Blanca",
+        "cantidad": 50,
+        "preparado": 20,
+        "despachado": 0,
+        "devuelto": 0
+      }
+    ],
+    "invitados": 45
+  },
+  {
+    "id": "RES-0257",
+    "clienteId": "CLI-004",
+    "clienteNombre": "María José Reyes",
+    "tipoEvento": "Evento",
+    "fechaEvento": "2026-08-18",
+    "fechaDespacho": "2026-08-18",
+    "fechaRetiro": "2026-08-19",
+    "direccion": "Los Aromos 210",
+    "comuna": "Maipú",
+    "responsable": "Helen Cortés",
+    "estado": "En arriendo",
+    "monto": 150000,
+    "cotizacionId": null,
+    "productos": [
+      {
+        "codigo": "MOB-002",
+        "nombre": "Silla Crossback miel",
+        "cantidad": 30,
+        "preparado": 30,
+        "despachado": 30,
+        "devuelto": 0
+      },
+      {
+        "codigo": "MAN-002",
+        "nombre": "Camino de mesa lino natural",
+        "cantidad": 6,
+        "preparado": 6,
+        "despachado": 6,
+        "devuelto": 0
+      }
+    ],
+    "invitados": 25
+  },
+  {
+    "id": "RES-0258",
+    "clienteId": "CLI-006",
+    "clienteNombre": "Rodrigo Fuentes",
+    "tipoEvento": "Evento",
+    "fechaEvento": "2026-08-17",
+    "fechaDespacho": "2026-08-17",
+    "fechaRetiro": "2026-08-19",
+    "direccion": "Camino Real 890",
+    "comuna": "Pirque",
+    "responsable": "Helen Cortés",
+    "estado": "En arriendo",
+    "monto": 95000,
+    "cotizacionId": null,
+    "productos": [
+      {
+        "codigo": "CRIS-003",
+        "nombre": "Vaso Old Fashioned",
+        "cantidad": 25,
+        "preparado": 25,
+        "despachado": 25,
+        "devuelto": 0
+      }
+    ],
+    "invitados": 20
+  }
+]

@@ -1,0 +1,107 @@
+/* Copia embebida de clientes.json para vistas sin servidor (ver admin-datos.js). */
+var CLIENTES_DATA = [
+  {
+    "id": "CLI-001",
+    "rut": "18.442.310-5",
+    "nombre": "Fernanda Soto",
+    "tipo": "Particular",
+    "telefono": "+56 9 8321 4470",
+    "correo": "fernanda.soto@example.com",
+    "direccion": "Fundo Santa Rosa s/n",
+    "comuna": "Maipú",
+    "clienteDesde": "2025-02-11",
+    "observaciones": "Prefiere contacto por WhatsApp.",
+    "estado": "Activo"
+  },
+  {
+    "id": "CLI-002",
+    "rut": "76.221.980-3",
+    "nombre": "BCI Corporativo",
+    "tipo": "Empresa",
+    "telefono": "+56 2 2692 1000",
+    "correo": "eventos@bci.cl",
+    "direccion": "Av. El Golf 125, Las Condes",
+    "comuna": "Las Condes",
+    "clienteDesde": "2024-11-03",
+    "observaciones": "Requiere factura y contrato de arriendo formal.",
+    "estado": "Activo"
+  },
+  {
+    "id": "CLI-003",
+    "rut": "15.903.221-8",
+    "nombre": "Paula Rojas",
+    "tipo": "Particular",
+    "telefono": "+56 9 7710 2299",
+    "correo": "paula.rojas@example.com",
+    "direccion": "Camino Chicureo 4820",
+    "comuna": "Colina",
+    "clienteDesde": "2025-05-22",
+    "observaciones": "",
+    "estado": "Activo"
+  },
+  {
+    "id": "CLI-004",
+    "rut": "17.556.890-1",
+    "nombre": "María José Reyes",
+    "tipo": "Particular",
+    "telefono": "+56 9 6650 8823",
+    "correo": "mj.reyes@example.com",
+    "direccion": "Los Aromos 210",
+    "comuna": "Maipú",
+    "clienteDesde": "2023-09-14",
+    "observaciones": "Cliente recurrente, referida por Fernanda Soto.",
+    "estado": "Activo"
+  },
+  {
+    "id": "CLI-005",
+    "rut": "12.340.556-9",
+    "nombre": "Carlos Tapia",
+    "tipo": "Empresa",
+    "telefono": "+56 9 5541 0032",
+    "correo": "carlos.tapia@constructoraandes.cl",
+    "direccion": "Av. Apoquindo 4501",
+    "comuna": "Las Condes",
+    "clienteDesde": "2024-06-01",
+    "observaciones": "Eventos empresariales anuales.",
+    "estado": "Activo"
+  },
+  {
+    "id": "CLI-006",
+    "rut": "19.887.001-2",
+    "nombre": "Rodrigo Fuentes",
+    "tipo": "Particular",
+    "telefono": "+56 9 4432 7710",
+    "correo": "rodrigo.fuentes@example.com",
+    "direccion": "Camino Real 890",
+    "comuna": "Pirque",
+    "clienteDesde": "2025-07-02",
+    "observaciones": "",
+    "estado": "Activo"
+  },
+  {
+    "id": "CLI-007",
+    "rut": "14.220.775-4",
+    "nombre": "Fundación Evento Ejemplo",
+    "tipo": "Empresa",
+    "telefono": "+56 9 8765 4321",
+    "correo": "eventos@example.test",
+    "direccion": "Camino principal 2450",
+    "comuna": "Santiago",
+    "clienteDesde": "2024-01-20",
+    "observaciones": "Organiza cena anual de colaboradores.",
+    "estado": "Activo"
+  },
+  {
+    "id": "CLI-008",
+    "rut": "16.998.442-0",
+    "nombre": "Andrea Muñoz",
+    "tipo": "Particular",
+    "telefono": "+56 9 3321 5567",
+    "correo": "andrea.munoz@example.com",
+    "direccion": "Los Naranjos 340",
+    "comuna": "Peñaflor",
+    "clienteDesde": "2025-03-18",
+    "observaciones": "Primera reserva en evaluación.",
+    "estado": "Prospecto"
+  }
+];
