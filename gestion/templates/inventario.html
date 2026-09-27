@@ -107,6 +107,7 @@
               <th class="cell-num">Stock total</th>
               <th class="cell-num">Disponible</th>
               <th class="cell-num">Arrendado</th>
+              <th class="cell-num">Precio</th>
               <th></th>
             </tr>
           </thead>
@@ -119,6 +120,7 @@
   <td class="cell-num">{{ p.stock_total }}</td>
   <td class="cell-num">{{ p.stock_trabajable }}</td>
   <td class="cell-num">{{ p.stock_comprometido|default:"0" }}</td>
+  <td class="cell-num">{{ p.precio_arriendo }}</td>
   <td><div class="table-actions"><a href="{% url 'gestion_producto' p.id %}" class="icon-btn" title="Ver detalle">👁</a></div></td>
 </tr>
 {% empty %}<tr><td colspan="6" class="empty-state">No hay artículos registrados.</td></tr>{% endfor %}

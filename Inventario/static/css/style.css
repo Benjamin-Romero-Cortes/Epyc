@@ -550,7 +550,12 @@ h1, h2, h3, h4 {
 /* ---------- Mobile nav overlay ---------- */
 @media (max-width: 960px) {
   .nav-toggle { display: flex; }
-  .header-actions--desktop { display: none; }
+  .header-actions--desktop {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
 
   .main-nav {
     position: fixed;
@@ -684,4 +689,53 @@ h1, h2, h3, h4 {
   overflow: hidden;
   clip: rect(0 0 0 0);
   white-space: nowrap;
+}
+
+.btn-login-icon {
+  width: 40px;
+  height: 40px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 50%;
+
+  color: var(--color-text, #333);
+  background: transparent;
+
+  flex-shrink: 0;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.btn-login-icon svg {
+  width: 21px;
+  height: 21px;
+}
+
+.btn-login-icon:hover {
+  background: #f3ede4;
+  border-color: #c8b79d;
+  transform: translateY(-1px);
+}
+
+
+.header-actions--desktop {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: auto;
 }

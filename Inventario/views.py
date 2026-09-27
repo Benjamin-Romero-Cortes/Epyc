@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from functools import wraps
 import json
 import re
 from urllib.parse import quote
@@ -7,9 +8,13 @@ from uuid import uuid4
 from django.contrib.auth.hashers import check_password, make_password
 from django.db import transaction
 from django.db.models import Sum, Avg, Count, F
-from django.http import JsonResponse
+from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
 from django.views.decorators.http import require_POST
+from django.core.mail import EmailMultiAlternatives
+from django.conf import settings
+from django.utils.text import slugify
 
 from Inventario.models import (
     Negocio,
@@ -92,51 +97,146 @@ def catalogo(request):
 
 
 def cotizador(request):
+
     negocio = obtener_negocio()
 
     if negocio is None:
+
         return render(
             request,
             "cotizador.html",
             {
                 "categorias": [],
-                "error": "No existe un negocio activo configurado en el sistema.",
+                "error":
+                    "No existe un negocio activo configurado en el sistema.",
             },
         )
 
+    # ========================================================
+    # CATEGORÍAS
+    # ========================================================
+
     categorias = list(
         Categoria.objects
-        .filter(negocio=negocio, activo=True)
+        .filter(
+            negocio=negocio,
+            activo=True
+        )
         .order_by("nombre")
     )
 
+    # ========================================================
+    # ARTÍCULO PRESELECCIONADO
+    # ========================================================
+
     articulo_preseleccionado = None
-    articulo_id = request.GET.get("articulo") or request.POST.get("articulo_id")
+
+    articulo_id = (
+        request.GET.get("articulo")
+        or request.POST.get("articulo_id")
+    )
 
     if articulo_id:
+
         articulo_preseleccionado = (
             Articulo.objects
-            .filter(id=articulo_id, negocio=negocio, activo=True)
+            .filter(
+                id=articulo_id,
+                negocio=negocio,
+                activo=True,
+            )
             .select_related("categoria")
             .first()
         )
 
-    if request.method == "POST":
-        tipo_evento = request.POST.get("tipoEvento", "").strip()
-        fecha_evento = request.POST.get("fecha", "").strip()
-        invitados = request.POST.get("invitados", "").strip()
-        comuna = request.POST.get("comuna", "").strip()
-        despacho = request.POST.get("despacho", "").strip()
+    # ========================================================
+    # POST
+    # ========================================================
 
-        nombre_completo = request.POST.get("nombre", "").strip()
-        rut = request.POST.get("rut", "").strip()
-        empresa = request.POST.get("empresa", "").strip()
-        telefono = request.POST.get("telefono", "").strip()
-        correo = request.POST.get("correo", "").strip().lower()
-        direccion = request.POST.get("direccion", "").strip()
-        medio_contacto = request.POST.get("medioContacto", "").strip()
-        comentarios = request.POST.get("comentarios", "").strip()
-        categorias_seleccionadas = request.POST.getlist("categorias")
+    if request.method == "POST":
+
+        # ----------------------------------------------------
+        # DATOS DEL EVENTO
+        # ----------------------------------------------------
+
+        tipo_evento = request.POST.get(
+            "tipoEvento",
+            ""
+        ).strip()
+
+        fecha_evento = request.POST.get(
+            "fecha",
+            ""
+        ).strip()
+
+        invitados = request.POST.get(
+            "invitados",
+            ""
+        ).strip()
+
+        comuna = request.POST.get(
+            "comuna",
+            ""
+        ).strip()
+
+        despacho = request.POST.get(
+            "despacho",
+            ""
+        ).strip()
+
+        # ----------------------------------------------------
+        # DATOS DEL CLIENTE
+        # ----------------------------------------------------
+
+        nombre_completo = request.POST.get(
+            "nombre",
+            ""
+        ).strip()
+
+        rut = request.POST.get(
+            "rut",
+            ""
+        ).strip()
+
+        empresa = request.POST.get(
+            "empresa",
+            ""
+        ).strip()
+
+        telefono = request.POST.get(
+            "telefono",
+            ""
+        ).strip()
+
+        correo = request.POST.get(
+            "correo",
+            ""
+        ).strip().lower()
+
+        direccion = request.POST.get(
+            "direccion",
+            ""
+        ).strip()
+
+        medio_contacto = request.POST.get(
+            "medioContacto",
+            ""
+        ).strip()
+
+        comentarios = request.POST.get(
+            "comentarios",
+            ""
+        ).strip()
+
+        categorias_seleccionadas = (
+            request.POST.getlist(
+                "categorias"
+            )
+        )
+
+        # ====================================================
+        # VALIDACIONES
+        # ====================================================
 
         if not all([
             tipo_evento,
@@ -151,64 +251,122 @@ def cotizador(request):
             direccion,
             medio_contacto,
         ]):
+
             return render(
                 request,
                 "cotizador.html",
                 {
-                    "categorias": categorias,
-                    "articulo_preseleccionado": articulo_preseleccionado,
-                    "error": "Completa todos los campos obligatorios.",
+                    "categorias":
+                        categorias,
+
+                    "articulo_preseleccionado":
+                        articulo_preseleccionado,
+
+                    "error":
+                        "Completa todos los campos obligatorios.",
                 },
             )
 
-        cantidad_personas = _entero(invitados)
+        cantidad_personas = _entero(
+            invitados
+        )
 
         if cantidad_personas < 1:
+
             return render(
                 request,
                 "cotizador.html",
                 {
-                    "categorias": categorias,
-                    "articulo_preseleccionado": articulo_preseleccionado,
-                    "error": "La cantidad de invitados no es válida.",
+                    "categorias":
+                        categorias,
+
+                    "articulo_preseleccionado":
+                        articulo_preseleccionado,
+
+                    "error":
+                        "La cantidad de invitados no es válida.",
                 },
             )
 
-        nombre, apellido = _separar_nombre(nombre_completo)
+        # ====================================================
+        # NOMBRE / APELLIDO
+        # ====================================================
+
+        nombre, apellido = _separar_nombre(
+            nombre_completo
+        )
+
+        # ====================================================
+        # OBSERVACIONES
+        # ====================================================
 
         observaciones_partes = [
+
             f"Despacho: {despacho}",
-            f"Medio de contacto preferido: {medio_contacto}",
+
+            (
+                "Medio de contacto preferido: "
+                f"{medio_contacto}"
+            ),
         ]
 
         if empresa:
-            observaciones_partes.append(f"Empresa: {empresa}")
+
+            observaciones_partes.append(
+                f"Empresa: {empresa}"
+            )
 
         if categorias_seleccionadas:
+
             observaciones_partes.append(
-                "Categorías de interés: " + ", ".join(categorias_seleccionadas)
+                "Categorías de interés: "
+                + ", ".join(
+                    categorias_seleccionadas
+                )
             )
 
         if articulo_preseleccionado:
+
             observaciones_partes.append(
-                f"Artículo consultado: "
-                f"{articulo_preseleccionado.codigo} - "
-                f"{articulo_preseleccionado.nombre}"
+                (
+                    "Artículo consultado: "
+                    f"{articulo_preseleccionado.codigo}"
+                    " - "
+                    f"{articulo_preseleccionado.nombre}"
+                )
             )
 
         if comentarios:
-            observaciones_partes.append(f"Comentarios: {comentarios}")
 
-        observaciones = "\n".join(observaciones_partes)
+            observaciones_partes.append(
+                f"Comentarios: {comentarios}"
+            )
+
+        observaciones = "\n".join(
+            observaciones_partes
+        )
+
+        # ====================================================
+        # TRANSACCIÓN
+        # ====================================================
 
         with transaction.atomic():
+
+            # ------------------------------------------------
+            # CLIENTE
+            # ------------------------------------------------
+
             cliente = (
                 Cliente.objects
-                .filter(negocio=negocio, email__iexact=correo)
+                .filter(
+                    negocio=negocio,
+                    email__iexact=correo,
+                )
                 .first()
             )
 
             if cliente:
+
                 cliente.rut = rut
                 cliente.nombre = nombre
                 cliente.apellido = apellido
@@ -217,8 +375,11 @@ def cotizador(request):
                 cliente.direccion = direccion
                 cliente.comuna = comuna
                 cliente.activo = True
+
                 cliente.save()
+
             else:
+
                 cliente = Cliente.objects.create(
                     negocio=negocio,
                     rut=rut,
@@ -231,57 +392,319 @@ def cotizador(request):
                     activo=True,
                 )
 
-            codigo = f"COT-{date.today():%Y%m%d}-{uuid4().hex[:6].upper()}"
+            # ------------------------------------------------
+            # CÓDIGO
+            # ------------------------------------------------
+
+            codigo = (
+                f"COT-{date.today():%Y%m%d}-"
+                f"{uuid4().hex[:6].upper()}"
+            )
+
+            # ------------------------------------------------
+            # SERVICIO
+            # ------------------------------------------------
 
             servicio = Servicio.objects.create(
+
                 negocio=negocio,
+
                 cliente=cliente,
+
                 codigo=codigo,
+
                 estado="Cotizacion",
+
                 tipo_servicio=tipo_evento,
+
                 fecha_solicitud=date.today(),
+
                 fecha_evento=fecha_evento,
+
                 fecha_inicio=fecha_evento,
+
                 fecha_termino=fecha_evento,
+
+                direccion_evento=direccion,
+
                 comuna_evento=comuna,
-                cantidad_personas=cantidad_personas,
-                observaciones=observaciones,
+
+                cantidad_personas=
+                    cantidad_personas,
+
+                observaciones=
+                    observaciones,
+
                 subtotal=0,
+
                 descuento=0,
+
                 total=0,
+
                 abono=0,
+
                 garantia=0,
             )
 
+            # =================================================
+            # PREDETERMINADOS
+            # =================================================
+
+            preset_evento = (
+                PREDETERMINADOS_EVENTO
+                .get(
+                    tipo_evento,
+                    {}
+                )
+            )
+
+            # -------------------------------------------------
+            # NORMALIZAR CATEGORÍAS
+            # -------------------------------------------------
+
+            categorias_normalizadas = [
+
+                slugify(categoria)
+
+                for categoria
+                in categorias_seleccionadas
+            ]
+
+            # -------------------------------------------------
+            # "AÚN NO ESTOY SEGURO"
+            # -------------------------------------------------
+
+            no_esta_seguro = any(
+
+                "seguro"
+                in categoria
+
+                for categoria
+                in categorias_normalizadas
+            )
+
+            if no_esta_seguro:
+
+                # Usa todas las categorías
+                # disponibles para ese preset.
+
+                categorias_a_usar = list(
+                    preset_evento.keys()
+                )
+
+            else:
+
+                categorias_a_usar = (
+                    categorias_normalizadas
+                )
+
+            # =================================================
+            # CREAR DETALLES AUTOMÁTICOS
+            # =================================================
+
+            subtotal_general = 0
+
+            codigos_agregados = set()
+
+            for categoria in categorias_a_usar:
+
+                reglas = (
+                    preset_evento
+                    .get(
+                        categoria,
+                        []
+                    )
+                )
+
+                for regla in reglas:
+
+                    codigo_articulo = (
+                        regla.get("codigo")
+                    )
+
+                    if not codigo_articulo:
+                        continue
+
+                    # Evitar duplicados
+                    if (
+                        codigo_articulo
+                        in codigos_agregados
+                    ):
+                        continue
+
+                    articulo = (
+                        Articulo.objects
+                        .filter(
+                            negocio=negocio,
+                            codigo=codigo_articulo,
+                            activo=True,
+                        )
+                        .first()
+                    )
+
+                    # Si el código no existe,
+                    # simplemente se ignora.
+                    if articulo is None:
+                        continue
+
+                    cantidad = (
+                        calcular_cantidad_predeterminada(
+                            regla,
+                            cantidad_personas,
+                        )
+                    )
+
+                    if cantidad <= 0:
+                        continue
+
+                    subtotal = (
+                        articulo.precio_arriendo
+                        * cantidad
+                    )
+
+                    DetalleServicio.objects.create(
+
+                        servicio=servicio,
+
+                        articulo=articulo,
+
+                        cantidad=cantidad,
+
+                        precio_unitario=(
+                            articulo
+                            .precio_arriendo
+                        ),
+
+                        subtotal=subtotal,
+                    )
+
+                    subtotal_general += (
+                        subtotal
+                    )
+
+                    codigos_agregados.add(
+                        codigo_articulo
+                    )
+
+            # =================================================
+            # ARTÍCULO PRESELECCIONADO
+            # =================================================
+
+            if articulo_preseleccionado:
+
+                if (
+                    articulo_preseleccionado.codigo
+                    not in codigos_agregados
+                ):
+
+                    cantidad_preseleccionada = 1
+
+                    subtotal = (
+                        articulo_preseleccionado
+                        .precio_arriendo
+                        * cantidad_preseleccionada
+                    )
+
+                    DetalleServicio.objects.create(
+
+                        servicio=servicio,
+
+                        articulo=
+                            articulo_preseleccionado,
+
+                        cantidad=
+                            cantidad_preseleccionada,
+
+                        precio_unitario=(
+                            articulo_preseleccionado
+                            .precio_arriendo
+                        ),
+
+                        subtotal=subtotal,
+                    )
+
+                    subtotal_general += (
+                        subtotal
+                    )
+
+                    codigos_agregados.add(
+                        articulo_preseleccionado.codigo
+                    )
+
+            # =================================================
+            # RECALCULAR TOTAL
+            # =================================================
+
+            servicio.subtotal = (
+                subtotal_general
+            )
+
+            servicio.total = max(
+                0,
+                subtotal_general
+                - servicio.descuento
+            )
+
+            servicio.save(
+                update_fields=[
+                    "subtotal",
+                    "total",
+                    "fecha_actualizacion",
+                ]
+            )
+
+        # ====================================================
+        # WHATSAPP
+        # ====================================================
+
         mensaje = (
-            "Hola, envié una solicitud de cotización en la web. "
+            "Hola, envié una solicitud "
+            "de cotización en la web. "
             f"Mi código es {servicio.codigo}."
         )
 
         whatsapp_url = (
-            "https://wa.me/56942058820?text=" + quote(mensaje)
+            "https://wa.me/56942058820?text="
+            + quote(mensaje)
         )
+
+        # ====================================================
+        # CONFIRMACIÓN
+        # ====================================================
 
         return render(
             request,
             "cotizador.html",
             {
-                "categorias": categorias,
-                "enviado": True,
-                "codigo_servicio": servicio.codigo,
-                "whatsapp_url": whatsapp_url,
+                "categorias":
+                    categorias,
+
+                "enviado":
+                    True,
+
+                "codigo_servicio":
+                    servicio.codigo,
+
+                "whatsapp_url":
+                    whatsapp_url,
             },
         )
+
+    # ========================================================
+    # GET
+    # ========================================================
 
     return render(
         request,
         "cotizador.html",
         {
-            "categorias": categorias,
-            "articulo_preseleccionado": articulo_preseleccionado,
+            "categorias":
+                categorias,
+
+            "articulo_preseleccionado":
+                articulo_preseleccionado,
         },
     )
-
 
 def nosotros(request):
     return render(request, "nosotros.html")
@@ -318,10 +741,142 @@ def producto(request, id):
     )
 
 
+def solo_administrador(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+
+        usuario_id = request.session.get("usuario_id")
+
+        # No ha iniciado sesión
+        if not usuario_id:
+            login_url = reverse("gestion_login")
+
+            return redirect(
+                f"{login_url}?next={request.get_full_path()}"
+            )
+
+        usuario = (
+            Usuario.objects
+            .filter(
+                id=usuario_id,
+                activo=True
+            )
+            .select_related(
+                "rol",
+                "negocio"
+            )
+            .first()
+        )
+
+        # La sesión apunta a un usuario que ya no existe
+        # o fue desactivado.
+        if usuario is None:
+            request.session.flush()
+
+            return redirect("gestion_login")
+
+        # Solo Administrador
+        if (
+            not usuario.rol
+            or usuario.rol.nombre != "Administrador"
+        ):
+            return HttpResponseForbidden(
+                "No tienes permisos para acceder a esta sección."
+            )
+
+        # Dejamos el usuario disponible para la vista
+        request.usuario_panel = usuario
+
+        return view_func(
+            request,
+            *args,
+            **kwargs
+        )
+
+    return wrapper
+
+# ============================================================
+# LOGIN
+# ============================================================
+
+def gestion_login(request):
+    if request.method == "POST":
+        email = request.POST.get(
+            "email",
+            "",
+        ).strip().lower()
+
+        password = request.POST.get(
+            "password",
+            "",
+        )
+
+        usuario = (
+            Usuario.objects
+            .filter(
+                email=email,
+                activo=True,
+            )
+            .select_related(
+                "rol",
+                "negocio",
+            )
+            .first()
+        )
+
+        if usuario:
+            password_valida = False
+
+            try:
+                password_valida = check_password(
+                    password,
+                    usuario.password,
+                )
+            except Exception:
+                password_valida = False
+
+            # Compatibilidad temporal con registros antiguos en texto plano.
+            if not password_valida:
+                password_valida = (
+                    usuario.password == password
+                )
+
+            if password_valida:
+                request.session["usuario_id"] = usuario.id
+                request.session["usuario_nombre"] = (
+                    f"{usuario.nombre} {usuario.apellido}".strip()
+                )
+                request.session["usuario_rol"] = usuario.rol.nombre
+
+                destino = request.GET.get("next")
+
+                if destino:
+                    return redirect(destino)
+
+                return redirect("inicio")
+
+        return render(
+            request,
+            "login.html",
+            {
+                "error": "Correo o contraseña incorrectos.",
+            },
+        )
+
+    return render(
+        request,
+        "login.html",
+    )
+
+@solo_administrador
+def gestion_logout(request):
+    request.session.flush()
+    return redirect("gestion_login")
+
 # ============================================================
 # GESTIÓN - INICIO
 # ============================================================
-
+@solo_administrador
 def gestionIndex(request):
     negocio = obtener_negocio()
     hoy = date.today()
@@ -606,7 +1161,7 @@ PREFIJOS_CATEGORIA = {
     "Decoración": "DEC",
 }
 
-
+@solo_administrador
 def generar_codigo_producto(categoria):
     prefijo = PREFIJOS_CATEGORIA.get(
         categoria.nombre,
@@ -631,7 +1186,7 @@ def generar_codigo_producto(categoria):
 
     return f"{prefijo}-{siguiente:03d}"
 
-
+@solo_administrador
 def inventario(request):
     negocio = obtener_negocio()
 
@@ -751,7 +1306,7 @@ def inventario(request):
         },
     )
 
-
+@solo_administrador
 def gestion_producto(request, id):
     articulo = get_object_or_404(
         Articulo.objects.select_related("categoria", "negocio"),
@@ -774,7 +1329,7 @@ def gestion_producto(request, id):
         },
     )
 
-
+@solo_administrador
 @require_POST
 @transaction.atomic
 def guardar_producto(request):
@@ -923,7 +1478,7 @@ def guardar_producto(request):
 # ============================================================
 # CLIENTES
 # ============================================================
-
+@solo_administrador
 def gestion_clientes(request):
     negocio = obtener_negocio()
 
@@ -984,7 +1539,7 @@ def gestion_clientes(request):
         },
     )
 
-
+@solo_administrador
 def gestion_cliente(request, id):
     cliente = get_object_or_404(
         Cliente.objects.select_related("negocio"),
@@ -1030,7 +1585,7 @@ def gestion_cliente(request, id):
 # ============================================================
 # COTIZACIONES / SERVICIO
 # ============================================================
-
+@solo_administrador
 def gestion_cotizaciones(request):
     negocio = obtener_negocio()
 
@@ -1170,39 +1725,206 @@ def gestion_cotizaciones(request):
         },
     )
 
-
+@solo_administrador
 def gestion_cotizacion(request, id):
+
     servicio = get_object_or_404(
-        Servicio.objects.select_related("cliente", "negocio"),
+        Servicio.objects.select_related(
+            "cliente",
+            "negocio"
+        ),
         id=id,
     )
 
+    # ========================================================
+    # AGREGAR ARTÍCULO A LA COTIZACIÓN
+    # ========================================================
+
     if (
         request.method == "POST"
-        and request.POST.get("accion") == "cambiar_estado"
+        and request.POST.get("accion") == "agregar_articulo"
     ):
-        nuevo_estado = request.POST.get("estado", "").strip()
 
-        servicio.estado = nuevo_estado
+        articulo_id = request.POST.get("articulo_id")
+        cantidad = _entero(
+            request.POST.get("cantidad"),
+            1
+        )
 
-        if (
-            nuevo_estado == "Confirmado"
-            and not servicio.fecha_confirmacion
-        ):
-            servicio.fecha_confirmacion = datetime.now()
+        if cantidad < 1:
+            cantidad = 1
 
-        servicio.save()
+        articulo = get_object_or_404(
+            Articulo,
+            id=articulo_id,
+            negocio=servicio.negocio,
+            activo=True,
+        )
+
+        with transaction.atomic():
+
+            # Si ya existe el artículo en esta cotización,
+            # aumentamos la cantidad.
+            detalle = (
+                DetalleServicio.objects
+                .filter(
+                    servicio=servicio,
+                    articulo=articulo,
+                )
+                .first()
+            )
+
+            if detalle:
+
+                detalle.cantidad += cantidad
+
+                detalle.precio_unitario = (
+                    articulo.precio_arriendo
+                )
+
+                detalle.subtotal = (
+                    detalle.cantidad
+                    * detalle.precio_unitario
+                )
+
+                detalle.save()
+
+            else:
+
+                DetalleServicio.objects.create(
+                    servicio=servicio,
+                    articulo=articulo,
+                    cantidad=cantidad,
+                    precio_unitario=(
+                        articulo.precio_arriendo
+                    ),
+                    subtotal=(
+                        articulo.precio_arriendo
+                        * cantidad
+                    ),
+                )
+
+            # --------------------------------------------
+            # RECALCULAR SUBTOTAL
+            # --------------------------------------------
+
+            nuevo_subtotal = (
+                DetalleServicio.objects
+                .filter(servicio=servicio)
+                .aggregate(
+                    total=Sum("subtotal")
+                )["total"]
+                or 0
+            )
+
+            servicio.subtotal = nuevo_subtotal
+
+            # --------------------------------------------
+            # RECALCULAR TOTAL
+            # --------------------------------------------
+
+            servicio.total = max(
+                0,
+                servicio.subtotal
+                - servicio.descuento
+            )
+
+            servicio.save(
+                update_fields=[
+                    "subtotal",
+                    "total",
+                    "fecha_actualizacion",
+                ]
+            )
 
         return redirect(
             "gestion_cotizacion",
             id=servicio.id,
         )
 
+    # ========================================================
+    # CAMBIAR ESTADO
+    # ========================================================
+
+    if (
+        request.method == "POST"
+        and request.POST.get("accion") == "cambiar_estado"
+    ):
+
+        nuevo_estado = request.POST.get(
+            "estado",
+            ""
+        ).strip()
+
+        estados_validos = [
+            "Cotizacion",
+            "Confirmado",
+            "Preparacion",
+            "Despachado",
+            "Devolucion parcial",
+            "Finalizado",
+            "Cancelado",
+        ]
+
+        if nuevo_estado in estados_validos:
+
+            servicio.estado = nuevo_estado
+
+            if (
+                nuevo_estado == "Confirmado"
+                and not servicio.fecha_confirmacion
+            ):
+                servicio.fecha_confirmacion = (
+                    datetime.now()
+                )
+
+            servicio.save()
+
+        return redirect(
+            "gestion_cotizacion",
+            id=servicio.id,
+        )
+
+    # ========================================================
+    # DETALLES DE LA COTIZACIÓN
+    # ========================================================
+
     detalles = (
         DetalleServicio.objects
-        .filter(servicio=servicio)
-        .select_related("articulo")
+        .filter(
+            servicio=servicio
+        )
+        .select_related(
+            "articulo",
+            "articulo__categoria"
+        )
+        .order_by(
+            "articulo__nombre"
+        )
     )
+
+    # ========================================================
+    # ARTÍCULOS DISPONIBLES PARA AGREGAR
+    # ========================================================
+
+    articulos = (
+        Articulo.objects
+        .filter(
+            negocio=servicio.negocio,
+            activo=True,
+        )
+        .select_related(
+            "categoria"
+        )
+        .order_by(
+            "categoria__nombre",
+            "nombre"
+        )
+    )
+
+    # ========================================================
+    # ESTADOS
+    # ========================================================
 
     estados_servicio = [
         "Cotizacion",
@@ -1214,21 +1936,25 @@ def gestion_cotizacion(request, id):
         "Cancelado",
     ]
 
+    # ========================================================
+    # RENDER
+    # ========================================================
+
     return render(
         request,
         "cotizacion.html",
         {
             "servicio": servicio,
             "detalles": detalles,
+            "articulos": articulos,
             "estados_servicio": estados_servicio,
         },
     )
 
-
 # ============================================================
 # RESERVAS / SERVICIOS CONFIRMADOS
 # ============================================================
-
+@solo_administrador
 def gestion_reservas(request):
     negocio = obtener_negocio()
 
@@ -1253,7 +1979,7 @@ def gestion_reservas(request):
         },
     )
 
-
+@solo_administrador
 def gestion_reserva(request, id):
     servicio = get_object_or_404(
         Servicio.objects.select_related("cliente", "negocio"),
@@ -1279,7 +2005,7 @@ def gestion_reserva(request, id):
 # ============================================================
 # PREPARACIÓN
 # ============================================================
-
+@solo_administrador
 def gestion_preparacion(request):
     preparaciones = (
         Preparacion.objects
@@ -1299,7 +2025,7 @@ def gestion_preparacion(request):
         },
     )
 
-
+@solo_administrador
 def gestion_preparacion_documento(request, id):
     preparacion = get_object_or_404(
         Preparacion.objects.select_related(
@@ -1365,7 +2091,7 @@ def gestion_preparacion_documento(request, id):
 # ============================================================
 # DESPACHOS
 # ============================================================
-
+@solo_administrador
 def gestion_despachos(request):
     despachos = (
         Despacho.objects
@@ -1385,7 +2111,7 @@ def gestion_despachos(request):
         },
     )
 
-
+@solo_administrador
 def gestion_despacho_documento(request, id):
     despacho = get_object_or_404(
         Despacho.objects.select_related(
@@ -1415,7 +2141,7 @@ def gestion_despacho_documento(request, id):
 # ============================================================
 # DEVOLUCIONES
 # ============================================================
-
+@solo_administrador
 def gestion_devoluciones(request):
     devoluciones = list(
         Devolucion.objects
@@ -1456,7 +2182,7 @@ def gestion_devoluciones(request):
         },
     )
 
-
+@solo_administrador
 def gestion_devolucion(request, id):
     devolucion = get_object_or_404(
         Devolucion.objects.select_related(
@@ -1542,7 +2268,7 @@ def gestion_devolucion(request, id):
 # ============================================================
 # MERMAS
 # ============================================================
-
+@solo_administrador
 def gestion_mermas(request):
     negocio = obtener_negocio()
 
@@ -1639,7 +2365,7 @@ def gestion_mermas(request):
 # ============================================================
 # CALENDARIO
 # ============================================================
-
+@solo_administrador
 def gestion_calendario(request):
     negocio = obtener_negocio()
 
@@ -1666,7 +2392,7 @@ def gestion_calendario(request):
 # ============================================================
 # REPORTES
 # ============================================================
-
+@solo_administrador
 def gestion_reportes(request):
     negocio = obtener_negocio()
 
@@ -1782,7 +2508,7 @@ def gestion_reportes(request):
         )
         .annotate(
             total_servicios=Count(
-                "servicio",
+                "servicios",
                 distinct=True,
             )
         )
@@ -1825,7 +2551,7 @@ def gestion_reportes(request):
 # ============================================================
 # USUARIOS
 # ============================================================
-
+@solo_administrador
 def gestion_usuarios(request):
     negocio = obtener_negocio()
 
@@ -1871,7 +2597,7 @@ def gestion_usuarios(request):
 # ============================================================
 # CONFIGURACIÓN
 # ============================================================
-
+@solo_administrador
 def gestion_configuracion(request):
     negocio = obtener_negocio()
 
@@ -1948,70 +2674,497 @@ def gestion_configuracion(request):
     )
 
 
-# ============================================================
-# LOGIN
-# ============================================================
+@solo_administrador
+def enviar_cotizacion_email(request, id):
 
-def gestion_login(request):
-    if request.method == "POST":
-        email = request.POST.get(
-            "email",
-            "",
-        ).strip().lower()
-
-        password = request.POST.get(
-            "password",
-            "",
-        )
-
-        usuario = (
-            Usuario.objects
-            .filter(
-                email=email,
-                activo=True,
-            )
-            .select_related(
-                "rol",
-                "negocio",
-            )
-            .first()
-        )
-
-        if usuario:
-            password_valida = False
-
-            try:
-                password_valida = check_password(
-                    password,
-                    usuario.password,
-                )
-            except Exception:
-                password_valida = False
-
-            # Compatibilidad temporal con registros antiguos en texto plano.
-            if not password_valida:
-                password_valida = (
-                    usuario.password == password
-                )
-
-            if password_valida:
-                request.session["usuario_id"] = usuario.id
-                request.session["usuario_nombre"] = (
-                    f"{usuario.nombre} {usuario.apellido}".strip()
-                )
-                request.session["usuario_rol"] = usuario.rol.nombre
-
-                return redirect("index")
-
-        return render(
-            request,
-            "login.html",
-            {
-                "error": "Correo o contraseña incorrectos.",
-            },
-        )
-
-    return render(
-        request,
-        "login.html",
+    servicio = get_object_or_404(
+        Servicio.objects.select_related(
+            "cliente",
+            "negocio"
+        ),
+        id=id,
     )
+
+    cliente = servicio.cliente
+
+    if not cliente.email:
+        return redirect(
+            "gestion_cotizacion",
+            id=servicio.id,
+        )
+
+    detalles = (
+        DetalleServicio.objects
+        .filter(servicio=servicio)
+        .select_related("articulo")
+        .order_by("articulo__nombre")
+    )
+
+    subject = (
+        f"Cotización {servicio.codigo} "
+        f"· Entre Platos y Copas"
+    )
+
+    from_email = settings.DEFAULT_FROM_EMAIL
+
+    to = [
+        cliente.email
+    ]
+
+    text_content = f"""
+Hola {cliente.nombre},
+
+Te enviamos la cotización {servicio.codigo}
+para tu evento.
+
+Fecha del evento: {servicio.fecha_evento}
+Total: ${servicio.total}
+
+Si deseas realizar algún cambio o confirmar la cotización,
+puedes responder este correo o comunicarte con nosotros.
+
+Entre Platos y Copas
+"""
+
+    filas_articulos = ""
+
+    for detalle in detalles:
+        filas_articulos += f"""
+        <tr>
+            <td style="padding:8px;border-bottom:1px solid #ddd;">
+                {detalle.articulo.nombre}
+            </td>
+
+            <td style="padding:8px;border-bottom:1px solid #ddd;text-align:center;">
+                {detalle.cantidad}
+            </td>
+
+            <td style="padding:8px;border-bottom:1px solid #ddd;text-align:right;">
+                ${detalle.precio_unitario:,.0f}
+            </td>
+
+            <td style="padding:8px;border-bottom:1px solid #ddd;text-align:right;">
+                ${detalle.subtotal:,.0f}
+            </td>
+        </tr>
+        """
+
+    html_content = f"""
+    <div style="
+        font-family:Arial,sans-serif;
+        max-width:700px;
+        margin:auto;
+        color:#333;
+    ">
+
+        <h2 style="color:#b98b52;">
+            Entre Platos y Copas
+        </h2>
+
+        <p>
+            Hola <strong>{cliente.nombre}</strong>,
+        </p>
+
+        <p>
+            Te enviamos la cotización
+            <strong>{servicio.codigo}</strong>
+            correspondiente a tu evento.
+        </p>
+
+        <table
+            style="
+                width:100%;
+                border-collapse:collapse;
+                margin-top:20px;
+            "
+        >
+
+            <thead>
+                <tr style="background:#f3ede4;">
+                    <th style="padding:8px;text-align:left;">
+                        Artículo
+                    </th>
+
+                    <th style="padding:8px;">
+                        Cantidad
+                    </th>
+
+                    <th style="padding:8px;text-align:right;">
+                        Precio
+                    </th>
+
+                    <th style="padding:8px;text-align:right;">
+                        Subtotal
+                    </th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {filas_articulos}
+            </tbody>
+
+        </table>
+
+        <div style="
+            margin-top:20px;
+            text-align:right;
+        ">
+
+            <p>
+                Subtotal:
+                <strong>
+                    ${servicio.subtotal:,.0f}
+                </strong>
+            </p>
+
+            <p>
+                Descuento:
+                <strong>
+                    ${servicio.descuento:,.0f}
+                </strong>
+            </p>
+
+            <p style="font-size:20px;">
+                Total:
+                <strong>
+                    ${servicio.total:,.0f}
+                </strong>
+            </p>
+
+        </div>
+
+        <hr style="
+            border:none;
+            border-top:1px solid #ddd;
+            margin:30px 0;
+        ">
+
+        <p>
+            <strong>Fecha del evento:</strong>
+            {servicio.fecha_evento or "Por confirmar"}
+        </p>
+
+        <p>
+            <strong>Comuna:</strong>
+            {servicio.comuna_evento or "Por confirmar"}
+        </p>
+
+        <p>
+            Si deseas modificar o confirmar esta cotización,
+            puedes responder este correo o comunicarte con nosotros.
+        </p>
+
+        <p>
+            Saludos,<br>
+            <strong>Entre Platos y Copas</strong>
+        </p>
+
+    </div>
+    """
+
+    msg = EmailMultiAlternatives(
+        subject,
+        text_content,
+        from_email,
+        to,
+    )
+
+    msg.attach_alternative(
+        html_content,
+        "text/html",
+    )
+
+    msg.send()
+
+    return redirect(
+        "gestion_cotizacion",
+        id=servicio.id,
+    )
+
+
+import math
+
+
+PREDETERMINADOS_EVENTO = {
+
+    "Matrimonio": {
+
+        "vajilla": [
+            {
+                "codigo": "vaj-003",
+                "regla": "por_persona",
+                "factor": 1,
+            },
+        ],
+
+        "cristaleria": [
+            {
+                "codigo": "cris-001",
+                "regla": "por_persona",
+                "factor": 1.05,
+            },
+            {
+                "codigo": "cris-003",
+                "regla": "por_persona",
+                "factor": 1.05,
+            },
+        ],
+
+        "cubiertos": [
+            {
+                "codigo": "cub-001",
+                "regla": "por_persona",
+                "factor": 1,
+            },
+        ],
+
+        "mesas-sillas": [
+            {
+                "codigo": "sil-001",
+                "regla": "por_persona",
+                "factor": 1,
+            },
+            {
+                "codigo": "mes-001",
+                "regla": "por_capacidad",
+                "capacidad": 10,
+            },
+        ],
+
+        "manteleria": [
+            {
+                "codigo": "man-001",
+                "regla": "por_capacidad",
+                "capacidad": 10,
+            },
+            {
+                "codigo": "man-004",
+                "regla": "por_persona",
+                "factor": 1,
+            },
+        ],
+    },
+
+
+    "Cumpleaños": {
+
+        "vajilla": [
+            {
+                "codigo": "vaj-001",
+                "regla": "por_persona",
+                "factor": 1,
+            },
+        ],
+
+        "cubiertos": [
+            {
+                "codigo": "cub-001",
+                "regla": "por_persona",
+                "factor": 1,
+            },
+        ],
+
+        "mesas-sillas": [
+            {
+                "codigo": "sil-001",
+                "regla": "por_persona",
+                "factor": 1,
+            },
+            {
+                "codigo": "mes-001",
+                "regla": "por_capacidad",
+                "capacidad": 10,
+            },
+        ],
+
+        "cristaleria": [
+            {
+                "codigo": "cris-004",
+                "regla": "por_persona",
+                "factor": 1,
+            },
+        ],
+    },
+
+
+    "Evento empresarial": {
+
+        "vajilla": [
+            {
+                "codigo": "vaj-004",
+                "regla": "por_persona",
+                "factor": 1,
+            },
+        ],
+
+        "cubiertos": [
+            {
+                "codigo": "cub-001",
+                "regla": "por_persona",
+                "factor": 1,
+            },
+        ],
+
+        "cristaleria": [
+            {
+                "codigo": "cris-004",
+                "regla": "por_persona",
+                "factor": 1,
+            },
+        ],
+
+        "mesas-sillas": [
+            {
+                "codigo": "mes-002",
+                "regla": "por_capacidad",
+                "capacidad": 10,
+            },
+        ],
+
+        "equipamiento": [
+            {
+                "codigo": "equ-003",
+                "regla": "fijo",
+                "cantidad": 1,
+            },
+        ],
+    },
+
+
+    "Cena / Banquete": {
+
+        "vajilla": [
+            {
+                "codigo": "vaj-003",
+                "regla": "por_persona",
+                "factor": 1,
+            },
+        ],
+
+        "cubiertos": [
+            {
+                "codigo": "cub-001",
+                "regla": "por_persona",
+                "factor": 1,
+            },
+        ],
+
+        "cristaleria": [
+            {
+                "codigo": "cris-001",
+                "regla": "por_persona",
+                "factor": 1,
+            },
+            {
+                "codigo": "cris-002",
+                "regla": "por_persona",
+                "factor": 1,
+            },
+        ],
+
+        "mesas-sillas": [
+            {
+                "codigo": "mes-002",
+                "regla": "por_capacidad",
+                "capacidad": 10,
+            },
+        ],
+
+        "manteleria": [
+            {
+                "codigo": "man-002",
+                "regla": "por_capacidad",
+                "capacidad": 10,
+            },
+            {
+                "codigo": "man-004",
+                "regla": "por_persona",
+                "factor": 1,
+            },
+        ],
+    },
+
+
+    "Evento familiar": {
+
+        "vajilla": [
+            {
+                "codigo": "vaj-001",
+                "regla": "por_persona",
+                "factor": 1,
+            },
+        ],
+
+        "cubiertos": [
+            {
+                "codigo": "cub-001",
+                "regla": "por_persona",
+                "factor": 1,
+            },
+        ],
+
+        "mesas-sillas": [
+            {
+                "codigo": "sil-001",
+                "regla": "por_persona",
+                "factor": 1,
+            },
+            {
+                "codigo": "mes-001",
+                "regla": "por_capacidad",
+                "capacidad": 10,
+            },
+        ],
+    },
+
+
+    "Celebración": {
+
+        "cristaleria": [
+            {
+                "codigo": "cris-003",
+                "regla": "por_persona",
+                "factor": 1,
+            },
+            {
+                "codigo": "cris-004",
+                "regla": "por_persona",
+                "factor": 1,
+            },
+        ],
+
+        "equipamiento": [
+            {
+                "codigo": "equ-002",
+                "regla": "fijo",
+                "cantidad": 1,
+            },
+        ],
+    },
+
+
+    "Otro": {},
+}
+
+def calcular_cantidad_predeterminada(regla, invitados):
+
+    if regla["regla"] == "por_persona":
+        return math.ceil(
+            invitados
+            * regla.get("factor", 1)
+        )
+
+    if regla["regla"] == "por_capacidad":
+        return math.ceil(
+            invitados
+            / regla.get("capacidad", 1)
+        )
+
+    if regla["regla"] == "fijo":
+        return regla.get(
+            "cantidad",
+            1
+        )
+
+    return 0
+

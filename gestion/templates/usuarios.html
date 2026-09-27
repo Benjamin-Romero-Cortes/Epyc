@@ -132,5 +132,35 @@
 <script src="{% static 'js/admin-search.js' %}"></script>
 
 <script src="{% static 'js/gestion-django.js' %}"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const btnNuevoUsuario = document.getElementById("btn-nuevo-usuario");
+    const modalNuevoUsuario = document.getElementById("modal-nuevo-usuario");
+
+    if (btnNuevoUsuario && modalNuevoUsuario) {
+
+        btnNuevoUsuario.addEventListener("click", function () {
+            modalNuevoUsuario.hidden = false;
+        });
+
+        modalNuevoUsuario.querySelectorAll("[data-close-modal]").forEach(function (boton) {
+            boton.addEventListener("click", function () {
+                modalNuevoUsuario.hidden = true;
+            });
+        });
+
+        modalNuevoUsuario.addEventListener("click", function (event) {
+            if (event.target === modalNuevoUsuario) {
+                modalNuevoUsuario.hidden = true;
+            }
+        });
+
+    }
+
+});
+</script>
+
 </body>
 </html>

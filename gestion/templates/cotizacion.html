@@ -85,10 +85,75 @@
   </div>
 </div>
 <div class="card" style="margin-top:1rem;">
-<table class="data-table"><thead><tr><th>Artículo</th><th class="cell-num">Cantidad</th><th class="cell-num">Precio unitario</th><th class="cell-num">Subtotal</th></tr></thead><tbody>
-{% for d in detalles %}<tr><td>{{ d.articulo.nombre }}</td><td class="cell-num">{{ d.cantidad }}</td><td class="cell-num">${{ d.precio_unitario|floatformat:0 }}</td><td class="cell-num">${{ d.subtotal|floatformat:0 }}</td></tr>
-{% empty %}<tr><td colspan="4" class="empty-state">Sin artículos.</td></tr>{% endfor %}
-</tbody></table>
+
+  <div class="card-head no-print">
+
+    <div>
+      <span class="eyebrow">Detalle</span>
+      <h2 style="font-size:1rem;">
+        Artículos de la cotización
+      </h2>
+    </div>
+
+    <div class="card-head-actions">
+
+      <a
+        href="{% url 'enviar_cotizacion_email' servicio.id %}"
+        class="btn btn-outline btn-sm"
+      >
+        ✉ Enviar cotización por correo
+      </a>
+
+      <button
+        type="button"
+        class="btn btn-primary btn-sm"
+        id="btn-agregar-articulo"
+      >
+        + Agregar artículo
+      </button>
+
+    </div>
+
+  </div>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Artículo</th>
+        <th class="cell-num">Cantidad</th>
+        <th class="cell-num">Precio unitario</th>
+        <th class="cell-num">Subtotal</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for d in detalles %}
+      <tr>
+        <td>{{ d.articulo.nombre }}</td>
+
+        <td class="cell-num">
+          {{ d.cantidad }}
+        </td>
+
+        <td class="cell-num">
+          ${{ d.precio_unitario|floatformat:0 }}
+        </td>
+
+        <td class="cell-num">
+          ${{ d.subtotal|floatformat:0 }}
+        </td>
+      </tr>
+
+      {% empty %}
+      <tr>
+        <td colspan="4" class="empty-state">
+          Sin artículos.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
 </div>
 <form method="post" action="{% url 'gestion_cotizacion' servicio.id %}" class="no-print" style="margin-top:1rem;">
 {% csrf_token %}<input type="hidden" name="accion" value="cambiar_estado">
@@ -100,9 +165,174 @@
   </div>
 </div>
 
+
+<div
+  class="modal-overlay"
+  id="modal-agregar-articulo"
+  hidden
+>
+  <div
+    class="modal-panel"
+    style="max-width:500px;"
+  >
+
+    <button
+      type="button"
+      class="modal-close"
+      data-close-articulo
+    >
+      ✕
+    </button>
+
+    <span class="eyebrow">
+      Cotización {{ servicio.codigo }}
+    </span>
+
+    <h2 style="margin-top:0.2rem;">
+      Agregar artículo
+    </h2>
+
+    <form
+      method="post"
+      action="{% url 'gestion_cotizacion' servicio.id %}"
+    >
+
+      {% csrf_token %}
+
+      <input
+        type="hidden"
+        name="accion"
+        value="agregar_articulo"
+      >
+
+      <div
+        class="form-grid"
+        style="margin-top:1rem;"
+      >
+
+        <div class="form-field full">
+
+          <label for="articulo_id">
+            Artículo
+          </label>
+
+          <select
+            id="articulo_id"
+            name="articulo_id"
+            required
+          >
+
+            <option value="">
+              Seleccionar artículo
+            </option>
+
+            {% for articulo in articulos %}
+            <option value="{{ articulo.id }}">
+              {{ articulo.codigo }}
+              —
+              {{ articulo.nombre }}
+              —
+              ${{ articulo.precio_arriendo|floatformat:0 }}
+            </option>
+            {% endfor %}
+
+          </select>
+
+        </div>
+
+        <div class="form-field full">
+
+          <label for="cantidad">
+            Cantidad
+          </label>
+
+          <input
+            type="number"
+            id="cantidad"
+            name="cantidad"
+            min="1"
+            value="1"
+            required
+          >
+
+        </div>
+
+      </div>
+
+      <div class="modal-actions">
+
+        <span class="spacer"></span>
+
+        <button
+          type="button"
+          class="btn btn-outline"
+          data-close-articulo
+        >
+          Cancelar
+        </button>
+
+        <button
+          type="submit"
+          class="btn btn-primary"
+        >
+          Agregar artículo
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
 <script src="{% static 'js/admin-nav.js' %}"></script>
 <script src="{% static 'js/admin-search.js' %}"></script>
 <script src="{% static 'js/cotizacion-detalle.js' %}"></script>
 <script src="{% static 'js/gestion-django.js' %}"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const btn = document.getElementById(
+    "btn-agregar-articulo"
+  );
+
+  const modal = document.getElementById(
+    "modal-agregar-articulo"
+  );
+
+  if (!btn || !modal) {
+    return;
+  }
+
+  btn.addEventListener("click", function () {
+    modal.hidden = false;
+  });
+
+  modal
+    .querySelectorAll("[data-close-articulo]")
+    .forEach(function (elemento) {
+
+      elemento.addEventListener(
+        "click",
+        function () {
+          modal.hidden = true;
+        }
+      );
+
+    });
+
+  modal.addEventListener(
+    "click",
+    function (event) {
+
+      if (event.target === modal) {
+        modal.hidden = true;
+      }
+
+    }
+  );
+
+});
+</script>
 </body>
 </html>

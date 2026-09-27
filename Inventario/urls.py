@@ -242,4 +242,16 @@ urlpatterns = [
         name='gestion_login'
     ),
 
+    path(
+        "gestion/logout/",
+        views.gestion_logout,
+        name="gestion_logout"
+    ),
+
+    path(
+        "gestion/cotizaciones/<int:id>/enviar-correo/",
+        views.enviar_cotizacion_email,
+        name="enviar_cotizacion_email",
+    ),
+
 ]
