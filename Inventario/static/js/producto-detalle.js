@@ -1,8 +1,4 @@
-/**
- * producto-detalle.js
- * Renderiza la ficha de un producto según el parámetro ?id= de la URL
- * (ver catalogo-datos.js para el origen de los datos).
- */
+// Renderiza la ficha de un producto según el parámetro ?id= de la URL
 (function () {
   const contenedor = document.getElementById('product-detail');
   if (!contenedor) return;

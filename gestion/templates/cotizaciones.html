@@ -6,7 +6,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cotizaciones · Panel Entre Platos y Copas</title>
 <link rel="icon" href="{% static 'images/logo.jpg' %}">
-<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+<link rel="stylesheet" href="{% static 'css/admin.css' %}?v=cotizaciones-4">
+<link rel="stylesheet" href="{% static 'css/operaciones.css' %}?v=23">
 </head>
 <body>
 
@@ -57,7 +58,6 @@
         <input type="search" id="global-search" placeholder="Buscar productos, clientes, cotizaciones, reservas...">
       </div>
       <div class="topbar-actions">
-        <button class="icon-btn" aria-label="Notificaciones"><span class="dot"></span>🔔</button>
         <div class="topbar-user">
           <div class="user-avatar">HC</div>
           <div class="user-info"><strong>Helen Cortés</strong><span>Administradora</span></div>
@@ -69,57 +69,70 @@
       <div class="page-head">
         <div>
           <span class="eyebrow">Cotizaciones</span>
-          <h1>Crea propuestas, revisa su estado y conviértelas en reserva</h1>
+          <h1>Solicitudes y cotizaciones</h1>
+          <p>Solicitudes recibidas desde el sitio y cotizaciones creadas por el equipo.</p>
         </div>
         <div class="page-head-actions">
           <button class="btn btn-primary" id="btn-nueva-cotizacion">+ Nueva cotización</button>
         </div>
       </div>
 
-      <div class="toolbar">
+      {% for mensaje in messages %}
+      <div class="admin-notice is-{% if mensaje.tags == 'error' %}danger{% else %}success{% endif %}" role="status">{{ mensaje }}</div>
+      {% endfor %}
+
+      {% if por_confirmar and not filtros.aceptadas %}
+      <a class="admin-notice is-success aviso-aceptadas" href="?aceptadas=1">
+        <strong>{{ por_confirmar }} cotizaci{{ por_confirmar|pluralize:"ón,ones" }} aceptada{{ por_confirmar|pluralize }} por el cliente</strong> esperando que confirmes la reserva. <span>Ver →</span>
+      </a>
+      {% elif filtros.aceptadas %}
+      <div class="admin-notice is-success aviso-aceptadas">Mostrando solo las cotizaciones aceptadas por el cliente. <a href="{% url 'gestion_cotizaciones' %}">Ver todas</a></div>
+      {% endif %}
+
+      <div class="client-directory">
+      <form class="quotes-filter" method="get" action="{% url 'gestion_cotizaciones' %}">
         <div class="search-field">
           <span class="icon">🔍</span>
-          <input type="search" id="cot-search" placeholder="Buscar por N° o cliente...">
+          <input type="search" name="q" value="{{ filtros.q }}" placeholder="Buscar por nombre, RUT o correo..." aria-label="Buscar por nombre, RUT o correo">
         </div>
-        <div class="toolbar-filters">
-          <select class="select-filter" id="cot-estado">
-            <option value="">Todos los estados</option>
-            <option>Borrador</option><option>Pendiente</option><option>Enviada</option>
-            <option>Aceptada</option><option>Rechazada</option><option>Vencida</option>
-          </select>
-          <select class="select-filter" id="cot-responsable">
-            <option value="">Todos los responsables</option>
-          </select>
-        </div>
-      </div>
-
-      <p class="result-count" id="cot-result-count"></p>
+        <select name="estado" class="select-filter" aria-label="Filtrar por estado">
+          <option value="">Estado: todos</option>
+          {% for valor, etiqueta in estados %}
+          <option value="{{ valor }}" {% if filtros.estado == valor %}selected{% endif %}>{{ etiqueta }}</option>
+          {% endfor %}
+        </select>
+        <label class="date-filter">Evento desde <input type="date" name="desde" value="{{ filtros.desde }}"></label>
+        <label class="date-filter">hasta <input type="date" name="hasta" value="{{ filtros.hasta }}"></label>
+        <a href="{% url 'gestion_cotizaciones' %}" class="btn btn-ghost btn-sm">Limpiar</a>
+        <button type="submit" class="btn btn-accent btn-sm">Buscar</button>
+      </form>
 
       <div class="table-wrap">
-        <table class="data-table">
+        <table class="data-table tabla-fina">
           <thead>
             <tr>
-              <th>N°</th><th>Cliente</th><th>Evento</th><th>Fecha evento</th>
-              <th class="cell-num">Monto</th><th>Estado</th><th>Responsable</th><th></th>
+              <th>Cliente</th><th>RUT</th><th>Evento</th><th>Fecha evento</th>
+              <th>Contacto</th><th>Estado</th><th>Recibida</th><th></th>
             </tr>
           </thead>
-          <tbody id="cot-tbody">
-
+          <tbody>
 {% for servicio in cotizaciones %}
 <tr>
-  <td><a class="cell-strong" href="{% url 'gestion_cotizacion' servicio.id %}">{{ servicio.codigo }}</a></td>
-  <td>{{ servicio.cliente.nombre }} {{ servicio.cliente.apellido }}</td>
-  <td>{{ servicio.tipo_servicio|default:"—" }}</td>
-  <td>{{ servicio.fecha_evento|date:"d/m/Y"|default:"—" }}</td>
-  <td class="cell-num">${{ servicio.total|floatformat:0 }}</td>
-  <td><span class="status-pill">{{ servicio.estado }}</span></td>
-  <td>—</td>
-  <td><a class="icon-btn" href="{% url 'gestion_cotizacion' servicio.id %}">👁</a></td>
+  <td><a class="cell-strong" href="{% url 'gestion_cotizacion' servicio.id %}">{{ servicio.cliente.nombre }} {{ servicio.cliente.apellido }}</a><div class="cell-muted">{{ servicio.cliente.email|default:"Sin correo" }}</div></td>
+  <td class="tabla-fina__fecha is-suave">{{ servicio.cliente.rut_formateado|default:"—" }}</td>
+  <td>{{ servicio.tipo_servicio|default:"Sin tipo de evento" }}<div class="cell-muted">{% if servicio.cantidad_personas %}{{ servicio.cantidad_personas }} invitado{{ servicio.cantidad_personas|pluralize }}{% else %}Invitados sin indicar{% endif %}</div></td>
+  <td class="tabla-fina__fecha">{{ servicio.fecha_evento|date:"d/m/Y"|default:"—" }}</td>
+  <td class="is-suave-texto">{{ servicio.medio_contacto|default:"Sin preferencia" }}</td>
+  <td>{% if servicio.estado == "Contactado" and servicio.aceptada_cliente %}<span class="status-pill is-success" title="Aceptada el {{ servicio.aceptada_cliente|date:'d/m/Y H:i' }}">Aceptada por cliente</span>{% else %}<span class="status-pill is-{{ servicio.clase_estado }}">{{ servicio.get_estado_display }}</span>{% endif %}</td>
+  <td class="tabla-fina__fecha is-suave">{{ servicio.fecha_creacion|date:"d/m/Y" }}<div class="cell-muted">{{ servicio.fecha_creacion|date:"H:i" }}</div></td>
+  <td><a class="icon-btn" href="{% url 'gestion_cotizacion' servicio.id %}" title="Ver detalle" aria-label="Ver detalle de la solicitud de {{ servicio.cliente.nombre }}">👁</a></td>
 </tr>
-{% empty %}<tr><td colspan="8" class="empty-state">No hay cotizaciones.</td></tr>{% endfor %}
-
-</tbody>
+{% empty %}
+<tr><td colspan="8" class="empty-state">{% if filtros.q or filtros.estado or filtros.desde or filtros.hasta %}No encontramos solicitudes con esos filtros.{% else %}Aún no hay solicitudes.{% endif %}</td></tr>
+{% endfor %}
+          </tbody>
         </table>
+      </div>
       </div>
     </main>
   </div>
@@ -155,9 +168,14 @@
   </div>
 </div>
 
-<script src="{% static 'js/admin-nav.js' %}"></script>
-<script src="{% static 'js/admin-search.js' %}"></script>
+<script src="{% static 'js/admin-nav.js' %}?v=sidebar-icons-2"></script>
+<script src="{% static 'js/admin-search.js' %}?v=2"></script>
 
-<script src="{% static 'js/gestion-django.js' %}"></script>
+<script src="{% static 'js/gestion-django.js' %}?v=2"></script>
+<script>
+document.getElementById("btn-nueva-cotizacion")?.addEventListener("click", () => {
+  document.getElementById("modal-nueva-cotizacion").hidden = false;
+});
+</script>
 </body>
 </html>

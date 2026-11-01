@@ -1,14 +1,6 @@
-/**
- * charts.js
- * Componentes de gráficos livianos en HTML/CSS/SVG (sin librerías
- * externas) usados en el Dashboard y en Reportes. Cada gráfico es de una
- * sola serie, por lo que se usa un único tono (el acento de marca) en
- * distintas intensidades en vez de una paleta categórica — no hace falta
- * distinguir series por color porque cada barra ya está identificada por
- * su etiqueta.
- */
+// Componentes de gráficos livianos en HTML/CSS/SVG
 
-/** Ranking horizontal: items = [{ label, value, sublabel }] */
+// Ranking horizontal: items = [{ label, value, sublabel }]
 function renderBarListChart(container, items, { formatValue = (v) => v } = {}) {
   const el = typeof container === 'string' ? document.getElementById(container) : container;
   if (!el || !items.length) return;
@@ -27,7 +19,7 @@ function renderBarListChart(container, items, { formatValue = (v) => v } = {}) {
   `).join('');
 }
 
-/** Barras verticales por mes: items = [{ label, value }] */
+// Barras verticales por mes: items = [{ label, value }]
 function renderMonthlyBarChart(container, items, { formatValue = (v) => v } = {}) {
   const el = typeof container === 'string' ? document.getElementById(container) : container;
   if (!el || !items.length) return;
@@ -48,12 +40,7 @@ function renderMonthlyBarChart(container, items, { formatValue = (v) => v } = {}
   `;
 }
 
-/**
- * Ranking horizontal en formato "lollipop": línea fina + marcador circular
- * en vez de una barra sólida. Misma lectura que un ranking de barras pero
- * mucho más liviano a la vista para listas de 5-6 ítems.
- * items = [{ label, value }]
- */
+// Ranking horizontal en formato "lollipop": línea fina + marcador circular en vez de una barra sólida.
 function renderRankingChart(container, items, { formatValue = (v) => v } = {}) {
   const el = typeof container === 'string' ? document.getElementById(container) : container;
   if (!el) return;
@@ -76,10 +63,7 @@ function renderRankingChart(container, items, { formatValue = (v) => v } = {}) {
   }).join('');
 }
 
-/**
- * Barra apilada horizontal + leyenda: para datos parte-todo (ej. ingresos
- * por categoría de producto). items = [{ label, value, color }]
- */
+// Barra apilada horizontal + leyenda: para datos parte-todo (ej. ingresos por categoría de producto).
 function renderStackedBarChart(container, items, { formatValue = (v) => v } = {}) {
   const el = typeof container === 'string' ? document.getElementById(container) : container;
   if (!el) return;
@@ -104,7 +88,7 @@ function renderStackedBarChart(container, items, { formatValue = (v) => v } = {}
   `;
 }
 
-/** Línea de tendencia: items = [{ label, value }] */
+// Línea de tendencia: items = [{ label, value }]
 function renderLineChart(container, items, { formatValue = (v) => v } = {}) {
   const el = typeof container === 'string' ? document.getElementById(container) : container;
   if (!el || !items.length) return;

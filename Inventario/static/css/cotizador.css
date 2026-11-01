@@ -1,14 +1,55 @@
-/* =========================================================
-   Estilos específicos: cotizador por pasos
-   ========================================================= */
+/* Estilos específicos: cotizador por pasos */
+
+/* Fondo fotográfico detrás del encabezado y del formulario. */
+.quote-backdrop {
+  flex: 1 0 auto; /* ocupa todo el alto de <main> para que no quede franja bajo el fondo */
+  position: relative;
+  /* clip y no hidden: un contenedor con overflow hidden sigue siendo desplazable por
+     scrollIntoView, que lo corría y dejaba ver el borde sin oscurecer del fondo. */
+  overflow: clip;
+  isolation: isolate;
+  background-color: #1A1A1A;
+}
+.quote-backdrop::before,
+.quote-backdrop::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+}
+.quote-backdrop::before {
+  inset: -24px; /* evita bordes claros que deja el desenfoque */
+  background: url('../images/evento-exterior-profesional-sin-texto.jpg') center 55%/cover no-repeat;
+  filter: blur(7px) saturate(0.55);
+}
+.quote-backdrop::after {
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.62) 45%, rgba(0,0,0,0.75) 100%);
+}
+.quote-backdrop .page-hero { background-color: transparent; color: var(--color-white-warm); }
+.quote-backdrop .page-hero h1 { color: var(--color-white-warm); }
+.quote-backdrop .page-hero p { color: rgba(250, 250, 250, 0.9); opacity: 1; }
+.quote-backdrop .quote-section { background-color: transparent; }
+.quote-backdrop .quote-wizard { box-shadow: var(--shadow-lg); border-color: transparent; }
+
+/* Encabezado de página más bajo: el protagonista es el formulario */
+.page-hero--compact {
+  padding: 1.6rem 0 1.2rem;
+}
+.page-hero--compact .eyebrow { display: none; }
+.page-hero--compact h1 { font-size: clamp(1.5rem, 2.4vw, 1.85rem); margin: 0 0 0.3rem; }
+.page-hero--compact p { font-size: 0.9rem; max-width: 720px; }
+
+.quote-section {
+  padding: var(--space-md) 0 var(--space-xl);
+}
 
 .quote-wizard {
-  max-width: 760px;
+  max-width: 720px;
   margin: 0 auto;
-  background-color: var(--color-white-warm);
+  background-color: #FFFFFF;
   border: 1px solid var(--color-gray-light);
   border-radius: var(--radius-lg);
-  padding: var(--space-xl) var(--space-lg);
+  padding: 1.25rem 2rem 1rem;
   box-shadow: var(--shadow-sm);
 }
 
@@ -16,33 +57,35 @@
 .progress-track {
   display: flex;
   align-items: center;
-  margin-bottom: var(--space-xl);
+  max-width: 480px;
+  margin: 0 auto 0.9rem;
 }
 .progress-step {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  flex: 1;
+  gap: 0.35rem;
+  flex: 0 0 auto;
   text-align: center;
 }
 .progress-step .dot {
-  width: 34px; height: 34px;
+  width: 24px; height: 24px;
   border-radius: 50%;
   background-color: var(--color-gray-light);
   color: var(--color-gray-dark);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.75rem;
   transition: background-color var(--transition), color var(--transition);
 }
 .progress-step .label {
-  font-size: 0.78rem;
-  font-weight: 600;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--color-gray-dark);
-  opacity: 0.6;
+  opacity: 0.5;
+  white-space: nowrap;
 }
 .progress-step.is-active .dot,
 .progress-step.is-done .dot {
@@ -52,62 +95,97 @@
 .progress-step.is-active .label,
 .progress-step.is-done .label { opacity: 1; }
 .progress-line {
-  flex: 0.5;
-  height: 2px;
+  flex: 1;
+  height: 1px;
   background-color: var(--color-gray-light);
-  margin-bottom: 1.6rem;
+  margin: 0 0.75rem 1.35rem;
 }
 .progress-line.is-done { background-color: var(--color-accent); }
 
-/* Pasos del formulario */
-.wizard-step { display: none; }
-.wizard-step.is-active { display: block; animation: fadeIn 0.35s ease; }
+/* Los tres pasos se apilan para que la tarjeta no cambie de alto al avanzar. */
+#quote-form { display: grid; }
+.wizard-step {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  visibility: hidden;
+  pointer-events: none;
+}
+.wizard-step.is-active { visibility: visible; pointer-events: auto; animation: fadeIn 0.35s ease; }
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.wizard-step h2 { font-size: 1.5rem; margin-bottom: 0.3rem; }
-.wizard-step > .step-intro { opacity: 0.75; font-size: 0.92rem; margin-bottom: var(--space-lg); }
+/* El h2 queda solo para lectores de pantalla: el nombre ya está en la barra de progreso. */
+.wizard-step h2 {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.wizard-step > .step-intro {
+  text-align: center;
+  opacity: 0.7;
+  font-size: 0.85rem;
+  margin-bottom: 0.9rem;
+}
 
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-md);
-  margin-bottom: var(--space-md);
+  gap: 0.15rem 1rem;
+  margin-bottom: 0.15rem;
 }
-.form-field { display: flex; flex-direction: column; gap: 0.4rem; }
+.form-grid--3 { grid-template-columns: repeat(3, 1fr); }
+.form-field { display: flex; flex-direction: column; gap: 0.3rem; }
 .form-field.full { grid-column: 1 / -1; }
 
-.form-field label {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--color-gray-dark);
+.form-label,
+.form-field > label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--color-black);
+  letter-spacing: 0.01em;
 }
-.form-field .optional { font-weight: 400; opacity: 0.55; }
+.form-field .optional { opacity: 0.5; }
 
 .form-field input,
 .form-field select,
 .form-field textarea {
-  padding: 0.75rem 0.9rem;
+  height: 38px;
+  padding: 0 0.75rem;
+  font-size: 0.86rem;
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-gray-light);
   background-color: var(--color-white-warm);
-  transition: border-color var(--transition);
+  color: var(--color-gray-dark);
+  transition: border-color var(--transition), background-color var(--transition);
 }
+.form-field textarea {
+  height: auto;
+  padding: 0.5rem 0.75rem;
+  resize: none;
+  min-height: 38px;
+  height: 38px;
+}
+.form-field input::placeholder,
+.form-field textarea::placeholder { color: #9A9A9A; }
 .form-field input:focus,
 .form-field select:focus,
 .form-field textarea:focus {
   outline: none;
   border-color: var(--color-accent);
+  background-color: #FFFFFF;
 }
-.form-field textarea { resize: vertical; min-height: 90px; }
 
 .field-error {
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   color: #a4443a;
-  min-height: 1em;
+  min-height: 1.1em;
+  line-height: 1.1;
 }
 .form-field.has-error input,
 .form-field.has-error select,
@@ -115,107 +193,150 @@
   border-color: #a4443a;
 }
 
-/* Tipo de evento / radios como tarjetas */
-.option-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 0.6rem;
-  margin-bottom: var(--space-md);
+/* Opciones de selección única como "pastillas" compactas */
+.option-grid,
+.contact-pref-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.3rem;
 }
 .option-card {
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  padding: 0 0.9rem;
   border: 1px solid var(--color-gray-light);
-  border-radius: var(--radius-md);
-  padding: 0.85rem 0.7rem;
-  text-align: center;
-  font-size: 0.88rem;
-  font-weight: 600;
+  border-radius: 999px;
+  background-color: var(--color-white-warm);
+  font-size: 0.82rem;
+  color: var(--color-gray-dark);
   cursor: pointer;
-  transition: border-color var(--transition), background-color var(--transition);
+  white-space: nowrap;
+  transition: border-color var(--transition), background-color var(--transition), color var(--transition);
 }
 .option-card input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
 .option-card:hover { border-color: var(--color-accent); }
 .option-card.is-checked {
   border-color: var(--color-accent);
-  background-color: var(--color-beige-soft);
-  color: var(--color-accent-dark);
+  background-color: var(--color-accent);
+  color: var(--color-white-warm);
 }
+
+/* "¿Requieres despacho?": dos opciones a lo ancho, a la altura de los inputs */
+.form-field .option-grid { margin-top: 0; }
+.form-field .option-grid .option-card { flex: 1; height: 38px; }
 
 .checkbox-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  gap: 0.6rem;
-  margin-bottom: var(--space-md);
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.45rem;
+  margin-bottom: var(--space-sm);
 }
 .checkbox-card {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.55rem;
   border: 1px solid var(--color-gray-light);
-  border-radius: var(--radius-md);
-  padding: 0.75rem 0.9rem;
-  font-size: 0.88rem;
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.82rem;
   cursor: pointer;
   transition: border-color var(--transition), background-color var(--transition);
 }
 .checkbox-card:hover { border-color: var(--color-accent); }
-.checkbox-card input { accent-color: var(--color-accent); width: 16px; height: 16px; flex-shrink: 0; }
+.checkbox-card input { accent-color: var(--color-accent); width: 15px; height: 15px; flex-shrink: 0; }
 .checkbox-card.is-checked { border-color: var(--color-accent); background-color: var(--color-beige-soft); }
 
 .helper-note {
   background-color: var(--color-beige-soft);
   border-left: 3px solid var(--color-accent);
-  border-radius: var(--radius-md);
-  padding: var(--space-sm) var(--space-md);
-  font-size: 0.88rem;
-  margin-bottom: var(--space-md);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem var(--space-sm);
+  font-size: 0.84rem;
+  margin-bottom: var(--space-sm);
 }
 
-.contact-pref-group {
-  display: flex;
-  gap: 0.6rem;
-  flex-wrap: wrap;
-  margin-bottom: var(--space-md);
-}
-.contact-pref-group .option-card { flex: 1; min-width: 120px; }
+.contact-pref-group { margin-top: 0.3rem; }
+.contact-pref-group .option-card { flex: 1; min-width: 0; height: 38px; padding: 0 0.6rem; }
 
 .wizard-nav {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: var(--space-sm);
-  margin-top: var(--space-lg);
-  padding-top: var(--space-md);
+  margin-top: auto;
+  padding-top: 0.8rem;
   border-top: 1px solid var(--color-gray-light);
 }
+/* Separación mínima entre el contenido y la barra de botones */
+.wizard-step > :nth-last-child(2) { margin-bottom: 0.6rem; }
+.wizard-nav .btn { padding: 0.6rem 1.4rem; font-size: 0.86rem; }
 .wizard-nav .spacer { flex: 1; }
 
 /* Confirmación */
 .wizard-confirmation {
   text-align: center;
-  padding: var(--space-lg) 0;
+  padding: var(--space-md) 0;
 }
 .confirmation-icon {
-  width: 76px; height: 76px;
+  width: 60px; height: 60px;
   border-radius: 50%;
   background-color: var(--color-beige-soft);
   color: var(--color-accent-dark);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto var(--space-md);
-  font-size: 2rem;
+  margin: 0 auto var(--space-sm);
+  font-size: 1.5rem;
 }
-.wizard-confirmation h2 { margin-bottom: var(--space-sm); }
-.wizard-confirmation p { opacity: 0.85; max-width: 480px; margin: 0 auto var(--space-lg); }
+.wizard-confirmation h2 { font-size: 1.4rem; margin-bottom: var(--space-sm); }
+.wizard-confirmation p { opacity: 0.85; max-width: 480px; margin: 0 auto var(--space-sm); font-size: 0.92rem; }
 .confirmation-actions {
   display: flex;
   gap: 0.7rem;
   justify-content: center;
   flex-wrap: wrap;
+  margin-top: var(--space-md);
+}
+
+@media (max-width: 860px) {
+  .form-grid--3 { grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 640px) {
-  .quote-wizard { padding: var(--space-lg) var(--space-sm); }
-  .form-grid { grid-template-columns: 1fr; }
+  .quote-wizard { padding: var(--space-md) var(--space-sm); }
+  .form-grid, .form-grid--3 { grid-template-columns: 1fr; }
   .progress-step .label { display: none; }
+  .progress-line { margin-bottom: 0; }
 }
+
+/* Mensaje general del envío */
+.form-error-global {
+  margin-bottom: 1rem;
+  padding: 0.7rem 0.9rem;
+  border-left: 3px solid #a4443a;
+  border-radius: var(--radius-sm);
+  background-color: #F6E7E5;
+  color: #7d2f27;
+  font-size: 0.85rem;
+}
+.form-error-global[hidden] { display: none; }
+.wizard-confirmation[hidden],
+.progress-track[hidden],
+#quote-form[hidden] { display: none; }
+
+/* Indicador de carga del botón de envío */
+.btn-spinner {
+  display: none;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: girar 0.7s linear infinite;
+}
+.is-loading .btn-spinner { display: inline-block; }
+@keyframes girar { to { transform: rotate(360deg); } }

@@ -1,14 +1,4 @@
-/**
- * cotizador.js
- * Controla el formulario de cotización en 3 pasos: navegación entre
- * pasos, validaciones básicas y una pantalla de confirmación simulada.
- *
- * IMPORTANTE: en esta etapa no existe backend. `enviarSolicitud()`
- * simula el envío con un pequeño retardo. Cuando exista una API de
- * cotizaciones, esa función es el único lugar que debe cambiar: en
- * vez de simular, debería hacer un fetch POST con el mismo objeto
- * `datosSolicitud` que ya se arma más abajo.
- */
+// Controla el formulario de cotización en 3 pasos
 (function () {
   const wizard = document.getElementById('quote-wizard');
   if (!wizard) return;

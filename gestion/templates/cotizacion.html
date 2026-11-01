@@ -6,7 +6,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Detalle de cotización · Panel Entre Platos y Copas</title>
 <link rel="icon" href="{% static 'images/logo.jpg' %}">
-<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+<link rel="stylesheet" href="{% static 'css/admin.css' %}?v=cotizacion-4">
+<link rel="stylesheet" href="{% static 'css/operaciones.css' %}?v=11">
+<link rel="stylesheet" href="{% static 'css/cotizacion-detalle.css' %}?v=9">
 </head>
 <body>
 
@@ -57,7 +59,6 @@
         <input type="search" id="global-search" placeholder="Buscar productos, clientes, cotizaciones, reservas...">
       </div>
       <div class="topbar-actions">
-        <button class="icon-btn" aria-label="Notificaciones"><span class="dot"></span>🔔</button>
         <div class="topbar-user">
           <div class="user-avatar">HC</div>
           <div class="user-info"><strong>Helen Cortés</strong><span>Administradora</span></div>
@@ -68,271 +69,320 @@
     <main class="admin-content">
       <div class="breadcrumb no-print"><a href="{% url 'gestion_cotizaciones' %}">← Volver a cotizaciones</a></div>
 
-      <div class="toolbar no-print" id="doc-actions" style="justify-content:flex-start;"></div>
+      {% for mensaje in messages %}
+      <div class="admin-notice is-{% if mensaje.tags == 'error' %}danger{% elif mensaje.tags == 'warning' %}warning{% else %}success{% endif %}" role="status">{{ mensaje }}</div>
+      {% endfor %}
 
-      <div id="cotizacion-detalle">
+      {% if aceptada %}
+      <div class="admin-notice is-success"><strong>✓ El cliente aceptó esta cotización</strong> desde su cuenta el {{ aceptada|date:"d/m/Y" }} a las {{ aceptada|date:"H:i" }}. Revisa el stock y el abono, y confirma la reserva.</div>
+      {% endif %}
 
-<div class="card">
-  <div class="card-head"><div><span class="eyebrow">Cotización</span><h2>{{ servicio.codigo }}</h2></div><span class="status-pill">{{ servicio.estado }}</span></div>
-  <div class="detail-grid">
-    <div><span class="cell-muted">Cliente</span><strong>{{ servicio.cliente.nombre }} {{ servicio.cliente.apellido }}</strong></div>
-    <div><span class="cell-muted">Fecha solicitud</span><strong>{{ servicio.fecha_solicitud|date:"d/m/Y" }}</strong></div>
-    <div><span class="cell-muted">Fecha evento</span><strong>{{ servicio.fecha_evento|date:"d/m/Y"|default:"—" }}</strong></div>
-    <div><span class="cell-muted">Comuna</span><strong>{{ servicio.comuna_evento|default:"—" }}</strong></div>
-    <div><span class="cell-muted">Personas</span><strong>{{ servicio.cantidad_personas|default:"—" }}</strong></div>
-    <div><span class="cell-muted">Total</span><strong>${{ servicio.total|floatformat:0 }}</strong></div>
-    <div class="full"><span class="cell-muted">Observaciones</span><p>{{ servicio.observaciones|default:"—" }}</p></div>
-  </div>
-</div>
-<div class="card" style="margin-top:1rem;">
-
-  <div class="card-head no-print">
-
+<div class="card ficha">
+  <div class="ficha__head">
     <div>
-      <span class="eyebrow">Detalle</span>
-      <h2 style="font-size:1rem;">
-        Artículos de la cotización
-      </h2>
+      <span class="eyebrow">Solicitud {{ servicio.codigo }}</span>
+      <h2>{{ servicio.tipo_servicio|default:"Evento" }} · <a href="{% url 'gestion_cliente' servicio.cliente.id %}">{{ servicio.cliente.nombre }} {{ servicio.cliente.apellido }}</a></h2>
     </div>
-
-    <div class="card-head-actions">
-
-      <a
-        href="{% url 'enviar_cotizacion_email' servicio.id %}"
-        class="btn btn-outline btn-sm"
-      >
-        ✉ Enviar cotización por correo
-      </a>
-
-      <button
-        type="button"
-        class="btn btn-primary btn-sm"
-        id="btn-agregar-articulo"
-      >
-        + Agregar artículo
-      </button>
-
-    </div>
-
+    <span class="badge badge--{{ servicio.clase_estado }}">{{ servicio.get_estado_display }}</span>
   </div>
 
+  <div class="ficha__cols">
+    <section aria-label="Cliente">
+      <h3 class="ficha__titulo">Cliente</h3>
+      <dl class="ficha__datos">
+        <div><dt>RUT</dt><dd>{{ servicio.cliente.rut_formateado|default:"—" }}</dd></div>
+        <div><dt>Teléfono</dt><dd>{% if servicio.cliente.telefono %}<a href="tel:{{ servicio.cliente.telefono }}">{{ servicio.cliente.telefono }}</a>{% else %}—{% endif %}</dd></div>
+        <div><dt>Correo</dt><dd>{% if servicio.cliente.email %}<a href="mailto:{{ servicio.cliente.email }}">{{ servicio.cliente.email }}</a>{% else %}—{% endif %}</dd></div>
+        <div><dt>Prefiere</dt><dd>{{ servicio.get_medio_contacto_display|default:"Sin preferencia" }}</dd></div>
+        <div class="ancho"><dt>Dirección</dt><dd>{{ servicio.cliente.direccion|default:"—" }}</dd></div>
+      </dl>
+    </section>
+    <section aria-label="Evento">
+      <h3 class="ficha__titulo">Evento</h3>
+      <dl class="ficha__datos">
+        <div><dt>Fecha</dt><dd>{{ servicio.fecha_evento|date:"d/m/Y"|default:"—" }}</dd></div>
+        <div><dt>Invitados</dt><dd>{{ servicio.cantidad_personas|default:"—" }}</dd></div>
+        <div><dt>Comuna</dt><dd>{{ servicio.comuna_evento|default:"—" }}</dd></div>
+        <div><dt>Entrega</dt><dd>{% if servicio.requiere_despacho %}Despacho{% else %}Retira el cliente{% endif %}</dd></div>
+        <div class="ancho"><dt>Pidió</dt><dd class="chip-list">
+          {% if servicio.categorias_por_definir %}<span class="chip">Aún no está seguro/a</span>{% endif %}
+          {% for categoria in categorias %}<span class="chip">{{ categoria }}</span>{% empty %}{% if not servicio.categorias_por_definir %}<span class="cell-muted">Sin categorías</span>{% endif %}{% endfor %}
+        </dd></div>
+      </dl>
+    </section>
+  </div>
+
+  {% if servicio.comentarios or servicio.observaciones %}
+  <div class="ficha__notas">
+    {% if servicio.comentarios %}<p><strong>Comentarios del cliente:</strong> {{ servicio.comentarios|linebreaksbr }}</p>{% endif %}
+    {% if servicio.observaciones %}<p><strong>Notas:</strong> {{ servicio.observaciones|linebreaksbr }}</p>{% endif %}
+  </div>
+  {% endif %}
+  <p class="ficha__pie">Recibida el {{ servicio.fecha_creacion|date:"d/m/Y H:i" }}</p>
+</div>
+
+<div class="card" style="margin-top:1rem;">
+  <div class="card-head no-print">
+    <div>
+      <span class="eyebrow">Artículos y disponibilidad</span>
+      <h2 style="font-size:1rem;">Para el {{ servicio.fecha_evento|date:"d/m/Y"|default:"evento (sin fecha)" }}</h2>
+    </div>
+    <div class="card-head-actions">
+      {% if articulos_editables %}<button type="button" class="btn btn-primary btn-sm" id="btn-agregar-articulo">+ Agregar productos</button>
+      {% else %}<span class="cell-muted" style="font-size:0.8rem;">{% if servicio.estado == "Cancelado" %}Solicitud cancelada: los productos ya no se pueden modificar.{% else %}Productos bloqueados: la reserva está en estado {{ servicio.get_estado_display }}.{% endif %}</span>{% endif %}
+    </div>
+  </div>
+
+  <div class="table-wrap">
   <table class="data-table">
     <thead>
       <tr>
         <th>Artículo</th>
-        <th class="cell-num">Cantidad</th>
+        <th class="cell-num">Solicitado</th>
+        <th class="cell-num">Disponible</th>
+        <th>Resultado</th>
         <th class="cell-num">Precio unitario</th>
         <th class="cell-num">Subtotal</th>
+        <th></th>
       </tr>
     </thead>
-
     <tbody>
       {% for d in detalles %}
       <tr>
-        <td>{{ d.articulo.nombre }}</td>
-
-        <td class="cell-num">
-          {{ d.cantidad }}
+        <td>{{ d.articulo.nombre }}<div class="cell-muted">{{ d.articulo.codigo }}</div></td>
+        <td class="cell-num">{{ d.cantidad }}</td>
+        <td class="cell-num">{% if d.disponibilidad.disponible is None %}—{% else %}{{ d.disponibilidad.disponible }}{% endif %}</td>
+        <td>
+          {% if d.disponibilidad.disponible is None %}<span class="badge badge--neutral">Sin fecha</span>
+          {% elif d.disponibilidad.faltante %}<span class="badge badge--danger">Faltan {{ d.disponibilidad.faltante }}</span>
+          {% else %}<span class="badge badge--success">Disponible</span>{% endif %}
         </td>
-
-        <td class="cell-num">
-          ${{ d.precio_unitario|floatformat:0 }}
-        </td>
-
-        <td class="cell-num">
-          ${{ d.subtotal|floatformat:0 }}
+        <td class="cell-num">${{ d.precio_unitario|floatformat:0 }}</td>
+        <td class="cell-num">${{ d.subtotal|floatformat:0 }}</td>
+        <td>
+          {% if articulos_editables %}
+          <form method="post" action="{% url 'gestion_cotizacion' servicio.id %}" class="no-print">
+            {% csrf_token %}<input type="hidden" name="accion" value="quitar_articulo"><input type="hidden" name="detalle_id" value="{{ d.id }}">
+            <button type="submit" class="icon-btn icon-btn--danger" title="Quitar artículo" aria-label="Quitar {{ d.articulo.nombre }}">✕</button>
+          </form>
+          {% endif %}
         </td>
       </tr>
-
       {% empty %}
-      <tr>
-        <td colspan="4" class="empty-state">
-          Sin artículos.
-        </td>
-      </tr>
+      <tr><td colspan="7" class="empty-state">Aún no hay productos. Usa "+ Agregar productos" según lo que pidió el cliente.</td></tr>
       {% endfor %}
     </tbody>
+    {% if detalles %}
+    <tfoot>
+      <tr><td colspan="5" class="cell-num"><strong>Total</strong></td><td class="cell-num"><strong>${{ servicio.total|floatformat:0 }}</strong></td><td></td></tr>
+    </tfoot>
+    {% endif %}
   </table>
+  </div>
+
+  {% if bloquea_stock %}
+  <p class="availability-note">Esta reserva ya retiene stock para sus fechas. La columna "Disponible" muestra lo que queda sin contarla a ella.</p>
+  {% elif servicio.estado != "Cancelado" %}
+  <p class="availability-note">Una cotización no retiene stock: la disponibilidad se vuelve a comprobar al confirmar.</p>
+  {% endif %}
+
+  {% if servicio.estado == "Cancelado" %}
+  <div class="flujo-cerrada">
+    <span class="flujo-cerrada__icono" aria-hidden="true">✕</span>
+    <div>
+      <strong>{% if cierre.accion == "Cotización rechazada por el cliente" %}Rechazada por el cliente{% else %}Solicitud cancelada{% endif %}</strong>
+      {% if cierre %}<span>{{ cierre.observacion|default:"Sin motivo indicado" }} · {{ cierre.fecha|date:"d/m/Y" }}{% if cierre.usuario %} · registró {{ cierre.usuario.nombre }}{% endif %}</span>{% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if servicio.estado != "Cancelado" %}
+  <div class="flujo no-print">
+    <ol class="flujo__linea" aria-label="Avance de la solicitud">
+      <li class="{% if detalles %}is-hecho{% else %}is-actual{% endif %}">Productos</li>
+      <li class="{% if servicio.estado == 'Cotizacion' %}{% if detalles %}is-actual{% endif %}{% else %}is-hecho{% endif %}"{% if envio %} title="{{ envio.accion }} · {{ envio.fecha|date:'d/m/Y H:i' }}"{% endif %}>Enviada</li>
+      {% if aceptada %}<li class="is-hecho" title="Aceptada el {{ aceptada|date:'d/m/Y H:i' }}">Aceptada</li>{% endif %}
+      <li class="{% if servicio.estado == 'Contactado' %}{% if detalles %}is-actual{% endif %}{% elif servicio.estado != 'Cotizacion' %}is-hecho{% endif %}">Confirmada</li>
+    </ol>
+
+    <div class="flujo__acciones">
+      {% if servicio.estado == "Cotizacion" and detalles %}
+        {% with ep=envio_preferido %}
+        <details class="flujo__menu">
+          <summary>Otro medio</summary>
+          <div class="flujo__menu-panel">
+            {% if ep.medio != "Correo" and ep.email %}
+            <form method="post" action="{% url 'enviar_cotizacion_email' servicio.id %}" data-un-envio>
+              {% csrf_token %}
+              <button type="submit" class="flujo__opcion" data-texto-cargando="Enviando..." data-confirmar="Se enviará la cotización por ${{ servicio.total|floatformat:0 }} a {{ ep.email }} y la solicitud quedará como Contactado.">✉ Enviar por correo</button>
+            </form>
+            {% endif %}
+            {% if ep.medio != "WhatsApp" and ep.whatsapp_url %}
+            <form method="post" action="{% url 'gestion_cotizacion' servicio.id %}" data-un-envio data-abrir-url="{{ ep.whatsapp_url }}">
+              {% csrf_token %}<input type="hidden" name="accion" value="marcar_enviada"><input type="hidden" name="medio" value="WhatsApp">
+              <button type="submit" class="flujo__opcion" data-confirmar="Se abrirá WhatsApp con la cotización para {{ ep.telefono }} y la solicitud quedará como Contactado.">💬 Enviar por WhatsApp</button>
+            </form>
+            {% endif %}
+            {% if ep.medio != "Llamada" and ep.telefono %}
+            <form method="post" action="{% url 'gestion_cotizacion' servicio.id %}" data-un-envio>
+              {% csrf_token %}<input type="hidden" name="accion" value="marcar_enviada"><input type="hidden" name="medio" value="Teléfono">
+              <button type="submit" class="flujo__opcion" data-confirmar="Se registrará que informaste la cotización por teléfono y la solicitud quedará como Contactado.">📞 La informé por teléfono</button>
+            </form>
+            {% endif %}
+            <form method="post" action="{% url 'gestion_cotizacion' servicio.id %}" data-un-envio>
+              {% csrf_token %}<input type="hidden" name="accion" value="marcar_enviada"><input type="hidden" name="medio" value="En persona">
+              <button type="submit" class="flujo__opcion" data-confirmar="Se registrará que entregaste la cotización en persona y la solicitud quedará como Contactado.">🤝 La entregué en persona</button>
+            </form>
+          </div>
+        </details>
+
+        {% if ep.medio == "Correo" %}
+        <form method="post" action="{% url 'enviar_cotizacion_email' servicio.id %}" data-un-envio>
+          {% csrf_token %}
+          <button type="submit" class="btn btn-accent" data-texto-cargando="Enviando..." data-confirmar="Se enviará la cotización por ${{ servicio.total|floatformat:0 }} a {{ ep.email }} y la solicitud quedará como Contactado.">✉ Enviar cotización por correo</button>
+        </form>
+        {% elif ep.medio == "WhatsApp" %}
+        <form method="post" action="{% url 'gestion_cotizacion' servicio.id %}" data-un-envio data-abrir-url="{{ ep.whatsapp_url }}">
+          {% csrf_token %}<input type="hidden" name="accion" value="marcar_enviada"><input type="hidden" name="medio" value="WhatsApp">
+          <button type="submit" class="btn btn-whatsapp" data-confirmar="Se abrirá WhatsApp con la cotización lista para enviar a {{ ep.telefono }}. La solicitud quedará como Contactado.">💬 Enviar cotización por WhatsApp</button>
+        </form>
+        {% elif ep.medio == "Llamada" %}
+        <a class="flujo__enlace" href="tel:{{ ep.telefono }}">📞 Llamar al {{ ep.telefono }}</a>
+        <form method="post" action="{% url 'gestion_cotizacion' servicio.id %}" data-un-envio>
+          {% csrf_token %}<input type="hidden" name="accion" value="marcar_enviada"><input type="hidden" name="medio" value="Teléfono">
+          <button type="submit" class="btn btn-accent" data-confirmar="Se registrará que le informaste la cotización por teléfono. La solicitud quedará como Contactado.">Registrar llamada</button>
+        </form>
+        {% endif %}
+        {% endwith %}
+
+      {% elif servicio.estado == "Contactado" %}
+        {% if envio %}<span class="flujo__nota">{{ envio.accion|cut:"Cotización " }} el {{ envio.fecha|date:"d/m" }}</span>{% endif %}
+        {% if servicio.cliente.email %}
+        <form method="post" action="{% url 'enviar_cotizacion_email' servicio.id %}" data-un-envio>
+          {% csrf_token %}
+          <button type="submit" class="flujo__enlace" data-texto-cargando="Enviando..." data-confirmar="Se volverá a enviar la cotización a {{ servicio.cliente.email }}.">Reenviar</button>
+        </form>
+        {% endif %}
+        <details class="flujo__menu flujo__rechazo">
+          <summary>No aceptó</summary>
+          <form method="post" action="{% url 'gestion_cotizacion' servicio.id %}" class="flujo__menu-panel rechazo-form" data-un-envio>
+            {% csrf_token %}<input type="hidden" name="accion" value="rechazar">
+            <strong>¿Por qué no aceptó?</strong>
+            <select name="motivo_rechazo" required aria-label="Motivo del rechazo">
+              {% for m in motivos_rechazo %}<option value="{{ m }}">{{ m }}</option>{% endfor %}
+            </select>
+            <input type="text" name="detalle_rechazo" maxlength="200" placeholder="Detalle (opcional)" aria-label="Detalle del rechazo">
+            <button type="submit" class="btn btn-outline btn-sm" data-texto-cargando="Guardando..." data-confirmar="La cotización {{ servicio.codigo }} quedará cancelada como rechazada por el cliente.">Marcar como rechazada</button>
+          </form>
+        </details>
+        <form method="post" action="{% url 'gestion_cotizacion' servicio.id %}" id="form-confirmar">
+          {% csrf_token %}<input type="hidden" name="accion" value="confirmar">
+          <button type="submit" class="btn btn-accent" {% if not puede_confirmar or hay_faltantes %}disabled title="Hay productos sin stock suficiente para la fecha"{% endif %}>Confirmar reserva</button>
+        </form>
+
+      {% elif bloquea_stock or servicio.estado == "Finalizado" or servicio.estado == "Cerrado" %}
+        <a class="btn btn-primary" href="{% url 'gestion_reserva' servicio.id %}">Ir a la reserva →</a>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if servicio.estado == "Cotizacion" and detalles %}<p class="flujo__ayuda">{% if envio_preferido.elegido_por_cliente %}El cliente prefiere que lo contacten por {{ envio_preferido.etiqueta }}.{% elif servicio.medio_contacto %}El cliente prefiere {{ servicio.get_medio_contacto_display|lower }}, pero no dejó los datos para ese medio.{% elif not envio_preferido.medio %}El cliente no dejó correo ni teléfono: usa "Otro medio".{% endif %}</p>{% endif %}
+  {% if servicio.estado == "Contactado" and not detalles %}<p class="flujo__ayuda is-alerta">Agrega productos para poder confirmar la reserva.</p>{% endif %}
+  {% if servicio.estado == "Contactado" and hay_faltantes %}<p class="flujo__ayuda is-alerta">Hay productos sin stock suficiente para la fecha: ajusta las cantidades para poder confirmar.</p>{% endif %}
+
+  {% if puede_cancelar %}
+  <details class="flujo__cancelar no-print">
+    <summary>Cancelar solicitud</summary>
+    <form method="post" action="{% url 'gestion_cotizacion' servicio.id %}" data-un-envio>
+      {% csrf_token %}<input type="hidden" name="accion" value="cancelar">
+      <input type="text" name="motivo" maxlength="255" {% if bloquea_stock %}required{% endif %} placeholder="Motivo{% if bloquea_stock %} (obligatorio){% else %} (opcional){% endif %}" aria-label="Motivo de la cancelación">
+      <button type="submit" class="btn btn-outline btn-sm" data-texto-cargando="Cancelando..." data-confirmar="Se cancelará la solicitud {{ servicio.codigo }}{% if bloquea_stock %} y se liberará su stock{% endif %}.">Confirmar cancelación</button>
+    </form>
+  </details>
+  {% endif %}
+  {% endif %}
 
 </div>
-<form method="post" action="{% url 'gestion_cotizacion' servicio.id %}" class="no-print" style="margin-top:1rem;">
-{% csrf_token %}<input type="hidden" name="accion" value="cambiar_estado">
-<div class="toolbar"><select name="estado">{% for estado in estados_servicio %}<option value="{{ estado }}" {% if servicio.estado == estado %}selected{% endif %}>{{ estado }}</option>{% endfor %}</select><button class="btn btn-primary" type="submit">Actualizar estado</button></div>
-</form>
 
+
+<div class="card historial-card no-print" style="margin-top:1rem;">
+  <div class="card-head"><div><span class="eyebrow">Trazabilidad</span><h2>Historial</h2></div></div>
+  <ul class="timeline">
+    {% for h in historial %}
+    <li class="{% if h.estado_nuevo == 'Cancelado' %}is-cancelado{% endif %}"><time datetime="{{ h.fecha|date:'c' }}">{{ h.fecha|date:"d/m/Y H:i" }}</time><div><strong>{{ h.accion }}</strong><span class="meta">{% if h.usuario %}{{ h.usuario.nombre }} {{ h.usuario.apellido }}{% else %}{% if "cliente" in h.observacion|lower %}Cliente{% else %}Sistema{% endif %}{% endif %}{% if h.estado_anterior and h.estado_anterior != h.estado_nuevo %} · {{ h.etiqueta_anterior }} → {{ h.etiqueta_nuevo }}{% endif %}</span>{% if h.observacion %}<div>{{ h.observacion }}</div>{% endif %}</div></li>
+    {% endfor %}
+    <li><time datetime="{{ servicio.fecha_creacion|date:'c' }}">{{ servicio.fecha_creacion|date:"d/m/Y H:i" }}</time><div><strong>Solicitud recibida</strong><span class="meta">Cotizador web · {{ servicio.cliente.nombre }} {{ servicio.cliente.apellido }}</span></div></li>
+  </ul>
 </div>
     </main>
   </div>
 </div>
 
+<div class="modal-overlay" id="modal-agregar-articulo" hidden>
+  <div class="modal-panel catalogo">
+    <button type="button" class="modal-close" data-close-modal aria-label="Cerrar">✕</button>
+    <span class="eyebrow">Solicitud {{ servicio.codigo }}</span>
+    <h2 style="margin-top:0.2rem;">Agregar productos</h2>
+    <p class="cell-muted catalogo__ayuda">Escribe la cantidad en todos los productos que necesites y agrégalos juntos. Solo se muestran los productos con stock disponible para el {{ servicio.fecha_evento|date:"d/m/Y"|default:"evento" }}.</p>
 
-<div
-  class="modal-overlay"
-  id="modal-agregar-articulo"
-  hidden
->
-  <div
-    class="modal-panel"
-    style="max-width:500px;"
-  >
+    <form method="post" action="{% url 'gestion_cotizacion' servicio.id %}" id="form-catalogo">
+      {% csrf_token %}<input type="hidden" name="accion" value="agregar_articulos">
 
-    <button
-      type="button"
-      class="modal-close"
-      data-close-articulo
-    >
-      ✕
-    </button>
+      <div class="catalogo__filtros">
+        <input type="search" id="catalogo-buscar" placeholder="Buscar producto por nombre o código..." aria-label="Buscar producto" autocomplete="off">
+        <div class="catalogo__tabs" role="tablist" aria-label="Categorías">
+          {% for g in catalogo %}<button type="button" role="tab" data-tab="{{ g.id }}" class="{% if forloop.first %}is-activa{% endif %}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">{{ g.etiqueta }}</button>{% endfor %}
+        </div>
+      </div>
 
-    <span class="eyebrow">
-      Cotización {{ servicio.codigo }}
-    </span>
-
-    <h2 style="margin-top:0.2rem;">
-      Agregar artículo
-    </h2>
-
-    <form
-      method="post"
-      action="{% url 'gestion_cotizacion' servicio.id %}"
-    >
-
-      {% csrf_token %}
-
-      <input
-        type="hidden"
-        name="accion"
-        value="agregar_articulo"
-      >
-
-      <div
-        class="form-grid"
-        style="margin-top:1rem;"
-      >
-
-        <div class="form-field full">
-
-          <label for="articulo_id">
-            Artículo
-          </label>
-
-          <select
-            id="articulo_id"
-            name="articulo_id"
-            required
-          >
-
-            <option value="">
-              Seleccionar artículo
-            </option>
-
-            {% for articulo in articulos %}
-            <option value="{{ articulo.id }}">
-              {{ articulo.codigo }}
-              —
-              {{ articulo.nombre }}
-              —
-              ${{ articulo.precio_arriendo|floatformat:0 }}
-            </option>
+      <div class="catalogo__lista">
+        <table class="data-table catalogo__tabla">
+          <thead><tr><th>Producto</th><th class="cell-num">Disponible</th><th class="cell-num">Precio</th><th class="cell-num">Cantidad</th></tr></thead>
+          {% for g in catalogo %}
+          <tbody data-grupo="{{ g.id }}">
+            <tr class="catalogo__grupo"><th colspan="4">{{ g.etiqueta }}</th></tr>
+            {% for a in g.productos %}
+            <tr data-producto data-nombre="{{ a.nombre }}" data-codigo="{{ a.codigo }}" data-disponible="{{ a.disponible_fecha }}" data-precio="{{ a.precio_arriendo|floatformat:0 }}">
+              <td>
+                <div class="catalogo__prod">
+                  {% if a.imagen %}<img src="{{ a.imagen }}" alt="" class="row-thumb">{% endif %}
+                  <div><strong>{{ a.nombre }}</strong><div class="cell-muted">{{ a.codigo }}{% if a.en_cotizacion %} · <span class="catalogo__ya">ya tiene {{ a.en_cotizacion }}</span>{% endif %}</div></div>
+                </div>
+              </td>
+              <td class="cell-num"><span class="catalogo__disp {% if a.disponible_fecha <= 0 %}is-cero{% elif a.disponible_fecha <= 10 %}is-bajo{% endif %}">{{ a.disponible_fecha }}</span></td>
+              <td class="cell-num">${{ a.precio_arriendo|floatformat:0 }}</td>
+              <td class="cell-num">
+                <input type="hidden" name="articulo_id" value="{{ a.id }}">
+                <div class="catalogo__cant">
+                  <button type="button" data-menos aria-label="Restar uno a {{ a.nombre }}">−</button>
+                  <input type="number" name="cantidad" min="0" step="1" inputmode="numeric" value="" placeholder="0" aria-label="Cantidad de {{ a.nombre }}">
+                  <button type="button" data-mas aria-label="Sumar uno a {{ a.nombre }}">+</button>
+                </div>
+                {% if servicio.cantidad_personas %}<button type="button" class="catalogo__invitados" data-invitados="{{ servicio.cantidad_personas }}">= invitados ({{ servicio.cantidad_personas }})</button>{% endif %}
+                <div class="catalogo__aviso" data-aviso></div>
+              </td>
+            </tr>
             {% endfor %}
-
-          </select>
-
-        </div>
-
-        <div class="form-field full">
-
-          <label for="cantidad">
-            Cantidad
-          </label>
-
-          <input
-            type="number"
-            id="cantidad"
-            name="cantidad"
-            min="1"
-            value="1"
-            required
-          >
-
-        </div>
-
+          </tbody>
+          {% endfor %}
+        </table>
+        <p class="empty-state" id="catalogo-vacio" hidden>No encontramos productos con ese nombre.</p>
+        {% if not catalogo %}<p class="empty-state">No hay productos con stock disponible para la fecha del evento.</p>{% endif %}
       </div>
 
-      <div class="modal-actions">
-
+      <div class="catalogo__pie">
+        <span id="catalogo-resumen" aria-live="polite">Ningún producto seleccionado.</span>
         <span class="spacer"></span>
-
-        <button
-          type="button"
-          class="btn btn-outline"
-          data-close-articulo
-        >
-          Cancelar
-        </button>
-
-        <button
-          type="submit"
-          class="btn btn-primary"
-        >
-          Agregar artículo
-        </button>
-
+        <button type="button" class="btn btn-outline" data-close-modal>Cancelar</button>
+        <button type="submit" class="btn btn-primary" id="catalogo-agregar" disabled>Agregar productos</button>
       </div>
-
     </form>
-
   </div>
 </div>
 
-<script src="{% static 'js/admin-nav.js' %}"></script>
-<script src="{% static 'js/admin-search.js' %}"></script>
-<script src="{% static 'js/cotizacion-detalle.js' %}"></script>
-<script src="{% static 'js/gestion-django.js' %}"></script>
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-
-  const btn = document.getElementById(
-    "btn-agregar-articulo"
-  );
-
-  const modal = document.getElementById(
-    "modal-agregar-articulo"
-  );
-
-  if (!btn || !modal) {
-    return;
-  }
-
-  btn.addEventListener("click", function () {
-    modal.hidden = false;
-  });
-
-  modal
-    .querySelectorAll("[data-close-articulo]")
-    .forEach(function (elemento) {
-
-      elemento.addEventListener(
-        "click",
-        function () {
-          modal.hidden = true;
-        }
-      );
-
-    });
-
-  modal.addEventListener(
-    "click",
-    function (event) {
-
-      if (event.target === modal) {
-        modal.hidden = true;
-      }
-
-    }
-  );
-
-});
-</script>
+<script src="{% static 'js/admin-nav.js' %}?v=sidebar-icons-2"></script>
+<script src="{% static 'js/admin-search.js' %}?v=2"></script>
+<script src="{% static 'js/operaciones.js' %}?v=7"></script>
+<script src="{% static 'js/cotizacion-admin.js' %}?v=5"></script>
 </body>
 </html>

@@ -12,7 +12,7 @@
   {% endblock %}
 
   <link rel="icon" href="{% static 'images/logo.jpg' %}">
-  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}?v=18">
 
   {% block extra_css %}{% endblock %}
 </head>
@@ -37,11 +37,14 @@
           Cotizar mi evento
         </a>
 
+        {% if request.session.cliente_id %}
+        <a href="{% url 'cliente_cuenta' %}" class="cuenta-link" title="Mi cuenta">Hola, {{ request.session.cliente_nombre }}</a>
+        {% endif %}
         <a
-          href="{% url 'gestion_login' %}"
+          href="{% if request.session.cliente_id %}{% url 'cliente_cuenta' %}{% else %}{% url 'gestion_login' %}{% endif %}"
           class="btn-login-icon"
-          aria-label="Iniciar sesión"
-          title="Iniciar sesión"
+          aria-label="{% if request.session.cliente_id %}Mi cuenta{% else %}Iniciar sesión{% endif %}"
+          title="{% if request.session.cliente_id %}Mi cuenta{% else %}Iniciar sesión o crear cuenta{% endif %}"
         >
           <svg
             viewBox="0 0 24 24"
@@ -81,10 +84,23 @@
 
       <div class="header-actions header-actions--mobile">
         <a href="{% url 'cotizador' %}" class="btn btn-primary btn-sm">Cotizar mi evento</a>
+        {% if request.session.cliente_id %}<a href="{% url 'cliente_cuenta' %}" class="btn btn-outline btn-sm">Mi cuenta</a>
+        {% else %}<a href="{% url 'gestion_login' %}" class="btn btn-outline btn-sm">Iniciar sesión</a>{% endif %}
       </div>
     </div>
   </nav>
 </header>
+
+{% if messages %}
+<div class="avisos-flotantes" aria-live="polite">
+  {% for mensaje in messages %}
+  <div class="aviso-flotante is-{% if mensaje.tags == 'error' %}error{% else %}ok{% endif %}" role="status">
+    <span>{{ mensaje }}</span>
+    <button type="button" class="aviso-flotante__cerrar" aria-label="Cerrar aviso">&times;</button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
 
 <main>
   {% block content %}{% endblock %}
@@ -131,7 +147,6 @@
 
     <div class="footer-bottom">
       <span>&copy; <span data-year></span> Entre Platos y Copas. Todos los derechos reservados.</span>
-      <span>Sitio en desarrollo — próximamente conectado a nuestro sistema de reservas.</span>
     </div>
   </div>
 </footer>
@@ -149,7 +164,18 @@
   </span>
 </a>
 
-<script src="{% static 'js/main.js' %}"></script>
+<dialog class="confirmar" id="confirmar-dialogo" aria-labelledby="confirmar-titulo">
+  <form method="dialog">
+    <h2 id="confirmar-titulo">¿Confirmas?</h2>
+    <p id="confirmar-texto"></p>
+    <div class="confirmar__acciones">
+      <button type="submit" value="no" class="btn btn-outline btn-sm">Volver</button>
+      <button type="submit" value="si" class="btn btn-accent btn-sm" id="confirmar-ok">Confirmar</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="{% static 'js/main.js' %}?v=4"></script>
 {% block extra_js %}{% endblock %}
 
 </body>

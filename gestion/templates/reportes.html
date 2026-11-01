@@ -6,7 +6,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Reportes · Panel Entre Platos y Copas</title>
 <link rel="icon" href="{% static 'images/logo.jpg' %}">
-<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+<link rel="stylesheet" href="{% static 'css/admin.css' %}?v=sidebar-design-2">
+<link rel="stylesheet" href="{% static 'css/operaciones.css' %}?v=13">
 </head>
 <body>
 
@@ -57,7 +58,6 @@
         <input type="search" id="global-search" placeholder="Buscar productos, clientes, cotizaciones, reservas...">
       </div>
       <div class="topbar-actions">
-        <button class="icon-btn" aria-label="Notificaciones"><span class="dot"></span>🔔</button>
         <div class="topbar-user">
           <div class="user-avatar">HC</div>
           <div class="user-info"><strong>Helen Cortés</strong><span>Administradora</span></div>
@@ -65,78 +65,88 @@
       </div>
     </header>
 
-    <main class="admin-content">
-      <div class="page-head">
+    <main class="admin-content reportes">
+      <div class="reportes__cabeza">
         <div>
           <span class="eyebrow">Reportes</span>
-          <h1>Métricas del negocio</h1>
-          <p>Inventario, reservas, clientes e información comercial.</p>
+          <h1>Métricas del período</h1>
+          <p>{% if periodo.desde or periodo.hasta %}Del {{ periodo.desde|default:"inicio" }} al {{ periodo.hasta|default:"hoy" }}{% else %}Todo el historial{% endif %} · el estado actual del negocio está en el <a href="{% url 'inicio' %}">Resumen</a>.</p>
         </div>
-        <div class="page-head-actions">
-          <select class="select-filter" id="rep-periodo">
-            <option value="todo">Todo el tiempo</option>
-            <option value="mes">Este mes (agosto 2026)</option>
-            <option value="trimestre">Últimos 3 meses</option>
-          </select>
-        </div>
+        <form class="reportes__periodo" method="get">
+          <div class="reportes__atajos">
+            {% for a in atajos %}<a href="?desde={{ a.desde }}&hasta={{ a.hasta }}" class="{% if a.activo %}is-activo{% endif %}">{{ a.etiqueta }}</a>{% endfor %}
+            <a href="?" class="{% if not periodo.desde and not periodo.hasta %}is-activo{% endif %}">Todo</a>
+          </div>
+          <div class="reportes__fechas">
+            <input type="date" name="desde" value="{{ periodo.desde }}" aria-label="Desde">
+            <span>—</span>
+            <input type="date" name="hasta" value="{{ periodo.hasta }}" aria-label="Hasta">
+            <button type="submit" class="btn btn-accent btn-sm">Aplicar</button>
+          </div>
+        </form>
       </div>
 
-      <!-- Inventario -->
-      <div class="card-head" style="margin-top:1.5rem;"><div><span class="eyebrow">01</span><h2>Inventario</h2></div></div>
-      <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));">
-        <div class="kpi-card"><span class="kpi-label">Stock total</span><div class="kpi-value" id="ri-total" style="font-size:1.6rem;">{{ metricas.stock_total|default:"0" }}</div></div>
-        <div class="kpi-card"><span class="kpi-label">Disponible</span><div class="kpi-value" id="ri-disponible" style="font-size:1.6rem;">{{ metricas.stock_trabajable|default:"0" }}</div></div>
-        <div class="kpi-card"><span class="kpi-label">Comprometido</span><div class="kpi-value" id="ri-comprometido" style="font-size:1.6rem;">{{ metricas.stock_comprometido|default:"0" }}</div></div>
-        <div class="kpi-card"><span class="kpi-label">Bajo stock mínimo</span><div class="kpi-value" id="ri-bajo" style="font-size:1.6rem;">{{ metricas.stock_bajo|default:"0" }}</div></div>
-      </div>
-      <div class="section-row">
-        <div class="card"><div class="card-head"><h2 style="font-size:1rem;">Productos más arrendados</h2></div><div id="ri-chart-mas">
-<ul>{% for x in productos_mas_arrendados %}<li>{{ x.nombre }} — {{ x.total_arrendado }}</li>{% empty %}<li>Sin datos.</li>{% endfor %}</ul>
-</div></div>
-        <div class="card"><div class="card-head"><h2 style="font-size:1rem;">Productos menos utilizados</h2></div><div id="ri-chart-menos">
-<ul>{% for x in productos_menos_utilizados %}<li>{{ x.nombre }} — {{ x.total_arrendado }}</li>{% empty %}<li>Sin datos.</li>{% endfor %}</ul>
-</div></div>
+      <section class="reportes__bloque" aria-label="Comercial">
+        <h2 class="reportes__titulo">Comercial <span>según la fecha del evento</span></h2>
+        <dl class="franja">
+          <div><dt>Cotizaciones</dt><dd>{{ metricas.cotizaciones_total }}</dd></div>
+          <div><dt>Reservas confirmadas</dt><dd>{{ metricas.reservas_total }}</dd></div>
+          <div><dt>Conversión</dt><dd>{{ metricas.tasa_conversion }}%</dd></div>
+          <div><dt>Monto cotizado</dt><dd>${{ metricas.monto_cotizado|floatformat:0 }}</dd></div>
+          <div class="is-destacado"><dt>Monto confirmado</dt><dd>${{ metricas.monto_confirmado|floatformat:0 }}</dd></div>
+          <div><dt>Ticket promedio</dt><dd>${{ metricas.ticket_promedio|floatformat:0 }}</dd></div>
+          <div><dt>Canceladas</dt><dd>{{ metricas.cotizaciones_rechazadas }}</dd></div>
+        </dl>
+      </section>
+
+      <section class="reportes__bloque" aria-label="Operación">
+        <h2 class="reportes__titulo">Operación <span>según la fecha de cada operación</span></h2>
+        <dl class="franja">
+          <div><dt>Preparaciones completadas</dt><dd>{{ metricas.preparaciones_completas }}</dd></div>
+          <div><dt>Despachos</dt><dd>{{ metricas.despachos }}</dd></div>
+          <div><dt>Unidades devueltas</dt><dd>{{ metricas.unidades_devueltas }}</dd></div>
+          <div class="{% if metricas.unidades_merma %}is-alerta{% endif %}"><dt>Unidades en merma</dt><dd>{{ metricas.unidades_merma }}</dd></div>
+          <div class="{% if metricas.valor_merma %}is-alerta{% endif %}"><dt>Valor de merma</dt><dd>${{ metricas.valor_merma|floatformat:"0g" }}</dd></div>
+          <div><dt>Eventos realizados</dt><dd>{{ metricas.reservas_finalizadas }}</dd></div>
+        </dl>
+      </section>
+
+      <div class="rankings">
+        <section class="ranking">
+          <h3>Productos más arrendados</h3>
+          {% for x in productos_mas_arrendados %}
+          <div class="ranking__fila"><span class="ranking__nombre">{{ x.nombre }}</span><span class="ranking__barra"><span style="width:{{ x.pct }}%"></span></span><strong>{{ x.total }} u.</strong></div>
+          {% empty %}<p class="ranking__vacio">Sin reservas en el período.</p>{% endfor %}
+        </section>
+        <section class="ranking">
+          <h3>Ingresos por categoría</h3>
+          {% for x in ingresos_categoria %}
+          <div class="ranking__fila"><span class="ranking__nombre">{{ x.categoria }}</span><span class="ranking__barra"><span style="width:{{ x.pct }}%"></span></span><strong>${{ x.total|floatformat:0 }}</strong></div>
+          {% empty %}<p class="ranking__vacio">Sin reservas en el período.</p>{% endfor %}
+        </section>
+        <section class="ranking">
+          <h3>Clientes frecuentes</h3>
+          {% for x in clientes_frecuentes %}
+          <div class="ranking__fila"><span class="ranking__nombre">{{ x.nombre }} {{ x.apellido }}</span><span class="ranking__barra"><span style="width:{{ x.pct }}%"></span></span><strong>{{ x.reservas }} reserva{{ x.reservas|pluralize }}</strong></div>
+          {% empty %}<p class="ranking__vacio">Sin reservas en el período.</p>{% endfor %}
+        </section>
+        <section class="ranking">
+          <h3>Mermas por artículo</h3>
+          {% for x in mermas_por_articulo %}
+          <div class="ranking__fila"><span class="ranking__nombre">{{ x.nombre }}</span><span class="ranking__barra is-merma"><span style="width:{{ x.pct }}%"></span></span><strong>{{ x.total }} u.</strong></div>
+          {% empty %}<p class="ranking__vacio">Sin mermas en el período.</p>{% endfor %}
+        </section>
       </div>
 
-      <!-- Reservas -->
-      <div class="card-head" style="margin-top:1.5rem;"><div><span class="eyebrow">02</span><h2>Reservas</h2></div></div>
-      <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));">
-        <div class="kpi-card"><span class="kpi-label">Reservas en el período</span><div class="kpi-value" id="rr-total" style="font-size:1.6rem;">{{ metricas.reservas_total|default:"0" }}</div></div>
-        <div class="kpi-card"><span class="kpi-label">Próximas</span><div class="kpi-value" id="rr-proximas" style="font-size:1.6rem;">{{ metricas.reservas_proximas|default:"0" }}</div></div>
-        <div class="kpi-card"><span class="kpi-label">Finalizadas</span><div class="kpi-value" id="rr-finalizadas" style="font-size:1.6rem;">{{ metricas.reservas_finalizadas|default:"0" }}</div></div>
-        <div class="kpi-card"><span class="kpi-label">Canceladas</span><div class="kpi-value" id="rr-canceladas" style="font-size:1.6rem;">{{ metricas.reservas_canceladas|default:"0" }}</div></div>
-      </div>
-
-      <!-- Clientes -->
-      <div class="card-head" style="margin-top:1.5rem;"><div><span class="eyebrow">03</span><h2>Clientes</h2></div></div>
-      <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));">
-        <div class="kpi-card"><span class="kpi-label">Clientes totales</span><div class="kpi-value" id="rc-total" style="font-size:1.6rem;">{{ metricas.clientes_total|default:"0" }}</div></div>
-        <div class="kpi-card"><span class="kpi-label">Clientes nuevos en el período</span><div class="kpi-value" id="rc-nuevos" style="font-size:1.6rem;">{{ metricas.clientes_nuevos|default:"0" }}</div></div>
-      </div>
-      <div class="card"><div class="card-head"><h2 style="font-size:1rem;">Clientes frecuentes</h2></div><div id="rc-chart">
-<ul>{% for x in clientes_frecuentes %}<li>{{ x.nombre }} {{ x.apellido }} — {{ x.total_servicios }} servicios</li>{% empty %}<li>Sin datos.</li>{% endfor %}</ul>
-</div></div>
-
-      <!-- Comercial -->
-      <div class="card-head" style="margin-top:1.5rem;"><div><span class="eyebrow">04</span><h2>Información comercial</h2></div></div>
-      <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));">
-        <div class="kpi-card"><span class="kpi-label">Monto cotizado</span><div class="kpi-value" id="rn-cotizado" style="font-size:1.4rem;">${{ metricas.monto_cotizado|default:"0"|floatformat:0 }}</div></div>
-        <div class="kpi-card"><span class="kpi-label">Cotiz. aceptadas</span><div class="kpi-value" id="rn-aceptadas" style="font-size:1.6rem;">{{ metricas.cotizaciones_aceptadas|default:"0" }}</div></div>
-        <div class="kpi-card"><span class="kpi-label">Cotiz. rechazadas</span><div class="kpi-value" id="rn-rechazadas" style="font-size:1.6rem;">{{ metricas.cotizaciones_rechazadas|default:"0" }}</div></div>
-        <div class="kpi-card"><span class="kpi-label">Ticket promedio</span><div class="kpi-value" id="rn-ticket" style="font-size:1.4rem;">${{ metricas.ticket_promedio|default:"0"|floatformat:0 }}</div></div>
-      </div>
-      <div class="card"><div class="card-head"><h2 style="font-size:1rem;">Ingresos referenciales por categoría</h2></div><div id="rn-chart">
-<ul>{% for x in ingresos_categoria %}<li>{{ x.categoria }} — ${{ x.total|floatformat:0 }}</li>{% empty %}<li>Sin datos.</li>{% endfor %}</ul>
-</div></div>
-
+      <p class="reportes__nota">Monto cotizado: servicios desde Cotización hasta Cerrado. Monto confirmado: desde Confirmado hasta Cerrado. Ticket promedio = monto confirmado ÷ reservas confirmadas. Conversión = reservas ÷ cotizaciones. Los cancelados no se suman.</p>
     </main>
   </div>
 </div>
 
-<script src="{% static 'js/admin-nav.js' %}"></script>
-<script src="{% static 'js/admin-search.js' %}"></script>
+<script src="{% static 'js/admin-nav.js' %}?v=sidebar-icons-2"></script>
+<script src="{% static 'js/admin-search.js' %}?v=2"></script>
 <script src="{% static 'js/charts.js' %}"></script>
 
-<script src="{% static 'js/gestion-django.js' %}"></script>
+<script src="{% static 'js/gestion-django.js' %}?v=2"></script>
 </body>
 </html>

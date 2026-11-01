@@ -1,8 +1,4 @@
-/**
- * usuarios.js
- * Administración de usuarios internos: listado, alta simulada y
- * activar/desactivar acceso (acción crítica, requiere confirmación).
- */
+// Administración de usuarios internos
 (function () {
   const tbody = document.getElementById('usr-tbody');
   if (!tbody) return;

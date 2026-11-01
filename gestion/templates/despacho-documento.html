@@ -4,9 +4,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hoja de despacho · Panel Entre Platos y Copas</title>
+<title>Despacho · Panel Entre Platos y Copas</title>
 <link rel="icon" href="{% static 'images/logo.jpg' %}">
-<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+<link rel="stylesheet" href="{% static 'css/admin.css' %}?v=sidebar-design-2">
+<link rel="stylesheet" href="{% static 'css/operaciones.css' %}?v=2">
 </head>
 <body>
 
@@ -56,31 +57,61 @@
 
     <main class="admin-content">
       <div class="breadcrumb no-print"><a href="{% url 'gestion_despachos' %}">← Volver a despachos</a></div>
-      <div class="toolbar no-print" style="justify-content:flex-start;">
-        <button class="btn btn-outline btn-sm" onclick="window.print()">🖨 Imprimir / Guardar como PDF</button>
-      </div>
+
+      {% for mensaje in messages %}
+      <div class="admin-notice is-{% if mensaje.tags == 'error' %}danger{% else %}success{% endif %}" role="status">{{ mensaje }}</div>
+      {% endfor %}
+
       <div id="despacho-doc">
+      <div class="card">
+        <div class="card-head">
+          <div><span class="eyebrow">Despacho · {{ servicio.codigo }}</span><h2>{{ servicio.cliente.nombre }} {{ servicio.cliente.apellido }}</h2></div>
+          <div class="card-head-actions">
+            <span class="status-pill is-{{ despacho.clase_estado }}">{{ despacho.get_estado_display }}</span>
+            <span class="status-pill is-{{ servicio.clase_estado }}">Reserva: {{ servicio.get_estado_display }}</span>
+            <button type="button" class="btn btn-outline btn-sm no-print" onclick="window.print()">🖨 Imprimir</button>
+          </div>
+        </div>
+        <div class="detail-grid">
+          <div><span class="cell-muted">RUT</span><strong>{{ servicio.cliente.rut_formateado|default:"—" }}</strong></div>
+          <div><span class="cell-muted">Contacto</span><strong>{{ servicio.cliente.telefono|default:"" }}{% if servicio.cliente.telefono and servicio.cliente.email %} · {% endif %}{{ servicio.cliente.email|default:"" }}{% if not servicio.cliente.telefono and not servicio.cliente.email %}—{% endif %}</strong></div>
+          <div><span class="cell-muted">Medio de contacto</span><strong>{{ servicio.get_medio_contacto_display|default:"—" }}</strong></div>
+          <div><span class="cell-muted">Fecha del evento</span><strong>{{ servicio.fecha_evento|date:"d/m/Y"|default:"—" }}</strong></div>
+          <div><span class="cell-muted">Modalidad</span><strong>{{ despacho.get_tipo_entrega_display|default:"—" }}</strong></div>
+          <div><span class="cell-muted">Fecha y hora de salida</span><strong>{{ despacho.fecha_despacho|date:"d/m/Y H:i" }}</strong></div>
+          <div><span class="cell-muted">Responsable de la entrega</span><strong>{{ despacho.responsable_entrega|default:"—" }}</strong></div>
+          <div><span class="cell-muted">Recibe</span><strong>{{ despacho.receptor|default:"—" }}</strong></div>
+          <div><span class="cell-muted">Registrado por</span><strong>{% if despacho.usuario %}{{ despacho.usuario.nombre }} {{ despacho.usuario.apellido }}{% else %}—{% endif %} · {{ despacho.fecha_registro|date:"d/m/Y H:i" }}</strong></div>
+          <div><span class="cell-muted">Preparación asociada</span><strong>{% if despacho.preparacion %}<a class="no-print" href="{% url 'gestion_preparacion_documento' despacho.preparacion.id %}">Ver hoja de preparación</a>{% else %}—{% endif %}</strong></div>
+          <div class="full"><span class="cell-muted">Dirección</span><strong>{{ servicio.direccion_evento|default:"—" }}{% if servicio.comuna_evento %}, {{ servicio.comuna_evento }}{% endif %}</strong></div>
+          {% if despacho.observaciones %}<div class="full"><span class="cell-muted">Observaciones</span><p>{{ despacho.observaciones }}</p></div>{% endif %}
+        </div>
+      </div>
 
-<div class="card">
-  <div class="card-head"><div><span class="eyebrow">Despacho</span><h2>{{ despacho.servicio.codigo }}</h2></div><button class="btn btn-outline btn-sm no-print" onclick="window.print()">Imprimir</button></div>
-  <p><strong>Cliente:</strong> {{ despacho.servicio.cliente.nombre }} {{ despacho.servicio.cliente.apellido }}</p>
-  <p><strong>Dirección:</strong> {{ despacho.servicio.direccion_evento }}, {{ despacho.servicio.comuna_evento }}</p>
-  <p><strong>Fecha:</strong> {{ despacho.fecha_despacho|date:"d/m/Y H:i" }}</p>
-  <p><strong>Tipo entrega:</strong> {{ despacho.tipo_entrega|default:"—" }}</p>
-  <p><strong>Responsable:</strong> {{ despacho.responsable_entrega|default:"—" }}</p>
-  <table class="data-table"><thead><tr><th>Artículo</th><th class="cell-num">Cantidad</th></tr></thead><tbody>
-  {% for d in detalles %}<tr><td>{{ d.articulo.nombre }}</td><td class="cell-num">{{ d.cantidad }}</td></tr>
-  {% empty %}<tr><td colspan="2">Sin detalles.</td></tr>{% endfor %}
-  </tbody></table>
-</div>
+      <div class="card" style="margin-top:1rem;">
+        <div class="card-head"><div><span class="eyebrow">Artículos despachados</span><h2>{{ total_unidades }} unidades · {{ detalles|length }} artículo{{ detalles|length|pluralize }}</h2></div></div>
+        <table class="data-table"><thead><tr><th>Artículo</th><th class="cell-num">Cantidad</th></tr></thead><tbody>
+        {% for d in detalles %}<tr><td><span class="cell-strong">{{ d.articulo.nombre }}</span><div class="cell-muted">{{ d.articulo.codigo }}</div></td><td class="cell-num">{{ d.cantidad }}</td></tr>
+        {% empty %}<tr><td colspan="2" class="empty-state">Sin detalles.</td></tr>{% endfor %}
+        </tbody></table>
+      </div>
 
-</div>
+      <div class="card no-print" style="margin-top:1rem;">
+        <div class="card-head"><div><span class="eyebrow">Trazabilidad</span><h2>Historial de la reserva</h2></div></div>
+        <ul class="timeline">
+          {% for h in historial %}
+          <li><time datetime="{{ h.fecha|date:'c' }}">{{ h.fecha|date:"d/m/Y H:i" }}</time><div><strong>{{ h.accion }}</strong><span class="meta">{% if h.usuario %}{{ h.usuario.nombre }} {{ h.usuario.apellido }}{% else %}Sistema{% endif %}{% if h.estado_anterior and h.estado_anterior != h.estado_nuevo %} · {{ h.etiqueta_anterior }} → {{ h.etiqueta_nuevo }}{% endif %}</span>{% if h.observacion %}<div>{{ h.observacion }}</div>{% endif %}</div></li>
+          {% empty %}<li><span class="cell-muted">Sin movimientos registrados.</span></li>{% endfor %}
+        </ul>
+      </div>
+      </div>
     </main>
   </div>
 </div>
 
-<script src="{% static 'js/admin-nav.js' %}"></script>
+<script src="{% static 'js/admin-nav.js' %}?v=sidebar-icons-2"></script>
 
-<script src="{% static 'js/gestion-django.js' %}"></script>
+<script src="{% static 'js/gestion-django.js' %}?v=2"></script>
+<script src="{% static 'js/operaciones.js' %}?v=7"></script>
 </body>
 </html>

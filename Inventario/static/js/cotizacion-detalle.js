@@ -1,10 +1,4 @@
-/**
- * cotizacion-detalle.js
- * Documento de la cotización (formato imprimible) más la barra de
- * acciones: editar, descargar, enviar, compartir, aceptar y convertir
- * en reserva. "Descargar" usa la función de impresión del navegador
- * (Guardar como PDF), ya que no hay backend para generar el archivo.
- */
+// Documento de la cotización (formato imprimible) más la barra de acciones
 (function () {
   const contenedor = document.getElementById('cotizacion-detalle');
   if (!contenedor) return;
@@ -28,8 +22,7 @@
     console.error(err);
   });
 
-  /** Las cotizaciones recién creadas en el modal viajan por sessionStorage
-   *  (viven solo en memoria); si existen, tienen prioridad sobre los datos base. */
+  // Las cotizaciones recién creadas en el modal viajan por sessionStorage (viven solo en memoria)
   function cargarCotizaciones() {
     const temp = sessionStorage.getItem('epyc_admin_cotizaciones_temp');
     if (temp) return Promise.resolve(JSON.parse(temp));

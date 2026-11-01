@@ -1,4 +1,4 @@
-/* Copia embebida de movimientos.json para vistas sin servidor (ver admin-datos.js). */
+// Copia embebida de movimientos.json para vistas sin servidor (ver admin-datos.js).
 var MOVIMIENTOS_DATA = [
   {
     "id": 1,

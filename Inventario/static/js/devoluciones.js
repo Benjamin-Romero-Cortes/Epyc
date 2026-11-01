@@ -1,9 +1,4 @@
-/**
- * devoluciones.js
- * Lista de reservas cuyos productos ya deberían estar volviendo
- * (despachadas o en arriendo, con fecha de retiro alcanzada) o que ya
- * están formalmente en estado "En devolución".
- */
+// Lista de reservas cuyos productos ya deberían estar volviendo
 (function () {
   const tbody = document.getElementById('dev-tbody');
   if (!tbody) return;

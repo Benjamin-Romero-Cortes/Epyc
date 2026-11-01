@@ -6,7 +6,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ficha de cliente · Panel Entre Platos y Copas</title>
 <link rel="icon" href="{% static 'images/logo.jpg' %}">
-<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+<link rel="stylesheet" href="{% static 'css/admin.css' %}?v=clients-edit-1">
+<link rel="stylesheet" href="{% static 'css/operaciones.css' %}?v=2">
 <style>
   .tabs { display: flex; gap: 0.4rem; border-bottom: 1px solid var(--color-gray-light); margin-bottom: var(--space-md); }
   .tab-btn { padding: 0.7rem 1.1rem; font-size: 0.86rem; font-weight: 600; color: var(--color-gray-dark); opacity: 0.6; border-bottom: 2px solid transparent; margin-bottom: -1px; }
@@ -64,7 +65,6 @@
         <input type="search" id="global-search" placeholder="Buscar productos, clientes, cotizaciones, reservas...">
       </div>
       <div class="topbar-actions">
-        <button class="icon-btn" aria-label="Notificaciones"><span class="dot"></span>🔔</button>
         <div class="topbar-user">
           <div class="user-avatar">HC</div>
           <div class="user-info"><strong>Helen Cortés</strong><span>Administradora</span></div>
@@ -74,15 +74,32 @@
 
     <main class="admin-content">
       <div class="breadcrumb"><a href="{% url 'gestion_clientes' %}">← Volver a clientes</a></div>
+      {% if request.GET.aviso == "rut-duplicado" %}
+      <div class="admin-notice is-danger" role="alert">No se guardaron los cambios: ya existe otro cliente con ese RUT.</div>
+      {% endif %}
+      {% if request.GET.aviso == "con-servicios" %}
+      <div class="admin-notice is-danger" role="alert">No se puede eliminar este cliente porque tiene cotizaciones o reservas asociadas. Puedes marcarlo como inactivo con el botón Editar.</div>
+      {% endif %}
       <div id="cliente-detalle">
 
 <div class="card">
   <div class="card-head">
     <div><span class="eyebrow">Cliente</span><h2>{{ cliente.nombre }} {{ cliente.apellido }}</h2></div>
-    <button class="btn btn-outline btn-sm" type="button" id="btn-editar-cliente">Editar</button>
+    <div class="card-head-actions">
+      <button class="btn btn-outline btn-sm" type="button" id="btn-editar-cliente">Editar</button>
+      {% if servicios %}
+      <button class="btn btn-danger-outline btn-sm" type="button" disabled title="No se puede eliminar: tiene cotizaciones o reservas asociadas">Eliminar</button>
+      {% else %}
+      <form method="post" action="{% url 'gestion_cliente' cliente.id %}" data-confirm-delete="{{ cliente.nombre }} {{ cliente.apellido }}">
+        {% csrf_token %}
+        <input type="hidden" name="accion" value="eliminar">
+        <button class="btn btn-danger-outline btn-sm" type="submit">Eliminar</button>
+      </form>
+      {% endif %}
+    </div>
   </div>
   <div class="detail-grid">
-    <div><span class="cell-muted">RUT</span><strong>{{ cliente.rut|default:"—" }}</strong></div>
+    <div><span class="cell-muted">RUT</span><strong>{{ cliente.rut_formateado|default:"—" }}</strong></div>
     <div><span class="cell-muted">Teléfono</span><strong>{{ cliente.telefono|default:"—" }}</strong></div>
     <div><span class="cell-muted">Correo</span><strong>{{ cliente.email|default:"—" }}</strong></div>
     <div><span class="cell-muted">Comuna</span><strong>{{ cliente.comuna|default:"—" }}</strong></div>
@@ -91,15 +108,42 @@
   </div>
 </div>
 <div class="card" style="margin-top:1rem;">
-  <div class="card-head"><h2 style="font-size:1rem;">Servicios del cliente</h2></div>
+  <div class="card-head"><h2 style="font-size:1rem;">Servicios del cliente ({{ servicios|length }})</h2></div>
   <div class="table-wrap">
-    <table class="data-table"><thead><tr><th>Código</th><th>Estado</th><th>Evento</th><th>Fecha</th><th class="cell-num">Total</th></tr></thead>
+    <table class="data-table"><thead><tr><th>Código</th><th>Estado</th><th>Evento</th><th>Fecha</th><th class="cell-num">Total</th><th>Preparación</th><th>Despacho</th><th>Devolución</th><th></th></tr></thead>
     <tbody>
       {% for servicio in servicios %}
-      <tr><td>{{ servicio.codigo }}</td><td>{{ servicio.estado }}</td><td>{{ servicio.tipo_servicio|default:"—" }}</td><td>{{ servicio.fecha_evento|date:"d/m/Y"|default:"—" }}</td><td class="cell-num">${{ servicio.total|floatformat:0 }}</td></tr>
-      {% empty %}<tr><td colspan="5" class="empty-state">Este cliente aún no tiene servicios.</td></tr>{% endfor %}
+      <tr>
+        <td><span class="cell-strong">{{ servicio.codigo }}</span></td>
+        <td><span class="status-pill is-{{ servicio.clase_estado }}">{{ servicio.get_estado_display }}</span></td>
+        <td>{{ servicio.tipo_servicio|default:"—" }}</td>
+        <td>{{ servicio.fecha_evento|date:"d/m/Y"|default:"—" }}</td>
+        <td class="cell-num">${{ servicio.total|floatformat:0 }}</td>
+        <td>{% if servicio.preparacion %}<a href="{% url 'gestion_preparacion_documento' servicio.preparacion.id %}">{{ servicio.preparacion.get_estado_display }}</a>{% else %}—{% endif %}</td>
+        <td>{% if servicio.despacho %}<a href="{% url 'gestion_despacho_documento' servicio.despacho.id %}">{{ servicio.despacho.fecha_despacho|date:"d/m/Y" }}</a>{% else %}—{% endif %}</td>
+        <td>{% if servicio.total_despachado %}<a href="{% url 'gestion_devolucion_servicio' servicio.id %}">{% if servicio.total_pendiente %}{{ servicio.total_pendiente }} pendientes{% else %}Completa{% endif %}</a>{% if servicio.total_merma %}<div class="cell-muted">{{ servicio.total_merma }} en merma</div>{% endif %}{% else %}—{% endif %}</td>
+        <td><div class="table-actions"><a class="icon-btn" href="{% if servicio.es_cotizacion %}{% url 'gestion_cotizacion' servicio.id %}{% else %}{% url 'gestion_reserva' servicio.id %}{% endif %}" title="Ver detalle" aria-label="Ver detalle de {{ servicio.codigo }}">👁</a></div></td>
+      </tr>
+      {% empty %}<tr><td colspan="9" class="empty-state">Este cliente aún no tiene servicios.</td></tr>{% endfor %}
     </tbody></table>
   </div>
+</div>
+
+<div class="card" style="margin-top:1rem;">
+  <div class="card-head"><h2 style="font-size:1rem;">Mermas relacionadas</h2></div>
+  <table class="data-table"><thead><tr><th>Fecha</th><th>Reserva</th><th>Artículo</th><th>Tipo</th><th class="cell-num">Cantidad</th></tr></thead><tbody>
+  {% for m in mermas %}<tr {% if m.anulada %}style="opacity:0.6"{% endif %}><td>{{ m.fecha|date:"d/m/Y" }}</td><td>{{ m.servicio.codigo }}</td><td>{{ m.articulo.nombre }}</td><td>{{ m.get_tipo_display }}{% if m.anulada %} (anulada){% endif %}</td><td class="cell-num">{{ m.cantidad }}</td></tr>
+  {% empty %}<tr><td colspan="5" class="empty-state">Sin mermas asociadas a este cliente.</td></tr>{% endfor %}
+  </tbody></table>
+</div>
+
+<div class="card" style="margin-top:1rem;">
+  <div class="card-head"><h2 style="font-size:1rem;">Historial de servicios</h2></div>
+  <ul class="timeline">
+    {% for h in historial %}
+    <li><time datetime="{{ h.fecha|date:'c' }}">{{ h.fecha|date:"d/m/Y H:i" }}</time><div><strong>{{ h.servicio.codigo }} · {{ h.accion }}</strong><span class="meta">{% if h.usuario %}{{ h.usuario.nombre }} {{ h.usuario.apellido }}{% else %}Sistema{% endif %}{% if h.estado_anterior and h.estado_anterior != h.estado_nuevo %} · {{ h.etiqueta_anterior }} → {{ h.etiqueta_nuevo }}{% endif %}</span>{% if h.observacion %}<div>{{ h.observacion }}</div>{% endif %}</div></li>
+    {% empty %}<li><span class="cell-muted">Sin operaciones registradas.</span></li>{% endfor %}
+  </ul>
 </div>
 
 </div>
@@ -132,9 +176,10 @@
   </div>
 </div>
 
-<script src="{% static 'js/admin-nav.js' %}"></script>
-<script src="{% static 'js/admin-search.js' %}"></script>
+<script src="{% static 'js/admin-nav.js' %}?v=sidebar-icons-2"></script>
+<script src="{% static 'js/admin-search.js' %}?v=2"></script>
 
-<script src="{% static 'js/gestion-django.js' %}"></script>
+<script src="{% static 'js/gestion-django.js' %}?v=2"></script>
+<script src="{% static 'js/clientes-eliminar.js' %}?v=3"></script>
 </body>
 </html>

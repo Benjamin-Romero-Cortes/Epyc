@@ -1,13 +1,4 @@
-/**
- * productos.js
- *
- * El catálogo ya viene renderizado desde Django/PostgreSQL.
- * Este archivo controla:
- * - búsqueda
- * - filtro por categoría
- * - contador de resultados
- * - mensaje cuando no hay resultados
- */
+// El catálogo ya viene renderizado desde Django/PostgreSQL.
 
 (function () {
     const grid = document.getElementById('product-grid');
@@ -97,9 +88,7 @@
         actualizarEstadoVacio(visibles);
     }
 
-    // ==========================
     // FILTROS POR CATEGORÍA
-    // ==========================
 
     if (chipsContainer) {
         const chips = chipsContainer.querySelectorAll('.chip');
@@ -119,9 +108,7 @@
         });
     }
 
-    // ==========================
     // BARRA DE BÚSQUEDA
-    // ==========================
 
     if (searchInput) {
         searchInput.addEventListener('input', () => {

@@ -1,10 +1,4 @@
-/**
- * despachos.js
- * Pedidos preparados listos para salir a entrega. Confirmar el despacho
- * simula el traspaso de stock de "reservado" a "arrendado" en el
- * inventario y cambia la reserva a estado Despachada, previa
- * confirmación (acción crítica).
- */
+// Pedidos preparados listos para salir a entrega.
 (function () {
   const tbody = document.getElementById('desp-tbody');
   if (!tbody) return;

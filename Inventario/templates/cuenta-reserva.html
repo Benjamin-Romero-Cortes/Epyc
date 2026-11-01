@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Solicitud {{ servicio.codigo }} · Entre Platos y Copas{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/cuenta.css' %}?v=7">
+{% endblock %}
+
+{% block content %}
+<section class="cuenta cuenta--detalle">
+  <div class="container cuenta__contenedor">
+    <a href="{% url 'cliente_cuenta' %}" class="cuenta__volver">← Mis solicitudes</a>
+
+
+    <div class="cuenta__cabecera">
+      <div>
+        <span class="cuenta__eyebrow">Solicitud {{ servicio.codigo }}</span>
+        <h1>{{ servicio.tipo_servicio|default:"Evento" }}{% if servicio.fecha_evento %} · {{ servicio.fecha_evento|date:"d/m/Y" }}{% endif %}</h1>
+      </div>
+      <span class="estado estado--{{ clase_estado }}">{{ estado_publico }}</span>
+    </div>
+
+    {% if etapas %}
+    <ol class="etapas" aria-label="Avance de tu reserva">
+      {% for e in etapas %}
+      <li class="{% if e.hecha %}is-hecha{% elif e.actual %}is-actual{% endif %}">
+        <span class="etapas__punto" aria-hidden="true">{% if e.hecha %}✓{% else %}{{ forloop.counter }}{% endif %}</span>
+        <span>{{ e.nombre }}{% if e.actual %}<span class="sr-only"> (etapa actual)</span>{% endif %}</span>
+      </li>
+      {% endfor %}
+    </ol>
+    {% endif %}
+
+    <div class="cuenta__grid">
+      <div>
+        <div class="bloque">
+          <h2 class="cuenta__titulo">Artículos</h2>
+          {% if detalles %}
+          <table class="tabla-cuenta">
+            <thead><tr><th>Artículo</th><th class="num">Cantidad</th><th class="num">Precio</th><th class="num">Subtotal</th></tr></thead>
+            <tbody>
+              {% for d in detalles %}<tr><td>{{ d.articulo.nombre }}</td><td class="num">{{ d.cantidad }}</td><td class="num">${{ d.precio_unitario|floatformat:"0g" }}</td><td class="num">${{ d.subtotal|floatformat:"0g" }}</td></tr>{% endfor %}
+            </tbody>
+            <tfoot>
+              {% if servicio.descuento %}<tr><td colspan="3">Descuento</td><td class="num">−${{ servicio.descuento|floatformat:"0g" }}</td></tr>{% endif %}
+              <tr class="total"><td colspan="3">{% if es_reserva %}Total{% else %}Total referencial{% endif %}</td><td class="num">${{ servicio.total|floatformat:"0g" }}</td></tr>
+            </tfoot>
+          </table>
+          {% if puede_aceptar %}
+          <form method="post" class="aceptar">
+            {% csrf_token %}<input type="hidden" name="accion" value="aceptar">
+            <div>
+              <strong>¿Te acomoda esta propuesta?</strong>
+              <p>Al aceptarla revisamos la disponibilidad para tu fecha y te escribimos para coordinar el abono y confirmar la reserva.</p>
+            </div>
+            <button type="submit" class="btn btn-accent" data-confirmar-titulo="¿Aceptas esta cotización?" data-confirmar="Total referencial: ${{ servicio.total|floatformat:"0g" }}. Revisaremos la disponibilidad y te escribiremos para coordinar el abono y confirmar tu reserva." data-confirmar-ok="Sí, aceptar">Aceptar cotización</button>
+          </form>
+          {% elif aceptada %}
+          <div class="aceptar is-hecha">
+            <span class="aceptar__check" aria-hidden="true">✓</span>
+            <div>
+              <strong>Aceptaste esta cotización el {{ servicio.aceptada_cliente|date:"d/m/Y" }}</strong>
+              <p>Estamos revisando la disponibilidad. Te avisaremos cuando la reserva quede confirmada.</p>
+            </div>
+          </div>
+          {% elif not es_reserva %}<p class="cuenta__nota">Los precios son referenciales hasta que confirmemos tu reserva.</p>{% endif %}
+          {% else %}
+          <p class="cuenta__nota">Estamos preparando tu propuesta. Te contactaremos con los artículos y el valor.</p>
+          {% if categorias %}<p class="cuenta__chips"><em>Pediste</em>{% for c in categorias %}<span>{{ c }}</span>{% endfor %}</p>{% endif %}
+          {% endif %}
+        </div>
+      </div>
+
+      <aside class="bloque">
+        <h2 class="cuenta__titulo">Detalle del evento</h2>
+        <dl class="cuenta__dl cuenta__dl--filas">
+          <div><dt>Fecha</dt><dd>{{ servicio.fecha_evento|date:"d/m/Y"|default:"Por definir" }}</dd></div>
+          <div><dt>Invitados</dt><dd>{{ servicio.cantidad_personas|default:"—" }}</dd></div>
+          <div><dt>Dirección</dt><dd>{{ servicio.direccion_evento|default:"—" }}{% if servicio.comuna_evento %}, {{ servicio.comuna_evento }}{% endif %}</dd></div>
+          <div><dt>Entrega</dt><dd>{% if servicio.requiere_despacho %}Despacho a domicilio{% else %}Retiro en bodega{% endif %}</dd></div>
+          {% if despacho %}<div><dt>Entregado</dt><dd>{{ despacho.fecha_despacho|date:"d/m/Y H:i" }}</dd></div>{% endif %}
+          <div><dt>Solicitada</dt><dd>{{ servicio.fecha_creacion|date:"d/m/Y" }}</dd></div>
+          {% if servicio.comentarios %}<div><dt>Tus comentarios</dt><dd>{{ servicio.comentarios|linebreaksbr }}</dd></div>{% endif %}
+        </dl>
+
+        {% if puede_cancelar %}
+        <details class="cancelar">
+          <summary>Cancelar esta solicitud</summary>
+          <form method="post">
+            {% csrf_token %}<input type="hidden" name="accion" value="cancelar">
+            <label for="motivo">¿Por qué la cancelas? <span>(opcional)</span></label>
+            <input type="text" id="motivo" name="motivo" maxlength="200">
+            <button type="submit" class="btn btn-outline btn-sm" data-confirmar-titulo="¿Cancelar esta solicitud?" data-confirmar="La solicitud {{ servicio.codigo }} quedará cancelada y no podrás reactivarla desde tu cuenta." data-confirmar-ok="Sí, cancelar" data-confirmar-peligro>Confirmar cancelación</button>
+          </form>
+        </details>
+        {% elif servicio.estado != "Cancelado" and servicio.estado != "Cerrado" and servicio.estado != "Finalizado" %}
+        <p class="cuenta__nota">¿Necesitas cambiar algo? Escríbenos por <a href="https://wa.me/56942058820" target="_blank" rel="noopener">WhatsApp</a> o a <a href="mailto:contacto@entreplatosycopas.cl">contacto@entreplatosycopas.cl</a>.</p>
+        {% endif %}
+      </aside>
+    </div>
+  </div>
+</section>
+{% endblock %}

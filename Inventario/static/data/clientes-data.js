@@ -1,4 +1,4 @@
-/* Copia embebida de clientes.json para vistas sin servidor (ver admin-datos.js). */
+// Copia embebida de clientes.json para vistas sin servidor (ver admin-datos.js).
 var CLIENTES_DATA = [
   {
     "id": "CLI-001",

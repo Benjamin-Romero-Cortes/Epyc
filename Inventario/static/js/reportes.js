@@ -1,10 +1,4 @@
-/**
- * reportes.js
- * Calcula las cuatro categorías de reportes (inventario, reservas,
- * clientes e información comercial) a partir de los mismos
- * datos que usa el resto del panel, aplicando el filtro de período
- * seleccionado sobre fechas de evento/creación/registro.
- */
+// Calcula las cuatro categorías de reportes
 (function () {
   const root = document.getElementById('ri-total');
   if (!root) return;

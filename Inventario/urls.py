@@ -4,9 +4,7 @@ from Inventario import views
 
 urlpatterns = [
 
-    # =========================
     # SITIO PÚBLICO
-    # =========================
 
     path('', views.index, name='index'),
 
@@ -21,6 +19,12 @@ urlpatterns = [
         views.cotizador,
         name='cotizador'
     ),
+
+    # CUENTA DE CLIENTE
+    path('cuenta/', views.cliente_cuenta, name='cliente_cuenta'),
+    path('cuenta/registro/', views.cliente_registro, name='cliente_registro'),
+    path('cuenta/reservas/<int:id>/', views.cliente_reserva, name='cliente_reserva'),
+    path('cuenta/salir/', views.cliente_logout, name='cliente_logout'),
 
     path(
         'nosotros/',
@@ -41,9 +45,7 @@ urlpatterns = [
     ),
 
 
-    # =========================
     # GESTIÓN - INICIO
-    # =========================
 
     path(
         'gestion/',
@@ -52,9 +54,7 @@ urlpatterns = [
     ),
 
 
-    # =========================
     # INVENTARIO
-    # =========================
 
     path(
         'gestion/inventario/',
@@ -75,9 +75,7 @@ urlpatterns = [
     ),
 
 
-    # =========================
     # CLIENTES
-    # =========================
 
     path(
         'gestion/clientes/',
@@ -92,9 +90,7 @@ urlpatterns = [
     ),
 
 
-    # =========================
     # COTIZACIONES
-    # =========================
 
     path(
         'gestion/cotizaciones/',
@@ -109,9 +105,7 @@ urlpatterns = [
     ),
 
 
-    # =========================
     # RESERVAS
-    # =========================
 
     path(
         'gestion/reservas/',
@@ -126,9 +120,7 @@ urlpatterns = [
     ),
 
 
-    # =========================
     # PREPARACIÓN
-    # =========================
 
     path(
         'gestion/preparacion/',
@@ -143,9 +135,7 @@ urlpatterns = [
     ),
 
 
-    # =========================
     # DESPACHOS
-    # =========================
 
     path(
         'gestion/despachos/',
@@ -159,10 +149,14 @@ urlpatterns = [
         name='gestion_despacho_documento'
     ),
 
+    path(
+        'gestion/despachos/registrar/<int:servicio_id>/',
+        views.gestion_registrar_despacho,
+        name='gestion_registrar_despacho'
+    ),
 
-    # =========================
+
     # DEVOLUCIONES
-    # =========================
 
     path(
         'gestion/devoluciones/',
@@ -176,10 +170,20 @@ urlpatterns = [
         name='gestion_devolucion'
     ),
 
+    path(
+        'gestion/devoluciones/reserva/<int:servicio_id>/',
+        views.gestion_devolucion_servicio,
+        name='gestion_devolucion_servicio'
+    ),
 
-    # =========================
+    path(
+        'gestion/devoluciones/registrar/<int:servicio_id>/',
+        views.gestion_registrar_devolucion,
+        name='gestion_registrar_devolucion'
+    ),
+
+
     # MERMAS
-    # =========================
 
     path(
         'gestion/mermas/',
@@ -188,9 +192,7 @@ urlpatterns = [
     ),
 
 
-    # =========================
     # CALENDARIO
-    # =========================
 
     path(
         'gestion/calendario/',
@@ -199,9 +201,7 @@ urlpatterns = [
     ),
 
 
-    # =========================
     # REPORTES
-    # =========================
 
     path(
         'gestion/reportes/',
@@ -209,10 +209,14 @@ urlpatterns = [
         name='gestion_reportes'
     ),
 
+    path(
+        'gestion/buscar/',
+        views.gestion_buscar,
+        name='gestion_buscar'
+    ),
 
-    # =========================
+
     # USUARIOS
-    # =========================
 
     path(
         'gestion/usuarios/',
@@ -221,9 +225,7 @@ urlpatterns = [
     ),
 
 
-    # =========================
     # CONFIGURACIÓN
-    # =========================
 
     path(
         'gestion/configuracion/',
@@ -232,9 +234,7 @@ urlpatterns = [
     ),
 
 
-    # =========================
     # LOGIN
-    # =========================
 
     path(
         'gestion/login/',

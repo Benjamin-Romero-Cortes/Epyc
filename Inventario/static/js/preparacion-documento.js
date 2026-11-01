@@ -1,10 +1,4 @@
-/**
- * preparacion-documento.js
- * Hojas de preparación imprimibles para una reserva: una hoja por
- * categoría de producto (sin precios, solo nombre y cantidad), para
- * repartir entre distintos encargados según lo que a cada uno le
- * corresponda preparar. Cada categoría se imprime en una página aparte.
- */
+// Hojas de preparación imprimibles para una reserva
 (function () {
   const contenedor = document.getElementById('preparacion-doc');
   if (!contenedor) return;

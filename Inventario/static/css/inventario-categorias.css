@@ -1,0 +1,84 @@
+/* Inventario agrupado por categoría — paleta de la marca en versión suave:
+   grafito para lo disponible, rojo de la marca solo como acento (reservas y alertas). */
+
+.inv-resumen, .inv-leyenda, .inv-cats, #inv-grupos {
+  --marca-tinta: #2E2E2E;
+  --marca-rojo: var(--color-accent);        /* #C41230 */
+  --marca-rojo-suave: #E9A9B4;
+  --marca-rosa: #FBEFF1;
+  --marca-dorado: #B8862B;
+  --marca-dorado-suave: #F4E7CC;
+  --linea: #ECECEC;
+}
+
+/* Semáforo: el color siempre va acompañado de texto. */
+.nivel-ok { --nivel: var(--marca-tinta); --nivel-barra: #4A4A4A; }
+.nivel-bajo { --nivel: var(--marca-dorado); --nivel-barra: #CFA457; }
+.nivel-agotado { --nivel: var(--marca-rojo); --nivel-barra: var(--marca-rojo-suave); }
+.nivel-sin-stock { --nivel: #9A9A9A; --nivel-barra: #D5D5D5; }
+
+/* Barra apilada fina: disponible (grafito) + comprometido en reservas (rosa de la marca) */
+.inv-meter { display: flex; height: 5px; border-radius: 999px; background: var(--linea, #ECECEC); overflow: hidden; }
+.inv-meter > span { display: block; height: 100%; }
+.inv-meter__disp { background: var(--nivel-barra, #4A4A4A); }
+.inv-meter__comp { background: var(--marca-rojo-suave, #E9A9B4); }
+
+.inv-leyenda { display: flex; flex-wrap: wrap; gap: 0.4rem 1.1rem; font-size: 0.74rem; color: var(--status-neutral); margin: 0 0 0.6rem; }
+.inv-leyenda span { display: inline-flex; align-items: center; gap: 0.35rem; }
+.inv-leyenda i { width: 12px; height: 5px; border-radius: 999px; display: inline-block; }
+.inv-leyenda__disp { background: #4A4A4A; }
+.inv-leyenda__comp { background: #E9A9B4; }
+.inv-leyenda__bajo { background: #CFA457; }
+
+/* Totales generales: tarjetas claras, sin bordes de color */
+.inv-resumen { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.7rem; margin: 1rem 0 1rem; }
+.inv-resumen > div { background: #fff; border: 1px solid var(--linea); border-radius: var(--radius-md); padding: 0.8rem 1rem; }
+.inv-resumen span { display: block; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: #8A8A8A; }
+.inv-resumen strong { font-size: 1.45rem; font-weight: 700; color: var(--marca-tinta); }
+.inv-resumen small { font-size: 0.8rem; font-weight: 400; color: #8A8A8A; }
+.inv-resumen > div:nth-child(2) strong { color: var(--marca-rojo); }
+.inv-resumen .is-alerta { background: var(--marca-rosa); border-color: #F3D3D9; }
+.inv-resumen .is-alerta strong { color: var(--marca-rojo); }
+
+/* Tarjetas de categoría (acceso rápido) */
+.inv-cats { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 0.75rem; margin-bottom: 1.25rem; }
+.inv-cat { display: flex; flex-direction: column; gap: 0.4rem; text-align: left; font: inherit; color: inherit; background: #fff; border: 1px solid var(--linea); border-radius: var(--radius-md); padding: 0.9rem 1rem 0.85rem; cursor: pointer; transition: box-shadow var(--transition), border-color var(--transition), background-color var(--transition); }
+.inv-cat:hover { border-color: #DCDCDC; box-shadow: 0 6px 18px rgba(0,0,0,0.06); }
+.inv-cat:focus-visible { outline: 2px solid var(--marca-rojo); outline-offset: 2px; }
+.inv-cat.is-activa { background: var(--marca-rosa); border-color: var(--marca-rojo-suave); box-shadow: 0 0 0 1px var(--marca-rojo-suave); }
+.inv-cat__nombre { font-weight: 700; font-size: 0.95rem; color: var(--marca-tinta); }
+.inv-cat__meta { font-size: 0.74rem; color: #8A8A8A; }
+.inv-cat__meta b { color: var(--marca-rojo); font-weight: 600; }
+.inv-cat__cifra { font-size: 0.8rem; color: #8A8A8A; }
+.inv-cat__cifra strong { font-size: 1.45rem; font-weight: 700; color: var(--nivel); margin-right: 0.15rem; }
+.inv-cat.nivel-sin-stock .inv-cat__cifra strong { color: #B5B5B5; }
+
+/* Secciones plegables: encabezado claro con acento rojo en el contador */
+.inv-grupo { background: #fff; border: 1px solid var(--linea); border-radius: var(--radius-md); margin-bottom: 0.9rem; overflow: hidden; scroll-margin-top: calc(var(--topbar-height) + 12px); }
+.inv-grupo > summary { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; padding: 0.85rem 1.1rem; cursor: pointer; list-style: none; background: #FAFAFA; border-bottom: 1px solid var(--linea); }
+.inv-grupo > summary::-webkit-details-marker { display: none; }
+.inv-grupo > summary:focus-visible { outline: 2px solid var(--marca-rojo); outline-offset: -2px; }
+.inv-grupo__titulo { font-weight: 700; font-size: 1rem; color: var(--marca-tinta); display: inline-flex; align-items: center; gap: 0.5rem; }
+.inv-grupo__count { font-size: 0.7rem; font-weight: 700; background: var(--marca-rosa); color: var(--marca-rojo); border-radius: 999px; padding: 0.1rem 0.55rem; }
+.inv-grupo__totales { display: flex; flex-wrap: wrap; gap: 0.4rem 1.1rem; margin-left: auto; font-size: 0.8rem; color: #8A8A8A; }
+.inv-grupo__totales b { color: var(--marca-tinta); }
+.inv-grupo__totales [class^="nivel-"] b { color: var(--nivel); }
+.inv-grupo__chevron { color: #9A9A9A; transition: transform var(--transition); }
+.inv-grupo:not([open]) .inv-grupo__chevron { transform: rotate(-90deg); }
+.inv-grupo .table-wrap { border: 0; border-radius: 0; margin: 0; }
+.inv-tabla { margin: 0; }
+
+/* Columna Disponible */
+.inv-disp { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 0.25rem 0.6rem; min-width: 180px; }
+.inv-disp__num { font-size: 0.85rem; color: #8A8A8A; white-space: nowrap; }
+.inv-disp__num strong { font-size: 1rem; color: var(--nivel); }
+.inv-disp__estado { grid-column: 1 / -1; font-size: 0.72rem; font-weight: 600; color: var(--nivel); }
+.inv-disp.nivel-ok .inv-disp__estado, .inv-disp.nivel-sin-stock .inv-disp__estado { color: #8A8A8A; font-weight: 400; }
+
+.inv-ayuda { text-align: center; padding: 1.2rem 1rem; border: 1px dashed #DCDCDC; border-radius: var(--radius-md); color: #8A8A8A; font-size: 0.86rem; background: transparent; }
+.inv-ayuda[hidden], .inv-grupo[hidden] { display: none; }
+
+@media (max-width: 760px) {
+  .inv-grupo__totales { margin-left: 0; width: 100%; }
+  .inv-cats { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+}

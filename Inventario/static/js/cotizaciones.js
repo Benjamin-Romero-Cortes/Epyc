@@ -1,10 +1,4 @@
-/**
- * cotizaciones.js
- * Listado de cotizaciones y modal "Crear nueva cotización". La creación
- * se simula en memoria: arma un nuevo registro con las líneas de
- * producto y el resumen calculado, lo agrega al listado y abre el
- * documento de la cotización recién generada.
- */
+// Listado de cotizaciones y modal "Crear nueva cotización".
 (function () {
   const tbody = document.getElementById('cot-tbody');
   if (!tbody) return;
@@ -77,7 +71,7 @@
   document.getElementById('cot-estado').addEventListener('change', (e) => { estadoFiltro = e.target.value; renderizar(); });
   document.getElementById('cot-responsable').addEventListener('change', (e) => { responsableFiltro = e.target.value; renderizar(); });
 
-  // ---------- Modal: nueva cotización ----------
+  // Modal: nueva cotización
   const modal = document.getElementById('modal-nueva-cotizacion');
   const form = document.getElementById('form-nueva-cotizacion');
 
@@ -95,7 +89,7 @@
   }
   document.getElementById('btn-nueva-cotizacion').addEventListener('click', abrirModalNueva);
 
-  // ---------- Buscador de producto ----------
+  // Buscador de producto
   const prodBuscar = document.getElementById('nq-producto-buscar');
   const prodOculto = document.getElementById('nq-producto');
   const prodOpciones = document.getElementById('nq-producto-opciones');

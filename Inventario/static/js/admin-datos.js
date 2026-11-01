@@ -1,16 +1,4 @@
-/**
- * admin-datos.js
- * Punto único para obtener los datos demostrativos del panel (inventario,
- * clientes, cotizaciones, reservas, movimientos, mermas, usuarios).
- * Intenta cargar el .json correspondiente (listo para cuando el panel se
- * conecte a una base de datos/API real); si el navegador bloquea esa
- * carga -por ejemplo al abrir el archivo directamente, sin servidor- usa
- * la copia embebida en el archivo -data.js correspondiente como respaldo.
- *
- * Todas las pantallas leen desde aquí para que la información se
- * mantenga consistente entre módulos (ej. la Reserva RES-0152 muestra el
- * mismo cliente y productos en Reservas, Preparación, Despachos, etc.).
- */
+// Punto único para obtener los datos demostrativos del panel
 const ADMIN_DATA_MAP = {
   inventario: 'INVENTARIO_DATA',
   movimientos: 'MOVIMIENTOS_DATA',
@@ -55,7 +43,7 @@ function iniciales(nombre) {
   return nombre.split(' ').filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
 }
 
-/** Mapea cada estado de negocio a una variante visual de badge. */
+// Mapea cada estado de negocio a una variante visual de badge.
 const ESTADO_BADGE = {
   // Cotizaciones
   Borrador: 'neutral', Pendiente: 'warning', Enviada: 'info', Aceptada: 'success', Rechazada: 'danger', Vencida: 'danger',

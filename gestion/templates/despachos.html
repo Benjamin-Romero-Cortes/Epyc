@@ -6,7 +6,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Despachos · Panel Entre Platos y Copas</title>
 <link rel="icon" href="{% static 'images/logo.jpg' %}">
-<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+<link rel="stylesheet" href="{% static 'css/admin.css' %}?v=sidebar-design-2">
+<link rel="stylesheet" href="{% static 'css/operaciones.css' %}?v=22">
 </head>
 <body>
 
@@ -57,7 +58,6 @@
         <input type="search" id="global-search" placeholder="Buscar productos, clientes, cotizaciones, reservas...">
       </div>
       <div class="topbar-actions">
-        <button class="icon-btn" aria-label="Notificaciones"><span class="dot"></span>🔔</button>
         <div class="topbar-user">
           <div class="user-avatar">HC</div>
           <div class="user-info"><strong>Helen Cortés</strong><span>Administradora</span></div>
@@ -69,34 +69,77 @@
       <div class="page-head">
         <div>
           <span class="eyebrow">Operación</span>
-          <h1>Pedidos programados para entrega</h1>
-          <p>Al confirmar el despacho, el stock pasa de reservado a arrendado.</p>
+          <h1>Salidas a clientes</h1>
+          <p>Registra la salida de las reservas preparadas. El despacho no vuelve a descontar stock: las unidades ya estaban comprometidas desde la confirmación.</p>
         </div>
       </div>
 
-      <p class="result-count" id="desp-result-count"></p>
+      {% for mensaje in messages %}
+      <div class="admin-notice is-{% if mensaje.tags == 'error' %}danger{% else %}success{% endif %}" role="status">{{ mensaje }}</div>
+      {% endfor %}
 
+      <div class="ops-chips">
+        {% for valor, etiqueta in vistas %}<a href="?vista={{ valor }}{% if filtros.q %}&q={{ filtros.q|urlencode }}{% endif %}{% if filtros.comuna %}&comuna={{ filtros.comuna|urlencode }}{% endif %}" class="{% if filtros.vista == valor %}is-active{% endif %}">{{ etiqueta }}</a>{% endfor %}
+      </div>
+      <form class="ops-filters" method="get">
+        <input type="hidden" name="vista" value="{{ filtros.vista }}">
+        <label class="grow">Cliente, RUT o reserva<input type="search" name="q" value="{{ filtros.q }}" placeholder="Ej: Pedro Soto o 12.345.678-5"></label>
+        <label>Comuna<input type="search" name="comuna" value="{{ filtros.comuna }}" placeholder="Ej: Maipú"></label>
+        <div class="actions"><a class="btn btn-ghost btn-sm" href="?">Limpiar</a><button type="submit" class="btn btn-accent btn-sm">Filtrar</button></div>
+      </form>
+
+      {% if filtros.vista != "despachados" %}
+      <h2 class="ops-section-title">Pendientes de despacho ({{ pendientes|length }})</h2>
       <div class="table-wrap">
-        <table class="data-table">
-          <thead>
-            <tr><th>Reserva</th><th>Cliente</th><th>Dirección</th><th>Comuna</th><th>Fecha</th><th>Responsable</th><th>Estado</th><th></th></tr>
-          </thead>
-          <tbody id="desp-tbody">
-
-{% for despacho in despachos %}
-<tr><td>{{ despacho.servicio.codigo }}</td><td>{{ despacho.servicio.cliente.nombre }} {{ despacho.servicio.cliente.apellido }}</td><td>{{ despacho.servicio.direccion_evento|default:"—" }}</td><td>{{ despacho.servicio.comuna_evento|default:"—" }}</td><td>{{ despacho.fecha_despacho|date:"d/m/Y H:i" }}</td><td>{{ despacho.responsable_entrega|default:"—" }}</td><td>{{ despacho.servicio.estado }}</td><td><a class="icon-btn" href="{% url 'gestion_despacho_documento' despacho.id %}">👁</a></td></tr>
-{% empty %}<tr><td colspan="8" class="empty-state">No hay despachos registrados.</td></tr>{% endfor %}
-
-</tbody>
+        <table class="data-table tabla-fina">
+          <thead><tr><th>Reserva</th><th>Cliente</th><th>Fecha evento</th><th>Dirección</th><th>Estado</th><th></th></tr></thead>
+          <tbody>
+          {% for servicio in pendientes %}
+          <tr>
+            <td><a class="tabla-fina__codigo" href="{% url 'gestion_reserva' servicio.id %}">{{ servicio.codigo }}</a></td>
+            <td><span class="cell-strong">{{ servicio.cliente.nombre }} {{ servicio.cliente.apellido }}</span><div class="cell-muted">{% if servicio.requiere_despacho %}Despacho a domicilio{% else %}Retiro en bodega{% endif %}</div></td>
+            <td class="tabla-fina__fecha">{{ servicio.fecha_evento|date:"d/m/Y"|default:"—" }}</td>
+            <td class="is-suave-texto">{{ servicio.direccion_evento|default:"—" }}{% if servicio.comuna_evento %}, {{ servicio.comuna_evento }}{% endif %}</td>
+            <td><span class="status-pill is-{{ servicio.clase_estado }}">{{ servicio.get_estado_display }}</span></td>
+            <td><a class="btn btn-primary btn-sm" href="{% url 'gestion_registrar_despacho' servicio.id %}">Registrar despacho</a></td>
+          </tr>
+          {% empty %}<tr><td colspan="6" class="empty-state">No hay reservas preparadas esperando despacho.</td></tr>{% endfor %}
+          </tbody>
         </table>
       </div>
+      {% endif %}
+
+      {% if filtros.vista != "pendientes" %}
+      <h2 class="ops-section-title">Despachos registrados ({{ despachos|length }})</h2>
+      <div class="table-wrap">
+        <table class="data-table tabla-fina">
+          <thead><tr><th>Reserva</th><th>Cliente</th><th>Fecha evento</th><th>Salida</th><th>Modalidad</th><th class="cell-num">Unidades</th><th>Estado</th><th>Responsable</th><th></th></tr></thead>
+          <tbody id="desp-tbody">
+          {% for despacho in despachos %}
+          <tr>
+            <td><a class="tabla-fina__codigo" href="{% url 'gestion_reserva' despacho.servicio.id %}">{{ despacho.servicio.codigo }}</a></td>
+            <td><span class="cell-strong">{{ despacho.servicio.cliente.nombre }} {{ despacho.servicio.cliente.apellido }}</span><div class="cell-muted">{{ despacho.servicio.comuna_evento|default:"Sin comuna" }}</div></td>
+            <td class="tabla-fina__fecha">{{ despacho.servicio.fecha_evento|date:"d/m/Y"|default:"—" }}</td>
+            <td class="tabla-fina__fecha">{{ despacho.fecha_despacho|date:"d/m/Y" }}<div class="cell-muted">{{ despacho.fecha_despacho|date:"H:i" }}</div></td>
+            <td class="is-suave-texto">{{ despacho.get_tipo_entrega_display|default:"—" }}</td>
+            <td class="cell-num">{{ despacho.unidades }}</td>
+            <td><span class="status-pill is-{{ despacho.clase_estado }}">{{ despacho.get_estado_display }}</span></td>
+            <td class="is-suave-texto">{{ despacho.responsable_entrega|default:"—" }}</td>
+            <td><a class="icon-btn" href="{% url 'gestion_despacho_documento' despacho.id %}" title="Ver despacho" aria-label="Ver despacho de {{ despacho.servicio.codigo }}">👁</a></td>
+          </tr>
+          {% empty %}<tr><td colspan="9" class="empty-state">No hay despachos registrados{% if filtros.q or filtros.comuna or filtros.vista %} con esos filtros{% endif %}.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
     </main>
   </div>
 </div>
 
-<script src="{% static 'js/admin-nav.js' %}"></script>
-<script src="{% static 'js/admin-search.js' %}"></script>
+<script src="{% static 'js/admin-nav.js' %}?v=sidebar-icons-2"></script>
+<script src="{% static 'js/admin-search.js' %}?v=2"></script>
 
-<script src="{% static 'js/gestion-django.js' %}"></script>
+<script src="{% static 'js/gestion-django.js' %}?v=2"></script>
+<script src="{% static 'js/operaciones.js' %}?v=7"></script>
 </body>
 </html>

@@ -1,8 +1,6 @@
-/* =========================================================
-   Estilos específicos: Nosotros, Contacto y FAQ
-   ========================================================= */
+/* Estilos específicos: Nosotros, Contacto y FAQ */
 
-/* ---------- Nosotros ---------- */
+/* Nosotros */
 .about-grid {
   display: grid;
   grid-template-columns: 0.95fr 1.05fr;
@@ -33,78 +31,131 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: var(--space-md);
-  margin-top: var(--space-xl);
 }
 .value-card {
   text-align: center;
-  padding: var(--space-lg) var(--space-md);
+  padding: var(--space-md) var(--space-md) 1.5rem;
   border-radius: var(--radius-lg);
   background-color: var(--color-white-warm);
   border: 1px solid var(--color-gray-light);
 }
-.value-card .icon { font-size: 1.8rem; margin-bottom: 0.6rem; }
-.value-card h3 { font-size: 1.05rem; margin-bottom: 0.3rem; }
-.value-card p { font-size: 0.88rem; opacity: 0.8; }
+.value-card .icon { font-size: 1.4rem; margin-bottom: 0.4rem; }
+.value-card h3 { font-size: 0.98rem; font-weight: 700; margin-bottom: 0.3rem; }
+.value-card p { font-size: 0.85rem; line-height: 1.55; color: #6B6B6B; }
 
 .stats-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: var(--space-md);
   text-align: center;
-  margin-top: var(--space-xl);
+  margin-top: var(--space-lg);
 }
 .stat-item strong {
   display: block;
   font-family: var(--font-display);
-  font-size: 2.2rem;
+  font-size: 1.7rem;
+  line-height: 1.2;
   color: var(--color-accent-dark);
 }
-.stat-item span { font-size: 0.85rem; opacity: 0.75; }
+.stat-item span { font-size: 0.8rem; opacity: 0.75; }
 
-/* ---------- Contacto ---------- */
+/* Sección de valores en Nosotros: más compacta que una sección estándar. */
+.section--values { padding: var(--space-xl) 0; }
+.section--values .section-header { margin-bottom: var(--space-lg); }
+.section--values .section-header h2 { font-size: clamp(1.4rem, 2.2vw, 1.75rem); }
+
+/* Contacto */
+/* Encabezado de Contacto más discreto que el page-hero estándar. */
+.contact-hero { padding: 1.75rem 0 1.4rem; }
+.contact-hero h1 { font-size: clamp(1.45rem, 2.4vw, 1.85rem); font-weight: 700; letter-spacing: -0.01em; }
+.contact-hero p { font-size: 0.92rem; }
+
+.contact-section { padding: var(--space-md) 0 var(--space-lg); }
+
+/* Más angosto que el contenedor general para que tarjeta y mapa se lean como un bloque compacto. */
 .contact-layout {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-xl);
-  align-items: flex-start;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: var(--space-md);
+  align-items: stretch;
+  max-width: 1040px;
 }
 
 .contact-card {
-  background-color: var(--color-white-warm);
+  display: flex;
+  flex-direction: column;
+  background-color: #FFFFFF;
   border: 1px solid var(--color-gray-light);
   border-radius: var(--radius-lg);
-  padding: var(--space-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 1.4rem 1.6rem 1.3rem;
 }
-.contact-list { display: flex; flex-direction: column; gap: var(--space-md); }
-.contact-item { display: flex; gap: 0.9rem; align-items: flex-start; }
+.contact-card__title {
+  font-size: 1rem;
+  font-weight: 700;
+  padding-bottom: 0.7rem;
+  margin-bottom: 0.25rem;
+  border-bottom: 2px solid var(--color-accent);
+  align-self: flex-start;
+}
+.contact-list { list-style: none; }
+.contact-item {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--color-gray-light);
+  min-width: 0;
+}
+.contact-item:last-child { border-bottom: 0; }
 .contact-item .icon {
-  width: 42px; height: 42px;
+  width: 32px; height: 32px;
   border-radius: 50%;
-  background-color: var(--color-beige-soft);
-  color: var(--color-accent-dark);
+  border: 1px solid rgba(196, 18, 48, 0.25);
+  color: var(--color-accent);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  font-size: 1.1rem;
 }
-.contact-item h4 { font-size: 0.95rem; margin-bottom: 0.15rem; }
-.contact-item p, .contact-item a { font-size: 0.9rem; opacity: 0.85; }
-.contact-item a:hover { color: var(--color-accent-dark); opacity: 1; }
+.contact-item .icon svg { width: 15px; height: 15px; }
+.contact-item .label {
+  display: block;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8A8A8A;
+  margin-bottom: 0.1rem;
+}
+.contact-item p, .contact-item a { font-size: 0.85rem; line-height: 1.5; color: var(--color-gray-dark); overflow-wrap: anywhere; }
+.contact-item a { transition: color var(--transition); }
+.contact-item a:hover { color: var(--color-accent); }
+
+.contact-actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: auto;
+  padding-top: 1rem;
+}
+.contact-actions .btn { flex: 1; padding: 0.65rem 0.9rem; font-size: 0.82rem; }
 
 .map-wrap {
   border-radius: var(--radius-lg);
   overflow: hidden;
   border: 1px solid var(--color-gray-light);
   box-shadow: var(--shadow-sm);
-  height: 100%;
-  min-height: 380px;
+  min-height: 340px;
 }
-.map-wrap iframe { width: 100%; height: 100%; min-height: 380px; border: 0; display: block; }
+.map-wrap iframe { width: 100%; height: 100%; min-height: 340px; border: 0; display: block; filter: grayscale(0.35); }
 
-/* ---------- FAQ ---------- */
+/* FAQ */
+.faq-section { padding: var(--space-xl) 0; }
+.faq-section .section-header { margin-bottom: var(--space-md); }
+.faq-section .section-header h2 { font-size: clamp(1.4rem, 2.2vw, 1.75rem); }
+
 .faq-list {
-  max-width: 780px;
+  max-width: 720px;
   margin: 0 auto;
 }
 .faq-item {
@@ -116,21 +167,21 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-md);
-  padding: var(--space-md) 0.2rem;
+  padding: 0.85rem 0.2rem;
   text-align: left;
   font-family: var(--font-display);
-  font-size: 1.08rem;
+  font-size: 0.95rem;
   color: var(--color-black);
 }
 .faq-question .plus {
   flex-shrink: 0;
-  width: 28px; height: 28px;
+  width: 24px; height: 24px;
   border-radius: 50%;
   border: 1px solid var(--color-gray-light);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   transition: transform var(--transition), background-color var(--transition), color var(--transition);
 }
 .faq-item.is-open .faq-question .plus {
@@ -142,12 +193,16 @@
 .faq-answer {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.35s ease, padding var(--transition);
+  transition: max-height 0.25s ease;
 }
-.faq-answer p { padding: 0 0.2rem var(--space-md); opacity: 0.82; font-size: 0.95rem; max-width: 620px; }
-.faq-item.is-open .faq-answer { max-height: 320px; }
+.faq-answer p { padding: 0 0.2rem 1rem; color: #6B6B6B; font-size: 0.88rem; line-height: 1.6; max-width: 620px; }
 
 @media (max-width: 860px) {
   .about-grid, .contact-layout { grid-template-columns: 1fr; }
+}
+@media (max-width: 520px) {
+  .contact-card { padding: 1.5rem 1.25rem; }
+  .contact-actions { flex-direction: column; }
+  .map-wrap, .map-wrap iframe { min-height: 320px; }
   .about-grid { text-align: left; }
 }

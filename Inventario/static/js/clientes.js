@@ -1,10 +1,4 @@
-/**
- * clientes.js
- * Listado de clientes. La cantidad de reservas y la fecha de la última
- * reserva se calculan en vivo a partir de reservas.json (no se guardan
- * como campos fijos) para que siempre reflejen los mismos datos que ven
- * los módulos de Reservas y Cotizaciones.
- */
+// Listado de clientes.
 (function () {
   const tbody = document.getElementById('cli-tbody');
   if (!tbody) return;
@@ -77,7 +71,7 @@
   document.getElementById('cli-tipo').addEventListener('change', (e) => { tipo = e.target.value; renderizar(); });
   document.getElementById('cli-estado').addEventListener('change', (e) => { estado = e.target.value; renderizar(); });
 
-  // ---------- Nuevo cliente (simulado, en memoria) ----------
+  // Nuevo cliente (simulado, en memoria)
   const modal = document.getElementById('modal-nuevo-cliente');
   document.getElementById('btn-nuevo-cliente').addEventListener('click', () => abrirModal(modal));
 

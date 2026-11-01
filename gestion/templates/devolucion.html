@@ -4,15 +4,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Registrar devolución · Panel Entre Platos y Copas</title>
+<title>Devolución · Panel Entre Platos y Copas</title>
 <link rel="icon" href="{% static 'images/logo.jpg' %}">
-<link rel="stylesheet" href="{% static 'css/admin.css' %}">
-<style>
-  .devol-row { display: grid; grid-template-columns: 1.6fr repeat(2, 0.8fr); gap: 0.6rem; align-items: center; padding: 0.7rem 0; border-bottom: 1px solid var(--color-gray-light); }
-  .devol-row.head { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.6; font-weight: 700; }
-  .devol-row input { width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--color-gray-light); text-align: center; }
-  .devol-row.mismatch { background-color: var(--status-danger-bg); border-radius: 8px; }
-</style>
+<link rel="stylesheet" href="{% static 'css/admin.css' %}?v=sidebar-design-2">
+<link rel="stylesheet" href="{% static 'css/operaciones.css' %}?v=12">
+<link rel="stylesheet" href="{% static 'css/cotizacion-detalle.css' %}?v=8">
 </head>
 <body>
 
@@ -55,7 +51,7 @@
         <button class="nav-toggle-admin" id="sidebar-toggle" aria-label="Abrir menú">☰</button>
         <div class="topbar-title">
           <span class="eyebrow">Devoluciones</span>
-          <h1>Registrar devolución</h1>
+          <h1>Detalle de devolución</h1>
         </div>
       </div>
       <div class="topbar-search">
@@ -63,7 +59,6 @@
         <input type="search" id="global-search" placeholder="Buscar productos, clientes, cotizaciones, reservas...">
       </div>
       <div class="topbar-actions">
-        <button class="icon-btn" aria-label="Notificaciones"><span class="dot"></span>🔔</button>
         <div class="topbar-user">
           <div class="user-avatar">HC</div>
           <div class="user-info"><strong>Helen Cortés</strong><span>Administradora</span></div>
@@ -73,31 +68,107 @@
 
     <main class="admin-content">
       <div class="breadcrumb"><a href="{% url 'gestion_devoluciones' %}">← Volver a devoluciones</a></div>
-      <div id="devolucion-form">
 
-<div class="card">
-  <div class="card-head"><div><span class="eyebrow">Devolución</span><h2>{{ devolucion.servicio.codigo }}</h2></div></div>
-  <p><strong>Cliente:</strong> {{ devolucion.servicio.cliente.nombre }} {{ devolucion.servicio.cliente.apellido }}</p>
-  <form method="post" action="{% url 'gestion_devolucion' devolucion.id %}">
-  {% csrf_token %}<input type="hidden" name="accion" value="actualizar_devolucion">
-  <table class="data-table"><thead><tr><th>Artículo</th><th class="cell-num">Devuelta</th><th class="cell-num">Buena</th><th class="cell-num">Dañada</th><th class="cell-num">Pendiente</th></tr></thead><tbody>
-  {% for d in detalles %}
-  <tr><td>{{ d.articulo.nombre }}</td><td><input type="number" name="devuelta_{{ d.id }}" min="0" value="{{ d.cantidad_devuelta }}"></td><td><input type="number" name="buena_{{ d.id }}" min="0" value="{{ d.cantidad_buena }}"></td><td><input type="number" name="danada_{{ d.id }}" min="0" value="{{ d.cantidad_danada }}"></td><td><input type="number" name="pendiente_{{ d.id }}" min="0" value="{{ d.cantidad_pendiente }}"></td></tr>
-  {% empty %}<tr><td colspan="5">Sin detalles.</td></tr>{% endfor %}
-  </tbody></table>
-  <div class="form-field" style="margin-top:1rem;"><label>Observaciones</label><textarea name="observaciones">{{ devolucion.observaciones }}</textarea></div>
-  <button class="btn btn-primary" type="submit">Guardar devolución</button>
-  </form>
-</div>
+      {% for mensaje in messages %}
+      <div class="admin-notice is-{% if mensaje.tags == 'error' %}danger{% else %}success{% endif %}" role="status">{{ mensaje }}</div>
+      {% endfor %}
 
-</div>
+      <div class="card ficha">
+        <div class="ficha__head">
+          <div>
+            <span class="eyebrow">Devolución · {{ servicio.codigo }}</span>
+            <h2>{{ servicio.tipo_servicio|default:"Evento" }} · {{ servicio.cliente.nombre }} {{ servicio.cliente.apellido }}</h2>
+          </div>
+          <div class="card-head-actions">
+            <span class="status-pill is-{{ servicio.clase_estado }}">{{ servicio.get_estado_display }}</span>
+            {% if acepta_devolucion %}<a class="btn btn-primary btn-sm" href="{% url 'gestion_registrar_devolucion' servicio.id %}">Registrar devolución</a>{% endif %}
+            {% if puede_cerrar %}
+            <form method="post" action="{% url 'gestion_reserva' servicio.id %}" data-un-envio>
+              {% csrf_token %}<input type="hidden" name="accion" value="cerrar">
+              <button type="submit" class="btn btn-accent btn-sm" data-texto-cargando="Cerrando..." data-confirmar="La reserva quedará cerrada: no se podrán registrar más devoluciones ni modificar cantidades.">Cerrar reserva</button>
+            </form>
+            {% endif %}
+            <a class="btn btn-outline btn-sm" href="{% url 'gestion_reserva' servicio.id %}">Ver reserva</a>
+          </div>
+        </div>
+        <div class="ficha__cols">
+          <section aria-label="Cliente">
+            <h3 class="ficha__titulo">Cliente</h3>
+            <dl class="ficha__datos">
+              <div><dt>RUT</dt><dd>{{ servicio.cliente.rut_formateado|default:"—" }}</dd></div>
+              <div><dt>Teléfono</dt><dd>{{ servicio.cliente.telefono|default:"—" }}</dd></div>
+              <div class="ancho"><dt>Dirección</dt><dd>{{ servicio.direccion_evento|default:"—" }}{% if servicio.comuna_evento %}, {{ servicio.comuna_evento }}{% endif %}</dd></div>
+            </dl>
+          </section>
+          <section aria-label="Evento y despacho">
+            <h3 class="ficha__titulo">Evento y despacho</h3>
+            <dl class="ficha__datos">
+              <div><dt>Evento</dt><dd>{{ servicio.fecha_evento|date:"d/m/Y"|default:"—" }}</dd></div>
+              <div><dt>Devolución</dt><dd>{{ servicio.fecha_termino|default:servicio.fecha_evento|date:"d/m/Y"|default:"—" }}</dd></div>
+              <div class="ancho"><dt>Salida</dt><dd>{% if despacho %}<a href="{% url 'gestion_despacho_documento' despacho.id %}">{{ despacho.fecha_despacho|date:"d/m/Y H:i" }}</a> · {{ despacho.responsable_entrega|default:"—" }}{% else %}—{% endif %}</dd></div>
+            </dl>
+          </section>
+        </div>
+        <dl class="totales-linea" aria-label="Totales de la devolución">
+          <div><dt>Despachado</dt><dd>{{ totales.despachado }}</dd></div>
+          <div class="is-ok"><dt>Buen estado</dt><dd>{{ totales.buenas }}</dd></div>
+          <div class="{% if totales.merma %}is-merma{% endif %}"><dt>Merma</dt><dd>{{ totales.merma }}</dd></div>
+          <div class="{% if totales.pendiente %}is-pendiente{% endif %}"><dt>Pendiente</dt><dd>{{ totales.pendiente }}</dd></div>
+        </dl>
+      </div>
+
+      <div class="card" style="margin-top:1rem;">
+        <div class="card-head"><div><span class="eyebrow">Acumulado</span><h2>Cantidades por artículo</h2></div></div>
+        <div class="table-wrap">
+          <table class="data-table qty-table">
+            <thead><tr><th>Artículo</th><th class="cell-num">Despachado</th><th class="cell-num">Buen estado</th><th class="cell-num">Merma</th><th class="cell-num">Pendiente</th></tr></thead>
+            <tbody>
+            {% for f in filas %}
+            <tr class="{% if f.pendiente %}is-missing{% else %}is-complete{% endif %}"><td><span class="cell-strong">{{ f.articulo.nombre }}</span><div class="cell-muted">{{ f.articulo.codigo }}</div></td><td class="cell-num">{{ f.despachado }}</td><td class="cell-num">{{ f.buenas }}</td><td class="cell-num">{{ f.danadas|add:f.perdidas }}</td><td class="cell-num faltante">{{ f.pendiente }}</td></tr>
+            {% empty %}<tr><td colspan="5" class="empty-state">Esta reserva no tiene despacho.</td></tr>{% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:1rem;">
+        <div class="card-head"><div><span class="eyebrow">Recepciones</span><h2>Devoluciones registradas ({{ devoluciones|length }})</h2></div></div>
+        {% for d in devoluciones %}
+        <div style="border-top:1px solid var(--color-gray-light);padding:0.8rem 0;">
+          <p><strong>{{ d.fecha_devolucion|date:"d/m/Y H:i" }}</strong> · {% if d.completa %}<span class="status-pill is-success">Completa</span>{% else %}<span class="status-pill is-warning">Parcial</span>{% endif %}
+            <span class="cell-muted"> · Registró {% if d.usuario %}{{ d.usuario.nombre }} {{ d.usuario.apellido }}{% else %}—{% endif %}{% if d.entregado_por %} · Entregó {{ d.entregado_por }}{% endif %}</span></p>
+          <table class="data-table" style="margin-top:0.5rem;"><thead><tr><th>Artículo</th><th class="cell-num">Buen estado</th><th class="cell-num">Merma</th><th class="cell-num">Pendiente después</th><th>Observación</th></tr></thead><tbody>
+          {% for det in d.detalles.all %}<tr><td>{{ det.articulo.nombre }}</td><td class="cell-num">{{ det.cantidad_buena }}</td><td class="cell-num">{{ det.cantidad_danada|add:det.cantidad_perdida }}</td><td class="cell-num">{{ det.cantidad_pendiente }}</td><td>{{ det.observaciones|default:"—" }}</td></tr>{% endfor %}
+          </tbody></table>
+          {% if d.observaciones %}<p class="cell-muted" style="margin-top:0.4rem;">{{ d.observaciones }}</p>{% endif %}
+        </div>
+        {% empty %}<p class="empty-state">Aún no se registran devoluciones.</p>{% endfor %}
+      </div>
+
+      <div class="card" style="margin-top:1rem;">
+        <div class="card-head"><div><span class="eyebrow">Merma</span><h2>Mermas de esta reserva ({{ mermas|length }})</h2></div><a class="link" href="{% url 'gestion_mermas' %}?servicio={{ servicio.codigo|urlencode }}">Ver en mermas</a></div>
+        <table class="data-table"><thead><tr><th>Fecha</th><th>Artículo</th><th>Tipo</th><th class="cell-num">Cantidad</th><th>Usuario</th><th>Estado</th></tr></thead><tbody>
+        {% for m in mermas %}<tr><td>{{ m.fecha|date:"d/m/Y H:i" }}</td><td>{{ m.articulo.nombre }}</td><td>{{ m.get_tipo_display }}</td><td class="cell-num">{{ m.cantidad }}</td><td>{% if m.usuario %}{{ m.usuario.nombre }} {{ m.usuario.apellido }}{% else %}—{% endif %}</td><td>{% if m.anulada %}<span class="status-pill is-danger">Anulada</span>{% elif m.cantidad_reparada %}<span class="status-pill is-info">{{ m.cantidad_reparada }} reparadas</span>{% else %}<span class="status-pill">Vigente</span>{% endif %}</td></tr>
+        {% empty %}<tr><td colspan="6" class="empty-state">Sin mermas.</td></tr>{% endfor %}
+        </tbody></table>
+      </div>
+
+      <div class="card" style="margin-top:1rem;">
+        <div class="card-head"><div><span class="eyebrow">Trazabilidad</span><h2>Historial de la reserva</h2></div></div>
+        <ul class="timeline">
+          {% for h in historial %}
+          <li><time datetime="{{ h.fecha|date:'c' }}">{{ h.fecha|date:"d/m/Y H:i" }}</time><div><strong>{{ h.accion }}</strong><span class="meta">{% if h.usuario %}{{ h.usuario.nombre }} {{ h.usuario.apellido }}{% else %}Sistema{% endif %}{% if h.estado_anterior and h.estado_anterior != h.estado_nuevo %} · {{ h.etiqueta_anterior }} → {{ h.etiqueta_nuevo }}{% endif %}</span>{% if h.observacion %}<div>{{ h.observacion }}</div>{% endif %}</div></li>
+          {% empty %}<li><span class="cell-muted">Sin movimientos registrados.</span></li>{% endfor %}
+        </ul>
+      </div>
     </main>
   </div>
 </div>
 
-<script src="{% static 'js/admin-nav.js' %}"></script>
-<script src="{% static 'js/admin-search.js' %}"></script>
+<script src="{% static 'js/admin-nav.js' %}?v=sidebar-icons-2"></script>
+<script src="{% static 'js/admin-search.js' %}?v=2"></script>
 
-<script src="{% static 'js/gestion-django.js' %}"></script>
+<script src="{% static 'js/gestion-django.js' %}?v=2"></script>
+<script src="{% static 'js/operaciones.js' %}?v=7"></script>
 </body>
 </html>

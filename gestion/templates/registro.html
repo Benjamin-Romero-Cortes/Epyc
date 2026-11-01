@@ -1,0 +1,189 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crear cuenta · Entre Platos y Copas</title>
+<link rel="icon" href="{% static 'images/logo.jpg' %}">
+<link rel="stylesheet" href="{% static 'css/admin.css' %}?v=sidebar-design-2">
+<style>
+  html, body { height: 100%; }
+  html { overflow-x: hidden; }
+  body {
+    display: flex;
+    min-height: 100vh;
+    max-width: 100vw;
+    overflow-x: hidden;
+    background-color: var(--color-black);
+  }
+
+  .login-visual {
+    position: relative;
+    flex: 1.1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: var(--space-lg);
+    background:
+      linear-gradient(180deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.3) 45%, rgba(0,0,0,0.82) 100%),
+      linear-gradient(100deg, rgba(196,18,48,0.35) 0%, rgba(0,0,0,0.1) 40%),
+      url('{% static 'images/montaje-01.jpg' %}') center 55%/cover no-repeat;
+    color: var(--color-white-warm);
+  }
+  .login-visual .visual-copy { max-width: 420px; min-width: 0; }
+  .login-visual .eyebrow {
+    display: inline-block;
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-white-warm);
+    opacity: 0.75;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+  }
+  .login-visual h1 {
+    font-family: var(--font-display);
+    color: var(--color-white-warm);
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    line-height: 1.2;
+    margin-bottom: 0.6rem;
+    max-width: 100%;
+    overflow-wrap: break-word;
+  }
+  .login-visual h1 span { color: var(--color-accent); }
+  .login-visual p {
+    font-size: 0.95rem;
+    opacity: 0.85;
+    max-width: 100%;
+  }
+
+  .login-panel {
+    flex: 1;
+    min-width: 400px;
+    max-width: 552px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-white-warm);
+    padding: var(--space-lg);
+  }
+  .login-form-wrap { width: 100%; max-width: 340px; }
+  .panel-logo { height: 88px; width: auto; margin-bottom: var(--space-md); }
+  .login-form-wrap .eyebrow {
+    display: block;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-accent-dark);
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+  }
+  .login-form-wrap h2 { font-size: 1.5rem; margin-bottom: 0.3rem; }
+  .login-form-wrap p.sub { opacity: 0.65; font-size: 0.86rem; margin-bottom: var(--space-md); }
+
+  .login-remember {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.84rem;
+    color: var(--color-gray-dark);
+    margin: 0.2rem 0 var(--space-md);
+  }
+  .login-remember input { accent-color: var(--color-accent); width: 16px; height: 16px; }
+
+  .password-field { position: relative; }
+  .password-field input { width: 100%; padding-right: 2.6rem; }
+  .toggle-password {
+    position: absolute;
+    right: 0.6rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    color: var(--color-gray-dark);
+    opacity: 0.55;
+    transition: opacity var(--transition);
+  }
+  .toggle-password:hover { opacity: 0.9; }
+  .toggle-password svg { width: 100%; height: 100%; }
+  .toggle-password .icon-eye-off { display: none; }
+  .toggle-password.is-visible .icon-eye { display: none; }
+  .toggle-password.is-visible .icon-eye-off { display: block; }
+
+  .login-alt { margin-top: var(--space-md); padding-top: var(--space-md); border-top: 1px solid var(--color-gray-light); display: grid; gap: 0.6rem; text-align: center; font-size: 0.86rem; color: var(--color-gray-dark); }
+  .login-volver { display: inline-block; margin-top: var(--space-md); font-size: 0.82rem; color: var(--color-gray-dark); opacity: 0.7; text-decoration: none; }
+  .login-volver:hover { opacity: 1; color: var(--color-accent-dark); }
+  .form-field .field-error { display: block; color: var(--color-accent); font-size: 0.76rem; margin-top: 0.25rem; }
+  .form-field .ayuda { display: block; font-size: 0.74rem; opacity: 0.6; margin-top: 0.25rem; }
+  .form-field .optional { opacity: 0.55; font-weight: 400; }
+  .registro-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 0.8rem; }
+  .registro-grid > * { min-width: 0; }
+  .registro-grid input { width: 100%; }
+  .login-error { display: block; margin-bottom: 1rem; color: var(--color-accent); font-size: 0.85rem; font-weight: 600; }
+  /* Formularios altos (registro): el panel se desplaza en vez de cortar la parte superior. */
+  .login-panel { overflow-y: auto; align-items: safe center; }
+  .login-form-wrap { padding: var(--space-sm) 0; }
+  .registro-grid .full { grid-column: 1 / -1; }
+
+  @media (max-width: 860px) {
+    body { flex-direction: column; }
+    .login-visual { min-height: 260px; flex: none; width: 100%; padding: var(--space-md); }
+    .login-visual .visual-copy { max-width: 100%; }
+    .login-visual h1 { font-size: 1.3rem; }
+    .login-panel { width: 100%; max-width: none; min-width: 0; }
+    .login-form-wrap { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="login-visual">
+    <div class="visual-copy">
+      <span class="eyebrow">Entre Platos y Copas</span>
+      <h1>Tu <span>evento</span>, a un clic de distancia.</h1>
+      <p>Revisa tus cotizaciones y reservas, sigue su avance y cotiza más rápido con tus datos guardados.</p>
+    </div>
+  </div>
+
+  <div class="login-panel">
+    <div class="login-form-wrap" style="max-width:380px;">
+      <img src="{% static 'images/logo2.jpg' %}" alt="Entre Platos y Copas" class="panel-logo" style="height:64px;">
+      <span class="eyebrow">Clientes</span>
+      <h2>Crear cuenta</h2>
+      <p class="sub">Con tu cuenta podrás ver el estado de tus reservas y cotizar sin volver a escribir tus datos.</p>
+
+      <form id="form-registro" method="post" action="{% url 'cliente_registro' %}" novalidate>
+{% csrf_token %}
+{% if errores %}<p class="login-error" role="alert">Revisa los campos marcados.</p>{% endif %}
+<div class="registro-grid">
+  <div class="form-field full"><label for="r-nombre">Nombre completo</label><input type="text" id="r-nombre" name="nombre" value="{{ valores.nombre_completo|default:'' }}" required autocomplete="name">{% if errores.nombre %}<span class="field-error">{{ errores.nombre }}</span>{% endif %}</div>
+  <div class="form-field"><label for="r-rut">RUT</label><input type="text" id="r-rut" name="rut" value="{{ valores.rut|default:'' }}" maxlength="12" placeholder="12.345.678-9" required>{% if errores.rut %}<span class="field-error">{{ errores.rut }}</span>{% endif %}</div>
+  <div class="form-field"><label for="r-telefono">Teléfono <span class="optional">(opcional)</span></label><input type="tel" id="r-telefono" name="telefono" value="{{ valores.telefono|default:'' }}" placeholder="+56 9 1234 5678" autocomplete="tel">{% if errores.telefono %}<span class="field-error">{{ errores.telefono }}</span>{% endif %}</div>
+  <div class="form-field full"><label for="r-email">Correo</label><input type="email" id="r-email" name="email" value="{{ valores.email|default:'' }}" required autocomplete="email">{% if errores.email %}<span class="field-error">{{ errores.email }}</span>{% endif %}</div>
+  <div class="form-field full"><label for="r-clave">Contraseña</label><div class="password-field"><input type="password" id="login-clave" name="password" required autocomplete="new-password"><button type="button" class="toggle-password" id="toggle-password" aria-label="Mostrar contraseña">👁</button></div><span class="ayuda">Mínimo 8 caracteres, que no sean solo números.</span>{% if errores.password %}<span class="field-error">{{ errores.password }}</span>{% endif %}</div>
+  <div class="form-field full"><label for="r-clave2">Repite la contraseña</label><input type="password" id="r-clave2" name="password2" required autocomplete="new-password">{% if errores.password2 %}<span class="field-error">{{ errores.password2 }}</span>{% endif %}</div>
+</div>
+<button type="submit" class="btn btn-accent btn-block" style="margin-top:0.4rem;">Crear cuenta</button>
+</form>
+      <div class="login-alt">
+        <span>¿Ya tienes cuenta?</span>
+        <a href="{% url 'gestion_login' %}" class="btn btn-outline btn-block">Iniciar sesión</a>
+      </div>
+      <a href="{% url 'index' %}" class="login-volver">← Volver al sitio</a>
+    </div>
+  </div>
+
+<script>
+const toggleBtn = document.getElementById('toggle-password');
+const claveInput = document.getElementById('login-clave');
+if (toggleBtn && claveInput) toggleBtn.addEventListener('click', () => {
+  claveInput.type = claveInput.type === 'password' ? 'text' : 'password';
+});
+</script>
+</body>
+</html>

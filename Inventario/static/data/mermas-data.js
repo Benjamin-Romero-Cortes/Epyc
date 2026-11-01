@@ -1,4 +1,4 @@
-/* Copia embebida de mermas.json para vistas sin servidor (ver admin-datos.js). */
+// Copia embebida de mermas.json para vistas sin servidor (ver admin-datos.js).
 var MERMAS_DATA = [
   {
     "id": 1,

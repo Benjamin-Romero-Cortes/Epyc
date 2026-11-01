@@ -10,22 +10,36 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
+from email.utils import formataddr
 from pathlib import Path
+
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Las credenciales y la configuración por ambiente viven en .env (nunca en el código).
+load_dotenv(BASE_DIR / ".env")
+
+
+def _bool(nombre, defecto=False):
+    return os.environ.get(nombre, str(defecto)).strip().lower() in ("1", "true", "si", "sí", "yes")
+
 
 # Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-pevg@3z^mfkbn*cf1tx5l22078nb8h+!m*suv((@*u)y+0m34i'
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError("Falta DJANGO_SECRET_KEY: copia .env.example como .env y completa los valores.")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Por defecto apagado: solo se enciende explícitamente en el .env de desarrollo.
+DEBUG = _bool("DJANGO_DEBUG", False)
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = [h.strip() for h in os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if h.strip()]
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",") if o.strip()]
 
 
 # Application definition
@@ -73,22 +87,37 @@ WSGI_APPLICATION = 'Epyc.wsgi.application'
 
 
 # Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres.bummlmlscmqcvgrotofu',
-        'PASSWORD': 'Josebenj@1979.',
-        'HOST': 'aws-0-us-west-2.pooler.supabase.com',
-        'PORT': '5432',
+
+# SQLite por defecto; con DB_ENGINE=postgresql usa PostgreSQL con los datos del .env.
+if os.environ.get("DB_ENGINE", "sqlite").strip().lower() == "postgresql":
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ.get("DB_NAME", ""),
+            "USER": os.environ.get("DB_USER", ""),
+            "PASSWORD": os.environ.get("DB_PASSWORD", ""),
+            "HOST": os.environ.get("DB_HOST", "localhost"),
+            "PORT": os.environ.get("DB_PORT", "5432"),
+
+            "CONN_MAX_AGE": 60,
+            "CONN_HEALTH_CHECKS": True,
+
+            "OPTIONS": {
+                "sslmode": "require",
+                "application_name": "EPYC_Django",
+            },
+        }
     }
-}
-
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 # Password validation
-# https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -107,11 +136,12 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 # Internationalization
-# https://docs.djangoproject.com/en/6.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'es-cl'
 
-TIME_ZONE = 'UTC'
+FORMAT_MODULE_PATH = ['Epyc.formats']
+
+TIME_ZONE = 'America/Santiago'
 
 USE_I18N = True
 
@@ -119,17 +149,43 @@ USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
-STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'Whitenoise.storage.CompressedManifestStaticFileStorage'
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
+}
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'yolo45osea@gmail.com'
-EMAIL_HOST_PASSWORD = 'zbos iowd fbfh cspq'
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+# Remitente de los correos a clientes: el nombre de la empresa con la cuenta de envío.
+EMAIL_FROM_NAME = os.environ.get("EMAIL_FROM_NAME", "Entre Platos y Copas")
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL") or formataddr(
+    (EMAIL_FROM_NAME, EMAIL_HOST_USER or "webmaster@localhost")
+)
+
+
+# Seguridad en producción (DEBUG apagado).
+if not DEBUG:
+    SESSION_COOKIE_SECURE = _bool("DJANGO_SECURE_COOKIES", True)
+    CSRF_COOKIE_SECURE = _bool("DJANGO_SECURE_COOKIES", True)
+    SECURE_SSL_REDIRECT = _bool("DJANGO_SSL_REDIRECT", False)
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY = "same-origin"
+    X_FRAME_OPTIONS = "DENY"
+
+SESSION_COOKIE_HTTPONLY = True
+
+# Errores al registro del servidor (consola), sin mostrar detalles técnicos a quien navega.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "root": {"handlers": ["console"], "level": "WARNING"},
+}

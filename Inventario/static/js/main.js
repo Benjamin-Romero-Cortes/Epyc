@@ -1,15 +1,12 @@
-/**
- * main.js
- * Comportamiento compartido por todas las páginas del sitio:
- * header con sombra al hacer scroll, menú responsive, resaltado
- * del link activo y animaciones de aparición al hacer scroll.
- */
+// Comportamiento compartido por todas las páginas del sitio
 document.addEventListener('DOMContentLoaded', () => {
   initHeaderScroll();
   initMobileNav();
   initActiveNavLink();
   initRevealAnimations();
   initFooterYear();
+  initAvisosFlotantes();
+  initConfirmaciones();
 });
 
 function initHeaderScroll() {
@@ -20,6 +17,22 @@ function initHeaderScroll() {
   };
   onScroll();
   window.addEventListener('scroll', onScroll, { passive: true });
+
+  // El header es sticky y tapa el inicio de las secciones al navegar con anclas (#como-funciona, #faq).
+  const setAnchorOffset = () => {
+    const offset = Math.max(header.offsetHeight - 40, 0);
+    document.documentElement.style.scrollPaddingTop = `${offset}px`;
+  };
+  setAnchorOffset();
+  window.addEventListener('resize', setAnchorOffset);
+
+  // Al llegar desde otra página se corrige el salto al ancla con el offset del header.
+  if (location.hash) {
+    const target = document.getElementById(location.hash.slice(1));
+    if (target) {
+      window.addEventListener('load', () => target.scrollIntoView(), { once: true });
+    }
+  }
 }
 
 function initMobileNav() {
@@ -48,8 +61,7 @@ function initActiveNavLink() {
   const current = window.location.pathname.split('/').pop() || 'index.html';
   document.querySelectorAll('.nav-links a').forEach((link) => {
     const href = link.getAttribute('href');
-    // Los enlaces con ancla (ej. index.html#como-funciona) apuntan a una
-    // sección, no a una página distinta, así que no marcan el nav activo.
+    // Los enlaces con ancla (#como-funciona) no marcan la página como activa.
     if (!href.includes('#') && href === current) {
       link.classList.add('is-active');
     }
@@ -80,4 +92,53 @@ function initRevealAnimations() {
 function initFooterYear() {
   const el = document.querySelector('[data-year]');
   if (el) el.textContent = new Date().getFullYear();
+}
+
+// Los avisos del servidor se muestran unos segundos y se retiran solos.
+function initAvisosFlotantes() {
+  document.querySelectorAll('.aviso-flotante').forEach((aviso, i) => {
+    const cerrar = () => {
+      aviso.classList.add('is-saliendo');
+      window.setTimeout(() => aviso.remove(), 300);
+    };
+    aviso.querySelector('.aviso-flotante__cerrar')?.addEventListener('click', cerrar);
+    window.setTimeout(cerrar, 4500 + i * 600);
+  });
+}
+
+// Botones con data-confirmar piden confirmación en un cuadro propio (en vez del confirm() del navegador).
+function initConfirmaciones() {
+  const dialogo = document.getElementById('confirmar-dialogo');
+  if (!dialogo || typeof dialogo.showModal !== 'function') return;
+  const titulo = dialogo.querySelector('#confirmar-titulo');
+  const texto = dialogo.querySelector('#confirmar-texto');
+  const ok = dialogo.querySelector('#confirmar-ok');
+  let pendiente = null;
+
+  document.querySelectorAll('[data-confirmar]').forEach((boton) => {
+    boton.addEventListener('click', (event) => {
+      if (boton.dataset.confirmado) return;
+      event.preventDefault();
+      pendiente = boton;
+      titulo.textContent = boton.dataset.confirmarTitulo || '¿Confirmas?';
+      texto.textContent = boton.dataset.confirmar;
+      ok.textContent = boton.dataset.confirmarOk || 'Confirmar';
+      ok.classList.toggle('is-peligro', 'confirmarPeligro' in boton.dataset);
+      dialogo.showModal();
+    });
+  });
+
+  // Clic fuera del cuadro = volver.
+  dialogo.addEventListener('click', (event) => {
+    if (event.target === dialogo) dialogo.close('no');
+  });
+
+  dialogo.addEventListener('close', () => {
+    if (dialogo.returnValue === 'si' && pendiente) {
+      pendiente.dataset.confirmado = '1';
+      pendiente.click();
+    }
+    pendiente = null;
+    dialogo.returnValue = '';
+  });
 }

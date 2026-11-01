@@ -4,9 +4,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Iniciar sesión · Panel Entre Platos y Copas</title>
+<title>Iniciar sesión · Entre Platos y Copas</title>
 <link rel="icon" href="{% static 'images/logo.jpg' %}">
-<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+<link rel="stylesheet" href="{% static 'css/admin.css' %}?v=sidebar-design-2">
 <style>
   html, body { height: 100%; }
   html { overflow-x: hidden; }
@@ -115,6 +115,21 @@
   .toggle-password.is-visible .icon-eye { display: none; }
   .toggle-password.is-visible .icon-eye-off { display: block; }
 
+  .login-alt { margin-top: var(--space-md); padding-top: var(--space-md); border-top: 1px solid var(--color-gray-light); display: grid; gap: 0.6rem; text-align: center; font-size: 0.86rem; color: var(--color-gray-dark); }
+  .login-volver { display: inline-block; margin-top: var(--space-md); font-size: 0.82rem; color: var(--color-gray-dark); opacity: 0.7; text-decoration: none; }
+  .login-volver:hover { opacity: 1; color: var(--color-accent-dark); }
+  .form-field .field-error { display: block; color: var(--color-accent); font-size: 0.76rem; margin-top: 0.25rem; }
+  .form-field .ayuda { display: block; font-size: 0.74rem; opacity: 0.6; margin-top: 0.25rem; }
+  .form-field .optional { opacity: 0.55; font-weight: 400; }
+  .registro-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 0.8rem; }
+  .registro-grid > * { min-width: 0; }
+  .registro-grid input { width: 100%; }
+  .login-error { display: block; margin-bottom: 1rem; color: var(--color-accent); font-size: 0.85rem; font-weight: 600; }
+  /* Formularios altos (registro): el panel se desplaza en vez de cortar la parte superior. */
+  .login-panel { overflow-y: auto; align-items: safe center; }
+  .login-form-wrap { padding: var(--space-sm) 0; }
+  .registro-grid .full { grid-column: 1 / -1; }
+
   @media (max-width: 860px) {
     body { flex-direction: column; }
     .login-visual { min-height: 260px; flex: none; width: 100%; padding: var(--space-md); }
@@ -129,9 +144,9 @@
 
   <div class="login-visual">
     <div class="visual-copy">
-      <span class="eyebrow">Panel administrativo</span>
-      <h1>Gestiona cada <span>evento</span> desde un solo lugar.</h1>
-      <p>Inventario, cotizaciones, reservas y despachos de Entre Platos y Copas, siempre a mano.</p>
+      <span class="eyebrow">Entre Platos y Copas</span>
+      <h1>Tu <span>evento</span>, a un clic de distancia.</h1>
+      <p>Revisa tus cotizaciones y reservas, sigue su avance y cotiza más rápido con tus datos guardados.</p>
     </div>
   </div>
 
@@ -140,17 +155,21 @@
       <img src="{% static 'images/logo2.jpg' %}" alt="Entre Platos y Copas" class="panel-logo">
       <span class="eyebrow">Bienvenid@ de nuevo</span>
       <h2>Iniciar sesión</h2>
-      <p class="sub">Ingresa tus credenciales para acceder a la gestión.</p>
+      <p class="sub">Ingresa con el correo y la contraseña de tu cuenta.</p>
 
       <form id="form-login" method="post" action="{% url 'gestion_login' %}">
 {% csrf_token %}
 {% if error %}<p class="field-error" style="display:block;margin-bottom:1rem;">{{ error }}</p>{% endif %}
-<div class="form-field"><label>Correo</label><input type="email" id="login-correo" name="email" required autocomplete="username"></div>
+<div class="form-field"><label>Correo</label><input type="email" id="login-correo" name="email" value="{{ email|default:'' }}" required autocomplete="username"></div>
 <div class="form-field"><label>Contraseña</label><div class="password-field"><input type="password" id="login-clave" name="password" required autocomplete="current-password"><button type="button" class="toggle-password" id="toggle-password" aria-label="Mostrar contraseña">👁</button></div></div>
 <label class="login-remember"><input type="checkbox" name="recordarme"> Recordarme en este equipo</label>
 <button type="submit" class="btn btn-accent btn-block">Iniciar sesión</button>
 </form>
-      <p class="form-hint" style="text-align:center;margin-top:1rem;">Prototipo de frontend — el inicio de sesión es simulado, no hay autenticación real todavía.</p>
+      <div class="login-alt">
+        <span>¿No tienes cuenta?</span>
+        <a href="{% url 'cliente_registro' %}" class="btn btn-outline btn-block">Crear cuenta de cliente</a>
+      </div>
+      <a href="{% url 'index' %}" class="login-volver">← Volver al sitio</a>
     </div>
   </div>
 

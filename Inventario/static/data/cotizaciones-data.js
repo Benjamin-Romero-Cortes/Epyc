@@ -1,4 +1,4 @@
-/* Copia embebida de cotizaciones.json para vistas sin servidor (ver admin-datos.js). */
+// Copia embebida de cotizaciones.json para vistas sin servidor (ver admin-datos.js).
 var COTIZACIONES_DATA = [
   {
     "id": "COT-2026-001",

@@ -1,11 +1,4 @@
-/**
- * preparacion.js
- * Lista de reservas pendientes de preparar, cada una como una orden de
- * preparación desplegable con checklist por producto, barra de
- * progreso y acciones. Marcar productos como preparados actualiza en
- * memoria reserva.productos[].preparado y el estado de la reserva
- * (Confirmada -> En preparación -> Preparada) cuando corresponde.
- */
+// Lista de reservas pendientes de preparar
 (function () {
   const lista = document.getElementById('prep-lista');
   if (!lista) return;

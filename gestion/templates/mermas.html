@@ -6,7 +6,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mermas · Panel Entre Platos y Copas</title>
 <link rel="icon" href="{% static 'images/logo.jpg' %}">
-<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+<link rel="stylesheet" href="{% static 'css/admin.css' %}?v=sidebar-design-2">
+<link rel="stylesheet" href="{% static 'css/operaciones.css' %}?v=22">
 </head>
 <body>
 
@@ -57,7 +58,6 @@
         <input type="search" id="global-search" placeholder="Buscar productos, clientes, cotizaciones, reservas...">
       </div>
       <div class="topbar-actions">
-        <button class="icon-btn" aria-label="Notificaciones"><span class="dot"></span>🔔</button>
         <div class="topbar-user">
           <div class="user-avatar">HC</div>
           <div class="user-info"><strong>Helen Cortés</strong><span>Administradora</span></div>
@@ -70,43 +70,78 @@
         <div>
           <span class="eyebrow">Inventario</span>
           <h1>Registro de mermas</h1>
-          <p>Pérdidas y bajas de inventario, con su reserva de origen cuando corresponde.</p>
+          <p>Unidades dañadas, perdidas o dadas de baja. Una merma no se borra: si hubo un error se anula y el stock se restituye.</p>
         </div>
         <div class="page-head-actions">
           <button class="btn btn-primary" id="btn-nueva-merma">+ Registrar merma</button>
         </div>
       </div>
 
-      <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));">
-        <div class="kpi-card"><span class="kpi-label">Registros totales</span><div class="kpi-value" id="mer-total" style="font-size:1.6rem;">—</div></div>
-        <div class="kpi-card"><span class="kpi-label">Unidades perdidas</span><div class="kpi-value" id="mer-unidades" style="font-size:1.6rem;">—</div></div>
-        <div class="kpi-card"><span class="kpi-label">Costo de reposición</span><div class="kpi-value" id="mer-costo" style="font-size:1.6rem;">—</div></div>
-      </div>
+      {% for mensaje in messages %}
+      <div class="admin-notice is-{% if mensaje.tags == 'error' %}danger{% else %}success{% endif %}" role="status">{{ mensaje }}</div>
+      {% endfor %}
+      {% if errores %}
+      <div class="admin-notice is-danger" role="alert"><strong>{{ errores.0 }}</strong>{% if errores|length > 1 %}<ul>{% for e in errores|slice:"1:" %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}</div>
+      {% endif %}
 
-      <div class="toolbar">
-        <div class="search-field">
-          <span class="icon">🔍</span>
-          <input type="search" id="mer-search" placeholder="Buscar por producto...">
-        </div>
-        <div class="toolbar-filters">
-          <select class="select-filter" id="mer-categoria">
-            <option value="">Todas las categorías</option>
-          </select>
-        </div>
+      <div class="ops-summary">
+        <div><span>Registros vigentes</span><strong>{{ kpis.registros }}</strong></div>
+        <div><span>Unidades en merma</span><strong>{{ kpis.unidades }}</strong></div>
+        <div><span>Valor de reposición</span><strong>${{ kpis.valor|floatformat:0 }}</strong></div>
       </div>
+      {% if kpis.sin_costo %}
+      <p class="admin-notice">{{ kpis.sin_costo }} producto{{ kpis.sin_costo|pluralize }} con merma no tiene{{ kpis.sin_costo|pluralize:"n" }} costo de reposición ni precio cargado y no suma{{ kpis.sin_costo|pluralize:"n" }} al valor. Cárgalo en la ficha del producto (Inventario → editar).</p>
+      {% endif %}
 
-      <p class="result-count" id="mer-result-count"></p>
+      <form class="ops-filters" method="get">
+        <label>Artículo<select name="articulo"><option value="">Todos</option>{% for a in articulos %}<option value="{{ a.id }}" {% if filtros.articulo == a.id|stringformat:"d" %}selected{% endif %}>{{ a.nombre }}</option>{% endfor %}</select></label>
+        <label>Categoría<select name="categoria"><option value="">Todas</option>{% for c in categorias %}<option value="{{ c.id }}" {% if filtros.categoria == c.id|stringformat:"d" %}selected{% endif %}>{{ c.nombre }}</option>{% endfor %}</select></label>
+        <label>Motivo<select name="tipo"><option value="">Todos</option>{% for valor, etiqueta in tipos %}<option value="{{ valor }}" {% if filtros.tipo == valor %}selected{% endif %}>{{ etiqueta }}</option>{% endfor %}</select></label>
+        <label>Desde<input type="date" name="desde" value="{{ filtros.desde }}"></label>
+        <label>Hasta<input type="date" name="hasta" value="{{ filtros.hasta }}"></label>
+        <label>Reserva<input type="search" name="servicio" value="{{ filtros.servicio }}" placeholder="Código"></label>
+        <div class="actions"><a class="btn btn-ghost btn-sm" href="?">Limpiar</a><button type="submit" class="btn btn-accent btn-sm">Filtrar</button></div>
+      </form>
 
       <div class="table-wrap">
-        <table class="data-table">
-          <thead><tr><th>Fecha</th><th>Producto</th><th>Categoría</th><th class="cell-num">Cantidad</th><th>Reserva</th><th class="cell-num">Valor reposición</th><th>Responsable</th></tr></thead>
-          <tbody id="mer-tbody">
-
-{% for merma in mermas %}
-<tr><td>{{ merma.fecha|date:"d/m/Y" }}</td><td>{{ merma.articulo.nombre }}</td><td>{{ merma.articulo.categoria.nombre }}</td><td class="cell-num">{{ merma.cantidad }}</td><td>{% if merma.detalle_devolucion %}{{ merma.detalle_devolucion.devolucion.servicio.codigo }}{% else %}—{% endif %}</td><td class="cell-num">${{ merma.valor_reposicion|floatformat:0 }}</td><td>{% if merma.detalle_devolucion.devolucion.usuario %}{{ merma.detalle_devolucion.devolucion.usuario.nombre }}{% else %}—{% endif %}</td></tr>
-{% empty %}<tr><td colspan="7" class="empty-state">No hay mermas registradas.</td></tr>{% endfor %}
-
-</tbody>
+        <table class="data-table tabla-fina">
+          <thead><tr><th>Fecha</th><th>Artículo</th><th class="cell-num">Cantidad</th><th>Motivo</th><th>Reserva</th><th>Usuario</th><th>Estado</th><th></th></tr></thead>
+          <tbody>
+          {% for m in mermas %}
+          <tr {% if m.anulada %}style="opacity:0.6"{% endif %}>
+            <td class="tabla-fina__fecha">{{ m.fecha|date:"d/m/Y" }}<div class="cell-muted">{{ m.fecha|date:"H:i" }}</div></td>
+            <td><span class="cell-strong">{{ m.articulo.nombre }}</span><div class="cell-muted">{{ m.articulo.categoria.nombre|capfirst }}</div></td>
+            <td class="cell-num"><strong>{{ m.cantidad }}</strong>{% if m.valor %}<div class="cell-muted">${{ m.valor|floatformat:"0g" }}</div>{% endif %}</td>
+            <td>{{ m.get_tipo_display }}{% if m.motivo %}<div class="cell-muted">{{ m.motivo }}</div>{% endif %}{% if m.observaciones %}<div class="cell-muted tabla-fina__nota">“{{ m.observaciones }}”</div>{% endif %}</td>
+            <td>{% if m.servicio %}<a class="tabla-fina__codigo" href="{% url 'gestion_devolucion_servicio' m.servicio.id %}">{{ m.servicio.codigo }}</a>{% else %}<span class="is-suave-texto">Bodega</span>{% endif %}</td>
+            <td class="is-suave-texto">{% if m.usuario %}{{ m.usuario.nombre }} {{ m.usuario.apellido }}{% else %}—{% endif %}</td>
+            <td>
+              {% if m.anulada %}<span class="status-pill is-danger" title="{{ m.motivo_anulacion }}">Anulada</span><div class="cell-muted">{{ m.fecha_anulacion|date:"d/m/Y" }}{% if m.anulada_por %} · {{ m.anulada_por.nombre }}{% endif %}</div>
+              {% elif m.cantidad_reparada %}<span class="status-pill is-info">{{ m.cantidad_reparada }} de {{ m.cantidad }} reparadas</span>
+              {% else %}<span class="status-pill is-warning">Vigente</span>{% endif %}
+            </td>
+            <td>
+              {% if not m.anulada %}
+              <details class="merma-acciones">
+                <summary class="btn btn-outline btn-sm">Corregir</summary>
+                <div class="merma-acciones__panel">
+                  {% if m.pendiente_reparar %}
+                  <form method="post" data-un-envio>{% csrf_token %}<input type="hidden" name="accion" value="reparar"><input type="hidden" name="merma_id" value="{{ m.id }}">
+                    <label>Unidades reparadas<input type="number" name="cantidad" min="1" max="{{ m.pendiente_reparar }}" value="{{ m.pendiente_reparar }}" required></label>
+                    <button type="submit" class="btn btn-primary btn-sm" data-texto-cargando="Guardando...">Registrar reparación</button></form>
+                  {% endif %}
+                  {% if not m.detalle_devolucion_id %}
+                  <form method="post" data-un-envio>{% csrf_token %}<input type="hidden" name="accion" value="anular"><input type="hidden" name="merma_id" value="{{ m.id }}">
+                    <label>Motivo de la anulación<input type="text" name="motivo" maxlength="255" required placeholder="Ej: se registró dos veces"></label>
+                    <button type="submit" class="btn btn-outline btn-sm" data-texto-cargando="Anulando..." data-confirmar="Se anulará la merma y se restituirá el stock. El registro quedará como anulado.">Anular merma</button></form>
+                  {% elif not m.pendiente_reparar %}<p class="cell-muted">Viene de una devolución: corrígela con un ajuste de inventario.</p>{% endif %}
+                </div>
+              </details>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}<tr><td colspan="8" class="empty-state">No hay mermas{% if filtros.articulo or filtros.categoria or filtros.tipo or filtros.desde or filtros.hasta or filtros.servicio %} con esos filtros{% else %} registradas{% endif %}.</td></tr>{% endfor %}
+          </tbody>
         </table>
       </div>
     </main>
@@ -114,33 +149,33 @@
 </div>
 
 <!-- Modal: registrar merma de bodega -->
-<div class="modal-overlay" id="modal-nueva-merma" hidden>
+<div class="modal-overlay" id="modal-nueva-merma" {% if not errores or not datos %}hidden{% endif %}>
   <div class="modal-panel">
     <button class="modal-close" data-close-modal>✕</button>
     <span class="eyebrow" style="color:var(--color-accent-dark);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;font-weight:700;">Mermas</span>
     <h2 style="margin-top:0.2rem;">Registrar merma de bodega</h2>
-    <p class="form-hint" style="margin-top:-0.4rem;">Para pérdidas detectadas en bodega, sin asociar a una reserva o pedido puntual.</p>
+    <p class="form-hint" style="margin-top:-0.4rem;">Para bajas detectadas en bodega o ajustes de inventario. Las mermas de una reserva se registran al recibir su devolución.</p>
 
-    <form id="form-nueva-merma" method="post" action="{% url 'gestion_mermas' %}">
+    <form id="form-nueva-merma" method="post" action="{% url 'gestion_mermas' %}" data-un-envio>
 {% csrf_token %}<input type="hidden" name="accion" value="crear">
 <div class="form-grid" style="margin-top:1rem;">
-  <div class="form-field full"><label>Artículo</label><select name="articulo_id" required>{% for articulo in articulos %}<option value="{{ articulo.id }}">{{ articulo.codigo }} — {{ articulo.nombre }}</option>{% endfor %}</select></div>
-  <div class="form-field"><label>Detalle devolución</label><select name="detalle_devolucion_id"><option value="">Merma de bodega / sin devolución</option>{% for detalle in detalles_devolucion %}<option value="{{ detalle.id }}">{{ detalle.devolucion.servicio.codigo }} — {{ detalle.articulo.nombre }}</option>{% endfor %}</select></div>
-  <div class="form-field"><label>Cantidad</label><input type="number" name="cantidad" min="1" value="1" required></div>
-  <div class="form-field"><label>Tipo</label><input type="text" name="tipo" placeholder="Daño, pérdida..." required></div>
-  <div class="form-field"><label>Fecha</label><input type="datetime-local" name="fecha" required></div>
-  <div class="form-field"><label>Valor reposición</label><input type="number" name="valor_reposicion" min="0" value="0"></div>
-  <div class="form-field full"><label>Motivo</label><input type="text" name="motivo"></div>
-  <div class="form-field full"><label>Observaciones</label><textarea name="observaciones"></textarea></div>
+  <div class="form-field full"><label for="m-articulo">Artículo</label><select id="m-articulo" name="articulo_id" required><option value="">Selecciona un artículo</option>{% for articulo in articulos %}<option value="{{ articulo.id }}" {% if datos.articulo_id == articulo.id|stringformat:"d" %}selected{% endif %}>{{ articulo.codigo }} — {{ articulo.nombre }} (total {{ articulo.stock_total }}, trabajable {{ articulo.stock_trabajable }})</option>{% endfor %}</select></div>
+  <div class="form-field"><label for="m-tipo">Tipo</label><select id="m-tipo" name="tipo" required>{% for valor, etiqueta in tipos %}<option value="{{ valor }}" {% if datos.tipo == valor %}selected{% endif %}>{{ etiqueta }}</option>{% endfor %}</select></div>
+  <div class="form-field"><label for="m-cantidad">Cantidad</label><input type="number" id="m-cantidad" name="cantidad" min="1" step="1" value="{{ datos.cantidad|default:'1' }}" required></div>
+  <div class="form-field"><label for="m-valor">Valor de reposición <span class="optional">(opcional)</span></label><input type="number" id="m-valor" name="valor_reposicion" min="0" step="1" value="{{ datos.valor_reposicion }}" placeholder="Automático: cantidad × valor del producto"></div>
+  <div class="form-field full"><label for="m-motivo">Motivo</label><input type="text" id="m-motivo" name="motivo" maxlength="255" value="{{ datos.motivo }}" required placeholder="Ej: caída en bodega"></div>
+  <div class="form-field full"><label for="m-obs">Observaciones <span class="optional">(opcional)</span></label><textarea id="m-obs" name="observaciones">{{ datos.observaciones }}</textarea></div>
+  <p class="form-hint full">Dañado (recuperable) baja solo el stock trabajable; los demás tipos bajan el stock total y el trabajable.</p>
 </div>
-<div class="modal-actions"><span class="spacer"></span><button type="button" class="btn btn-outline" data-close-modal>Cancelar</button><button type="submit" class="btn btn-primary">Registrar merma</button></div>
+<div class="modal-actions"><span class="spacer"></span><button type="button" class="btn btn-outline" data-close-modal>Cancelar</button><button type="submit" class="btn btn-primary" data-texto-cargando="Registrando..." data-confirmar="La merma se descontará del stock. Si luego necesitas corregirla, deberás anularla.">Registrar merma</button></div>
 </form>
   </div>
 </div>
 
-<script src="{% static 'js/admin-nav.js' %}"></script>
-<script src="{% static 'js/admin-search.js' %}"></script>
+<script src="{% static 'js/admin-nav.js' %}?v=sidebar-icons-2"></script>
+<script src="{% static 'js/admin-search.js' %}?v=2"></script>
 
-<script src="{% static 'js/gestion-django.js' %}"></script>
+<script src="{% static 'js/gestion-django.js' %}?v=2"></script>
+<script src="{% static 'js/operaciones.js' %}?v=7"></script>
 </body>
 </html>

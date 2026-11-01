@@ -1,11 +1,4 @@
-/**
- * reserva-detalle.js
- * Ficha completa de una reserva: datos generales, línea de tiempo del
- * proceso, listado de productos (cantidad/preparado/despachado/
- * devuelto) y una herramienta para agregar productos que valida
- * disponibilidad real para la fecha del evento cruzando todas las
- * demás reservas activas de ese mismo día.
- */
+// Ficha completa de una reserva
 (function () {
   const contenedor = document.getElementById('reserva-detalle');
   if (!contenedor) return;

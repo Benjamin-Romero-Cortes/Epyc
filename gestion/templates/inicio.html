@@ -6,7 +6,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Resumen general · Panel Entre Platos y Copas</title>
 <link rel="icon" href="{% static 'images/logo.jpg' %}">
-<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+<link rel="stylesheet" href="{% static 'css/admin.css' %}?v=sidebar-design-2">
+<style>
+  .ciclo-band { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.6rem; margin: 1rem 0 1.25rem; }
+  .ciclo-cell { display: flex; flex-direction: column; gap: 0.15rem; padding: 0.75rem 0.9rem; background: #fff; border: 1px solid var(--color-gray-light); border-radius: var(--radius-md); color: inherit; text-decoration: none; transition: background-color var(--transition); }
+  .ciclo-cell:hover { background: #f6f6f6; }
+  .ciclo-cell .kpi-value { font-size: 1.35rem; font-weight: 700; }
+  .ciclo-cell .kpi-label { font-size: 0.74rem; opacity: 0.7; }
+  .ciclo-cell.is-alerta { border-color: var(--status-danger); }
+  .ciclo-cell.is-alerta .kpi-label { color: var(--status-danger); opacity: 1; font-weight: 700; }
+</style>
 </head>
 <body>
 
@@ -35,9 +44,6 @@
       <a href="{% url 'gestion_inventario' %}" class="sidebar-link">
         <span class="nav-icon">📦</span>
         <span class="nav-label">Inventario</span>
-        {% if alertas_inventario_count %}
-        <span class="badge-count">{{ alertas_inventario_count }}</span>
-        {% endif %}
       </a>
 
       <a href="{% url 'gestion_cotizaciones' %}" class="sidebar-link">
@@ -114,7 +120,7 @@
         <button class="nav-toggle-admin" id="sidebar-toggle" aria-label="Abrir menú">☰</button>
 
         <div class="topbar-title">
-          <span class="eyebrow">{{ fecha_hoy|date:"l, d \\d\\e F" }}</span>
+          <span class="eyebrow">{{ fecha_hoy_texto }}</span>
           <h1>Resumen general</h1>
         </div>
       </div>
@@ -135,256 +141,148 @@
       </div>
     </header>
 
-    <main class="admin-content">
+    <main class="admin-content dashboard-content">
 
-      <div class="hero-banner">
-        <div>
-          <span class="eyebrow" style="display:block;font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;">
-            Panel de hoy
-          </span>
-
-          <h2>Todo bajo control{% if usuario_nombre %}, {{ usuario_nombre }}{% endif %}.</h2>
-
-          <p>
-            Tienes {{ reservas_activas }} reserva{{ reservas_activas|pluralize:"s" }} activa{{ reservas_activas|pluralize:"s" }},
-            {{ cotizaciones_pendientes }} cotización{{ cotizaciones_pendientes|pluralize:"es" }} pendiente{{ cotizaciones_pendientes|pluralize:"s" }}
-            y {{ alertas_inventario_count }} alerta{{ alertas_inventario_count|pluralize:"s" }} de inventario.
+      <div class="dashboard-intro">
+        <div class="dashboard-intro-copy">
+          <h2 class="dashboard-greeting">Hola{% if usuario_nombre %}, {{ usuario_nombre }}{% endif %}</h2>
+          <p class="dashboard-summary">
+            Hoy tienes {{ entregas_hoy }} entrega{{ entregas_hoy|pluralize }},
+            {{ retiros_hoy }} retiro{{ retiros_hoy|pluralize }}
+            y {{ pendientes_preparar }} pedido{{ pendientes_preparar|pluralize }} por preparar.
           </p>
         </div>
-
-        <a href="{% url 'gestion_cotizaciones' %}?nueva=1" class="btn btn-accent">
+        <a href="{% url 'gestion_cotizaciones' %}?nueva=1" class="btn btn-accent btn-sm">
           + Nueva cotización
         </a>
       </div>
 
-      <div class="kpi-grid">
-
-        <div class="kpi-card">
-          <div class="kpi-top">
-            <span class="kpi-label">Reservas activas</span>
-          </div>
-          <div class="kpi-value">{{ reservas_activas }}</div>
+      <!-- Indicadores principales: una sola franja en vez de tarjetas sueltas -->
+      <section class="kpi-band" aria-label="Indicadores principales">
+        <a class="kpi-cell" href="{% url 'gestion_reservas' %}">
+          <span class="kpi-label">Reservas activas</span>
+          <span class="kpi-value">{{ reservas_activas }}</span>
           <span class="kpi-delta">{{ reservas_proximas_7_dias }} en los próximos 7 días</span>
-        </div>
-
-        <div class="kpi-card">
-          <div class="kpi-top">
-            <span class="kpi-label">Artículos trabajables</span>
-          </div>
-          <div class="kpi-value">{{ articulos_disponibles }}</div>
-          <span class="kpi-delta">{{ articulos_totales }} unidades totales</span>
-        </div>
-
-        <div class="kpi-card">
-          <div class="kpi-top">
-            <span class="kpi-label">Cotizaciones pendientes</span>
-          </div>
-          <div class="kpi-value">{{ cotizaciones_pendientes }}</div>
+        </a>
+        <a class="kpi-cell" href="{% url 'gestion_cotizaciones' %}">
+          <span class="kpi-label">Cotizaciones pendientes</span>
+          <span class="kpi-value">{{ cotizaciones_pendientes }}</span>
           <span class="kpi-delta">{{ cotizaciones_mes }} creadas este mes</span>
-        </div>
-
-        <div class="kpi-card">
-          <div class="kpi-top">
-            <span class="kpi-label">Monto cotizado del mes</span>
+        </a>
+        <a class="kpi-cell" href="{% url 'gestion_cotizaciones' %}">
+          <span class="kpi-label">Monto cotizado del mes</span>
+          <span class="kpi-value">${{ monto_cotizado_mes|floatformat:0 }}</span>
+          <span class="kpi-delta">Total de las cotizaciones del mes</span>
+        </a>
+        <a class="kpi-cell" href="{% url 'gestion_inventario' %}">
+          <span class="kpi-label">Stock disponible</span>
+          <span class="kpi-value">{{ porcentaje_disponible }}%</span>
+          <div class="kpi-meter" role="img" aria-label="{{ porcentaje_disponible }}% del stock disponible">
+            <span style="width: {{ porcentaje_disponible }}%;"></span>
           </div>
-          <div class="kpi-value" style="font-size:1.6rem;">
-            ${{ monto_cotizado_mes|floatformat:0 }}
-          </div>
-          <span class="kpi-delta is-positive">Total de cotizaciones del mes</span>
-        </div>
+          <span class="kpi-delta">{{ articulos_disponibles }} de {{ articulos_totales }} unidades</span>
+        </a>
+      </section>
 
-      </div>
+      <section class="ciclo-band" aria-label="Ciclo operativo">
+        {% for item in ciclo %}
+        <a class="ciclo-cell{% if item.valor and 'atrasadas' in item.etiqueta %} is-alerta{% endif %}" href="{{ item.url }}">
+          <span class="kpi-value">{{ item.valor }}</span>
+          <span class="kpi-label">{% if item.valor and 'atrasadas' in item.etiqueta %}⚠ {% endif %}{{ item.etiqueta }}</span>
+        </a>
+        {% endfor %}
+      </section>
 
-      <div class="section-row">
-
-        <div class="card">
+      <div class="dashboard-grid dashboard-grid--wide">
+        <section class="card">
           <div class="card-head">
             <div>
-              <span class="eyebrow">Agenda</span>
-              <h2>Próximos eventos</h2>
+              <h2>Monto reservado por mes</h2>
+              <p class="card-sub">Reservas confirmadas o realizadas, según el mes del evento</p>
             </div>
-            <a href="{% url 'gestion_reservas' %}" class="link">Ver todos →</a>
+          </div>
+          <div id="chart-ingresos" class="dashboard-chart"></div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <div>
+              <h2>Productos más arrendados</h2>
+              <p class="card-sub">Unidades en reservas confirmadas o realizadas</p>
+            </div>
+          </div>
+          <div id="chart-productos"></div>
+        </section>
+      </div>
+
+      <div class="dashboard-grid">
+        <section class="card">
+          <div class="card-head">
+            <div>
+              <h2>Próximos eventos</h2>
+              <p class="card-sub">Agenda de reservas confirmadas</p>
+            </div>
+            <a href="{% url 'gestion_calendario' %}" class="link">Ver calendario →</a>
           </div>
 
           <div class="stack">
             {% for servicio in proximos_eventos %}
-            <a href="{% url 'gestion_reserva' servicio.id %}" class="list-row" style="text-decoration:none;color:inherit;">
-              <div>
-                <strong>{{ servicio.codigo }}</strong>
-                <div class="cell-muted">
-                  {{ servicio.cliente.nombre }} {{ servicio.cliente.apellido }}
-                  · {{ servicio.tipo_servicio|default:"Evento" }}
-                </div>
+            <a href="{% url 'gestion_reserva' servicio.id %}" class="list-row agenda-row">
+              <div class="list-row-date">
+                <strong>{{ servicio.fecha_evento|date:"d" }}</strong>
+                <span>{{ servicio.fecha_evento|date:"m/y" }}</span>
               </div>
-              <div style="text-align:right;">
-                <strong>{{ servicio.fecha_evento|date:"d/m/Y" }}</strong>
-                <div class="cell-muted">{{ servicio.comuna_evento|default:"Sin comuna" }}</div>
+              <div class="list-row-body">
+                <strong>{{ servicio.cliente.nombre }} {{ servicio.cliente.apellido }}</strong>
+                <span>{{ servicio.tipo_servicio|default:"Evento" }} · {{ servicio.comuna_evento|default:"Sin comuna" }}</span>
               </div>
+              <span class="agenda-code">{{ servicio.codigo }}</span>
             </a>
             {% empty %}
             <p class="empty-state">No hay eventos próximos.</p>
             {% endfor %}
           </div>
-        </div>
+        </section>
 
-        <div class="card">
+        <section class="card dashboard-alerts-card">
           <div class="card-head">
             <div>
-              <span class="eyebrow">Atención</span>
               <h2>Alertas de inventario</h2>
+              <p class="card-sub">Productos sin stock, agotados o con stock bajo</p>
             </div>
+            <a href="{% url 'gestion_inventario' %}" class="link">Ver inventario →</a>
           </div>
 
           <div class="stack">
-            {% for articulo in alertas_inventario %}
-            <a href="{% url 'gestion_producto' articulo.id %}" class="list-row" style="text-decoration:none;color:inherit;">
+            {% for articulo in alertas_inventario|slice:":4" %}
+            <a href="{% url 'gestion_producto' articulo.id %}" class="list-row">
               <div>
                 <strong>{{ articulo.nombre }}</strong>
                 <div class="cell-muted">{{ articulo.codigo }} · {{ articulo.categoria.nombre }}</div>
               </div>
-              <span class="status-pill {% if articulo.stock_trabajable == 0 %}is-danger{% else %}is-warning{% endif %}">
-                {{ articulo.stock_trabajable }} trabajables
+              <span class="status-pill {% if articulo.nivel_stock == 'bajo' %}is-warning{% else %}is-danger{% endif %}">
+                {% if articulo.nivel_stock == "sin-stock" %}Sin stock cargado{% elif articulo.nivel_stock == "agotado" %}Agotado{% else %}{{ articulo.stock_disponible }} disponibles{% endif %}
               </span>
             </a>
             {% empty %}
             <p class="empty-state">No hay alertas de inventario.</p>
             {% endfor %}
           </div>
-
-          <a href="{% url 'gestion_inventario' %}" class="link" style="display:block;margin-top:0.8rem;">
-            Revisar inventario →
-          </a>
-        </div>
-
+          {% if alertas_inventario_count > 4 %}
+          <p class="card-footnote">Y {{ alertas_inventario_count|add:"-4" }} producto{{ alertas_inventario_count|add:"-4"|pluralize }} más con stock bajo.</p>
+          {% endif %}
+        </section>
       </div>
 
-      <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));">
-
-        <div class="kpi-card">
-          <span class="kpi-label">Entregas hoy</span>
-          <div class="kpi-value" style="font-size:1.6rem;">{{ entregas_hoy }}</div>
-        </div>
-
-        <div class="kpi-card">
-          <span class="kpi-label">Retiros hoy</span>
-          <div class="kpi-value" style="font-size:1.6rem;">{{ retiros_hoy }}</div>
-        </div>
-
-        <div class="kpi-card">
-          <span class="kpi-label">Pendientes de preparar</span>
-          <div class="kpi-value" style="font-size:1.6rem;">{{ pendientes_preparar }}</div>
-        </div>
-
-        <div class="kpi-card">
-          <span class="kpi-label">Devoluciones pendientes</span>
-          <div class="kpi-value" style="font-size:1.6rem;">{{ devoluciones_pendientes }}</div>
-        </div>
-
-        <div class="kpi-card">
-          <span class="kpi-label">En mantención</span>
-          <div class="kpi-value" style="font-size:1.6rem;">{{ en_mantencion }}</div>
-        </div>
-
-        <div class="kpi-card">
-          <span class="kpi-label">Registros de merma</span>
-          <div class="kpi-value" style="font-size:1.6rem;">{{ registros_merma }}</div>
-        </div>
-
-      </div>
-
-      <div class="section-row">
-
-        <div class="card">
-          <div class="card-head">
-            <div>
-              <span class="eyebrow">Tendencia</span>
-              <h2>Ingresos por mes</h2>
-            </div>
-          </div>
-
-          <div class="stack">
-            {% for item in ingresos_mensuales %}
-            <div class="list-row">
-              <span>{{ item.mes }}</span>
-              <strong>${{ item.total|floatformat:0 }}</strong>
-            </div>
-            {% empty %}
-            <p class="empty-state">Aún no hay datos de ingresos.</p>
-            {% endfor %}
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-head">
-            <div>
-              <span class="eyebrow">Ranking</span>
-              <h2>Categorías más solicitadas</h2>
-            </div>
-          </div>
-
-          <div class="stack">
-            {% for item in categorias_solicitadas %}
-            <div class="list-row">
-              <span>{{ item.categoria }}</span>
-              <strong>{{ item.cantidad }}</strong>
-            </div>
-            {% empty %}
-            <p class="empty-state">Aún no hay datos.</p>
-            {% endfor %}
-          </div>
-        </div>
-
-      </div>
-
-      <div class="section-row">
-
-        <div class="card">
-          <div class="card-head">
-            <div>
-              <span class="eyebrow">Ranking</span>
-              <h2>Productos más arrendados</h2>
-            </div>
-          </div>
-
-          <div class="stack">
-            {% for item in productos_mas_arrendados %}
-            <div class="list-row">
-              <span>{{ item.nombre }}</span>
-              <strong>{{ item.cantidad }}</strong>
-            </div>
-            {% empty %}
-            <p class="empty-state">Aún no hay datos.</p>
-            {% endfor %}
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-head">
-            <div>
-              <span class="eyebrow">Fidelización</span>
-              <h2>Clientes con más reservas</h2>
-            </div>
-          </div>
-
-          <div class="stack">
-            {% for item in clientes_frecuentes %}
-            <div class="list-row">
-              <span>{{ item.nombre }} {{ item.apellido }}</span>
-              <strong>{{ item.cantidad }}</strong>
-            </div>
-            {% empty %}
-            <p class="empty-state">Aún no hay datos.</p>
-            {% endfor %}
-          </div>
-        </div>
-
-      </div>
-
+      {{ ingresos_mensuales|json_script:"data-ingresos" }}
+      {{ productos_mas_arrendados|json_script:"data-productos" }}
     </main>
   </div>
 </div>
 
-<script src="{% static 'js/admin-nav.js' %}"></script>
-<script src="{% static 'js/admin-search.js' %}"></script>
+<script src="{% static 'js/admin-nav.js' %}?v=sidebar-icons-2"></script>
+<script src="{% static 'js/admin-search.js' %}?v=2"></script>
+<script src="{% static 'js/charts.js' %}"></script>
+<script src="{% static 'js/dashboard-django.js' %}?v=2"></script>
 </body>
 </html>

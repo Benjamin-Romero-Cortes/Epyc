@@ -8,31 +8,35 @@
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/paginas.css' %}">
+<link rel="stylesheet" href="{% static 'css/paginas.css' %}?v=5">
 {% endblock %}
 
 {% block content %}
-<section class="page-hero"><div class="container">
+<section class="page-hero contact-hero"><div class="container">
   <span class="eyebrow">Contacto</span><h1>Conversemos sobre tu evento</h1>
   <p>Escríbenos por el canal que prefieras o visítanos en nuestra dirección.</p>
 </div></section>
 
-<section class="section"><div class="container contact-layout">
+<section class="section contact-section"><div class="container contact-layout">
   <div class="contact-card reveal">
-    <div class="contact-list">
-      <div class="contact-item"><span class="icon">💬</span><div><h4>WhatsApp</h4><a href="https://wa.me/56942058820" target="_blank">+56 9 4205 8820</a></div></div>
-      <div class="contact-item"><span class="icon">✉️</span><div><h4>Correo electrónico</h4><a href="mailto:contacto@entreplatosycopas.cl">contacto@entreplatosycopas.cl</a></div></div>
-      <div class="contact-item"><span class="icon">📞</span><div><h4>Teléfono</h4><a href="tel:+56942058820">+56 9 4205 8820</a></div></div>
-      <div class="contact-item"><span class="icon">📷</span><div><h4>Instagram</h4><a href="https://instagram.com/entreplatosycopas" target="_blank">@entreplatosycopas</a></div></div>
-      <div class="contact-item"><span class="icon">📍</span><div><h4>Dirección</h4><p>Nueva San Martín 233-A, Maipú</p></div></div>
-      <div class="contact-item"><span class="icon">🕒</span><div><h4>Horario de atención</h4><p>Lunes a viernes: 9:30 a 18:30 hrs<br>Sábado: 10:00 a 14:00 hrs</p></div></div>
+    <h2 class="contact-card__title">Datos de contacto</h2>
+    <ul class="contact-list">
+      <li class="contact-item"><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z"/><path d="M9 9.5c.3 1.8 2.6 4.3 4.6 4.8l1.2-1.2 2 .9c-.2 1.2-1.2 2-2.4 1.9-3.4-.4-6.6-3.6-7-7-.1-1.2.7-2.2 1.9-2.4l.9 2z"/></svg></span><div><span class="label">WhatsApp</span><a href="https://wa.me/56942058820" target="_blank" rel="noopener">+56 9 4205 8820</a></div></li>
+      <li class="contact-item"><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3.5h3.5l1.5 4-2.2 1.4a11 11 0 0 0 5.3 5.3l1.4-2.2 4 1.5V17a2 2 0 0 1-2 2A15.5 15.5 0 0 1 3 5.5a2 2 0 0 1 2-2z"/></svg></span><div><span class="label">Teléfono</span><a href="tel:+56942058820">+56 9 4205 8820</a></div></li>
+      <li class="contact-item"><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 6.5l8.5 6.5 8.5-6.5"/></svg></span><div><span class="label">Correo electrónico</span><a href="mailto:contacto@entreplatosycopas.cl">contacto@entreplatosycopas.cl</a></div></li>
+      <li class="contact-item"><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r=".6" fill="currentColor"/></svg></span><div><span class="label">Instagram</span><a href="https://instagram.com/entreplatosycopas" target="_blank" rel="noopener">@entreplatosycopas</a></div></li>
+      <li class="contact-item"><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg></span><div><span class="label">Dirección</span><p>Nueva San Martín 233-A, Maipú</p></div></li>
+      <li class="contact-item"><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></span><div><span class="label">Horario de atención</span><p>Lunes a viernes · 9:30 a 18:30 hrs<br>Sábado · 10:00 a 14:00 hrs</p></div></li>
+    </ul>
+    <div class="contact-actions">
+      <a href="{% url 'cotizador' %}" class="btn btn-accent">Cotizar mi evento</a>
+      <a href="https://wa.me/56942058820" target="_blank" rel="noopener" class="btn btn-outline">Escribir por WhatsApp</a>
     </div>
-    <a href="{% url 'cotizador' %}" class="btn btn-primary btn-block mt-lg">Cotizar mi evento</a>
   </div>
   <div class="map-wrap reveal"><iframe src="https://www.google.com/maps?q=Nueva+San+Mart%C3%ADn+233-A,+Maip%C3%BA,+Regi%C3%B3n+Metropolitana&output=embed" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Ubicación de Entre Platos y Copas"></iframe></div>
 </div></section>
 
-<section class="section section--beige" id="faq"><div class="container">
+<section class="section section--beige faq-section" id="faq"><div class="container">
   <div class="section-header reveal"><span class="eyebrow">Resolvemos tus dudas</span><h2>Preguntas frecuentes</h2></div>
   <div class="faq-list">
     <div class="faq-item"><button class="faq-question" aria-expanded="false">¿Con cuánto tiempo debo reservar?<span class="plus">+</span></button><div class="faq-answer"><p>Recomendamos reservar con al menos 3 a 4 semanas de anticipación, especialmente para matrimonios en temporada alta.</p></div></div>

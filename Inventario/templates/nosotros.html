@@ -8,12 +8,11 @@
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/paginas.css' %}">
+<link rel="stylesheet" href="{% static 'css/paginas.css' %}?v=3">
 {% endblock %}
 
 {% block content %}
-<section class="page-hero"><div class="container"><span class="eyebrow">Nosotros</span><h1>Cercanía y experiencia en cada evento</h1><p>Detrás de cada mesa montada hay un equipo que se preocupa de los detalles.</p></div></section>
-<section class="section"><div class="container about-grid">
+<section class="section" style="padding-top: var(--space-xl);"><div class="container about-grid">
   <img src="{% static 'images/nosotros.jpg' %}" alt="Montaje de mesa" class="about-photo reveal">
   <div class="about-text reveal"><span class="eyebrow">Nuestra historia</span><h2>Hacemos que organizar tu evento sea más simple</h2>
     <p>Entre Platos y Copas nació con un objetivo claro: que arrendar vajilla, cristalería, mobiliario y equipamiento para un evento no sea una fuente de estrés, sino una parte más de la organización que se resuelve con confianza.</p>
@@ -21,7 +20,7 @@
     <p>Más que un servicio de arriendo, buscamos ser un aliado durante todo el proceso.</p>
   </div>
 </div></section>
-<section class="section section--beige"><div class="container">
+<section class="section section--beige section--values"><div class="container">
   <div class="section-header reveal"><span class="eyebrow">Lo que nos representa</span><h2>Nuestros valores</h2></div>
   <div class="values-grid">
     <div class="value-card reveal"><div class="icon">🤝</div><h3>Atención personalizada</h3><p>Cada evento es distinto, por eso escuchamos antes de proponer.</p></div>

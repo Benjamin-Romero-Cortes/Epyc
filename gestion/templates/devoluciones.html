@@ -6,7 +6,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Devoluciones · Panel Entre Platos y Copas</title>
 <link rel="icon" href="{% static 'images/logo.jpg' %}">
-<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+<link rel="stylesheet" href="{% static 'css/admin.css' %}?v=sidebar-design-2">
+<link rel="stylesheet" href="{% static 'css/operaciones.css' %}?v=22">
 </head>
 <body>
 
@@ -57,7 +58,6 @@
         <input type="search" id="global-search" placeholder="Buscar productos, clientes, cotizaciones, reservas...">
       </div>
       <div class="topbar-actions">
-        <button class="icon-btn" aria-label="Notificaciones"><span class="dot"></span>🔔</button>
         <div class="topbar-user">
           <div class="user-avatar">HC</div>
           <div class="user-info"><strong>Helen Cortés</strong><span>Administradora</span></div>
@@ -69,31 +69,62 @@
       <div class="page-head">
         <div>
           <span class="eyebrow">Operación</span>
-          <h1>Reservas pendientes de devolución</h1>
-          <p>Registra lo que vuelve de cada evento: correcto, quebrado, perdido, dañado o a mantención.</p>
+          <h1>Recepción de devoluciones</h1>
+          <p>Recibe los artículos despachados. Lo que vuelve en buen estado se libera; lo dañado o perdido pasa a merma; lo pendiente sigue comprometido.</p>
         </div>
       </div>
 
-      <p class="result-count" id="dev-result-count"></p>
+      {% for mensaje in messages %}
+      <div class="admin-notice is-{% if mensaje.tags == 'error' %}danger{% else %}success{% endif %}" role="status">{{ mensaje }}</div>
+      {% endfor %}
+
+      <div class="ops-chips">
+        {% for valor, etiqueta in estados %}<a href="?estado={{ valor }}" class="{% if filtros.estado == valor %}is-active{% endif %}">{{ etiqueta }}</a>{% endfor %}
+      </div>
+      <form class="ops-filters" method="get">
+        <input type="hidden" name="estado" value="{{ filtros.estado }}">
+        <label class="grow">Cliente, RUT o reserva<input type="search" name="q" value="{{ filtros.q }}" placeholder="Ej: Pedro Soto o 12.345.678-5"></label>
+        <label>Evento desde<input type="date" name="desde" value="{{ filtros.desde }}"></label>
+        <label>Evento hasta<input type="date" name="hasta" value="{{ filtros.hasta }}"></label>
+        <div class="actions"><a class="btn btn-ghost btn-sm" href="?">Limpiar</a><button type="submit" class="btn btn-accent btn-sm">Filtrar</button></div>
+      </form>
+
       <div class="table-wrap">
-        <table class="data-table">
-          <thead><tr><th>Reserva</th><th>Cliente</th><th>Fecha de retiro</th><th class="cell-num">Productos</th><th>Estado</th><th></th></tr></thead>
-          <tbody id="dev-tbody">
-
-{% for devolucion in devoluciones %}
-<tr><td>{{ devolucion.servicio.codigo }}</td><td>{{ devolucion.servicio.cliente.nombre }} {{ devolucion.servicio.cliente.apellido }}</td><td>{{ devolucion.fecha_devolucion|date:"d/m/Y H:i" }}</td><td class="cell-num">{{ devolucion.total_productos|default:"—" }}</td><td>{{ devolucion.servicio.estado }}</td><td><a class="icon-btn" href="{% url 'gestion_devolucion' devolucion.id %}">👁</a></td></tr>
-{% empty %}<tr><td colspan="6" class="empty-state">No hay devoluciones registradas.</td></tr>{% endfor %}
-
-</tbody>
+        <table class="data-table tabla-fina">
+          <thead><tr><th>Reserva</th><th>Cliente</th><th>Evento</th><th>Despacho</th><th class="cell-num">Despachado</th><th class="cell-num">Devuelto</th><th class="cell-num">Merma</th><th class="cell-num">Pendiente</th><th>Estado</th><th></th></tr></thead>
+          <tbody>
+          {% for s in servicios %}
+          <tr>
+            <td><a class="tabla-fina__codigo" href="{% url 'gestion_reserva' s.id %}">{{ s.codigo }}</a></td>
+            <td><span class="cell-strong">{{ s.cliente.nombre }} {{ s.cliente.apellido }}</span><div class="cell-muted">{{ s.cliente.rut_formateado|default:"Sin RUT" }}</div></td>
+            <td class="tabla-fina__fecha">{{ s.fecha_evento|date:"d/m/Y"|default:"—" }}<div class="cell-muted">{{ s.tipo_servicio|default:"Sin tipo de evento" }}</div>{% if s.vencido %}<span class="status-pill is-danger" title="La fecha de término ya pasó y quedan unidades en el cliente">⚠ Vencida</span>{% endif %}</td>
+            <td class="tabla-fina__fecha">{{ s.fecha_salida|date:"d/m/Y"|default:"—" }}<div class="cell-muted">{{ s.fecha_salida|date:"H:i" }}</div></td>
+            <td class="cell-num">{{ s.total_despachado }}</td>
+            <td class="cell-num">{{ s.total_devuelto }}</td>
+            <td class="cell-num{% if s.total_merma %} tabla-fina__alerta{% else %} is-suave-texto{% endif %}">{{ s.total_merma }}</td>
+            <td class="cell-num">{% if s.total_pendiente %}<strong class="tabla-fina__alerta">{{ s.total_pendiente }}</strong>{% else %}<span class="is-suave-texto">0</span>{% endif %}</td>
+            <td><span class="status-pill is-{{ s.clase_estado }}">{{ s.get_estado_display }}</span></td>
+            <td>
+              <div class="table-actions">
+                {% if s.acepta_devolucion %}<a class="btn btn-primary btn-sm" href="{% url 'gestion_registrar_devolucion' s.id %}">Registrar devolución</a>{% endif %}
+                <a class="btn btn-outline btn-sm" href="{% url 'gestion_devolucion_servicio' s.id %}">Ver historial</a>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="10" class="empty-state">No hay reservas{% if filtros.estado or filtros.q or filtros.desde or filtros.hasta %} con esos filtros{% else %} despachadas{% endif %}.</td></tr>
+          {% endfor %}
+          </tbody>
         </table>
       </div>
     </main>
   </div>
 </div>
 
-<script src="{% static 'js/admin-nav.js' %}"></script>
-<script src="{% static 'js/admin-search.js' %}"></script>
+<script src="{% static 'js/admin-nav.js' %}?v=sidebar-icons-2"></script>
+<script src="{% static 'js/admin-search.js' %}?v=2"></script>
 
-<script src="{% static 'js/gestion-django.js' %}"></script>
+<script src="{% static 'js/gestion-django.js' %}?v=2"></script>
+<script src="{% static 'js/operaciones.js' %}?v=7"></script>
 </body>
 </html>

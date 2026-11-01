@@ -6,7 +6,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Detalle de reserva · Panel Entre Platos y Copas</title>
 <link rel="icon" href="{% static 'images/logo.jpg' %}">
-<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+<link rel="stylesheet" href="{% static 'css/admin.css' %}?v=sidebar-design-2">
+<link rel="stylesheet" href="{% static 'css/operaciones.css' %}?v=2">
 </head>
 <body>
 
@@ -57,7 +58,6 @@
         <input type="search" id="global-search" placeholder="Buscar productos, clientes, cotizaciones, reservas...">
       </div>
       <div class="topbar-actions">
-        <button class="icon-btn" aria-label="Notificaciones"><span class="dot"></span>🔔</button>
         <div class="topbar-user">
           <div class="user-avatar">HC</div>
           <div class="user-info"><strong>Helen Cortés</strong><span>Administradora</span></div>
@@ -67,10 +67,36 @@
 
     <main class="admin-content">
       <div class="breadcrumb"><a href="{% url 'gestion_reservas' %}">← Volver a reservas</a></div>
-      <div id="reserva-detalle">
 
+      {% for mensaje in messages %}
+      <div class="admin-notice is-{% if mensaje.tags == 'error' %}danger{% else %}success{% endif %}" role="status">{{ mensaje }}</div>
+      {% endfor %}
+
+      <div id="reserva-detalle">
 <div class="card">
-  <div class="card-head"><div><span class="eyebrow">Servicio</span><h2>{{ servicio.codigo }}</h2></div><span class="status-pill">{{ servicio.estado }}</span></div>
+  <div class="card-head">
+    <div><span class="eyebrow">Servicio</span><h2>{{ servicio.codigo }}</h2></div>
+    <div class="card-head-actions">
+      <span class="status-pill is-{{ servicio.clase_estado }}">{{ servicio.get_estado_display }}</span>
+      {% if puede_generar_preparacion %}
+      <form method="post" action="{% url 'gestion_reserva' servicio.id %}" data-un-envio>
+        {% csrf_token %}<input type="hidden" name="accion" value="generar_preparacion">
+        <button type="submit" class="btn btn-primary btn-sm" data-texto-cargando="Generando...">Generar preparación</button>
+      </form>
+      {% elif preparacion %}
+      <a class="btn btn-outline btn-sm" href="{% url 'gestion_preparacion_documento' preparacion.id %}">Ver preparación ({{ preparacion.get_estado_display|lower }})</a>
+      {% endif %}
+      {% if con_devolucion %}<a class="btn btn-outline btn-sm" href="{% url 'gestion_devolucion_servicio' servicio.id %}">Devolución</a>{% endif %}
+      {% if puede_cerrar %}
+      <form method="post" action="{% url 'gestion_reserva' servicio.id %}" data-un-envio>
+        {% csrf_token %}<input type="hidden" name="accion" value="cerrar">
+        <button type="submit" class="btn btn-accent btn-sm" data-texto-cargando="Cerrando..." data-confirmar="La reserva quedará cerrada: solo se podrá consultar.">Cerrar reserva</button>
+      </form>
+      {% endif %}
+      {% if despacho %}<a class="btn btn-outline btn-sm" href="{% url 'gestion_despacho_documento' despacho.id %}">Ver despacho</a>
+      {% elif servicio.estado == "Preparado" %}<a class="btn btn-primary btn-sm" href="{% url 'gestion_registrar_despacho' servicio.id %}">Registrar despacho</a>{% endif %}
+    </div>
+  </div>
   <div class="detail-grid">
     <div><span class="cell-muted">Cliente</span><strong>{{ servicio.cliente.nombre }} {{ servicio.cliente.apellido }}</strong></div>
     <div><span class="cell-muted">Evento</span><strong>{{ servicio.tipo_servicio|default:"—" }}</strong></div>
@@ -78,7 +104,7 @@
     <div><span class="cell-muted">Inicio</span><strong>{{ servicio.fecha_inicio|date:"d/m/Y"|default:"—" }}</strong></div>
     <div><span class="cell-muted">Término</span><strong>{{ servicio.fecha_termino|date:"d/m/Y"|default:"—" }}</strong></div>
     <div><span class="cell-muted">Total</span><strong>${{ servicio.total|floatformat:0 }}</strong></div>
-    <div class="full"><span class="cell-muted">Dirección</span><strong>{{ servicio.direccion_evento|default:"—" }}, {{ servicio.comuna_evento|default:"" }}</strong></div>
+    <div class="full"><span class="cell-muted">Dirección</span><strong>{{ servicio.direccion_evento|default:"—" }}{% if servicio.comuna_evento %}, {{ servicio.comuna_evento }}{% endif %}</strong></div>
   </div>
 </div>
 <div class="card" style="margin-top:1rem;">
@@ -88,14 +114,31 @@
 </tbody></table>
 </div>
 
+{% if puede_cancelar %}
+<form class="card cancel-box" style="margin-top:1rem;" method="post" action="{% url 'gestion_reserva' servicio.id %}" data-un-envio>
+  {% csrf_token %}<input type="hidden" name="accion" value="cancelar">
+  <div style="flex:1;min-width:220px;"><strong>Cancelar reserva</strong><p class="cell-muted" style="font-size:0.8rem;">Libera el stock comprometido y cancela la preparación, si existe. No se puede deshacer.</p></div>
+  <input type="text" name="motivo" maxlength="255" required placeholder="Motivo de la cancelación" aria-label="Motivo de la cancelación">
+  <button type="submit" class="btn btn-outline btn-sm" data-texto-cargando="Cancelando..." data-confirmar="Se cancelará la reserva {{ servicio.codigo }} y se liberará su stock comprometido.">Cancelar reserva</button>
+</form>
+{% endif %}
+
+<div class="card" style="margin-top:1rem;">
+  <div class="card-head"><div><span class="eyebrow">Trazabilidad</span><h2>Historial</h2></div></div>
+  <ul class="timeline">
+    {% for h in historial %}
+    <li><time datetime="{{ h.fecha|date:'c' }}">{{ h.fecha|date:"d/m/Y H:i" }}</time><div><strong>{{ h.accion }}</strong><span class="meta">{% if h.usuario %}{{ h.usuario.nombre }} {{ h.usuario.apellido }}{% else %}Sistema{% endif %}{% if h.estado_anterior and h.estado_anterior != h.estado_nuevo %} · {{ h.etiqueta_anterior }} → {{ h.etiqueta_nuevo }}{% endif %}</span>{% if h.observacion %}<div>{{ h.observacion }}</div>{% endif %}</div></li>
+    {% empty %}<li><span class="cell-muted">Sin movimientos registrados.</span></li>{% endfor %}
+  </ul>
 </div>
+      </div>
     </main>
   </div>
 </div>
 
-<script src="{% static 'js/admin-nav.js' %}"></script>
-<script src="{% static 'js/admin-search.js' %}"></script>
-<script src="{% static 'js/reserva-detalle.js' %}"></script>
-<script src="{% static 'js/gestion-django.js' %}"></script>
+<script src="{% static 'js/admin-nav.js' %}?v=sidebar-icons-2"></script>
+<script src="{% static 'js/admin-search.js' %}?v=2"></script>
+<script src="{% static 'js/gestion-django.js' %}?v=2"></script>
+<script src="{% static 'js/operaciones.js' %}?v=7"></script>
 </body>
 </html>

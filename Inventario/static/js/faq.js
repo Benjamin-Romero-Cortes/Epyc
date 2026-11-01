@@ -1,10 +1,15 @@
-/**
- * faq.js
- * Acordeón de Preguntas Frecuentes. Cada pregunta abre su propia
- * respuesta sin cerrar las demás, permitiendo comparar varias a la vez.
- */
+// Acordeón de Preguntas Frecuentes.
 document.addEventListener('DOMContentLoaded', () => {
   const items = document.querySelectorAll('.faq-item');
+
+  const setOpen = (item, open) => {
+    item.classList.toggle('is-open', open);
+    const question = item.querySelector('.faq-question');
+    if (question) question.setAttribute('aria-expanded', String(open));
+    // Se anima hasta la altura real para que abrir y cerrar duren lo mismo.
+    const answer = item.querySelector('.faq-answer');
+    if (answer) answer.style.maxHeight = open ? `${answer.scrollHeight}px` : '';
+  };
 
   items.forEach((item) => {
     const question = item.querySelector('.faq-question');
@@ -12,8 +17,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     question.addEventListener('click', () => {
       const isOpen = item.classList.contains('is-open');
-      item.classList.toggle('is-open', !isOpen);
-      question.setAttribute('aria-expanded', String(!isOpen));
+      items.forEach((other) => {
+        if (other !== item) setOpen(other, false);
+      });
+      setOpen(item, !isOpen);
     });
   });
 });

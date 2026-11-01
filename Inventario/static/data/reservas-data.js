@@ -1,4 +1,4 @@
-/* Copia embebida de reservas.json para vistas sin servidor (ver admin-datos.js). */
+// Copia embebida de reservas.json para vistas sin servidor (ver admin-datos.js).
 var RESERVAS_DATA = [
   {
     "id": "RES-0152",

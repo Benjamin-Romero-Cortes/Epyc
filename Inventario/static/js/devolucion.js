@@ -1,12 +1,4 @@
-/**
- * devolucion.js
- * Formulario de registro de devolución por producto: recibidas
- * correctamente y perdidas (quebradas, dañadas o que requieren
- * mantención se registran directamente como perdidas). Verifica en
- * vivo que la suma calce con lo despachado, calcula el costo de
- * reposición de las perdidas y, al finalizar, aplica los movimientos
- * simulados al inventario y cierra la reserva.
- */
+// Formulario de registro de devolución por producto
 (function () {
   const contenedor = document.getElementById('devolucion-form');
   if (!contenedor) return;

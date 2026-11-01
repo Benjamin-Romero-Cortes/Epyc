@@ -8,34 +8,31 @@
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/cotizador.css' %}">
+<link rel="stylesheet" href="{% static 'css/cotizador.css' %}?v=10">
 {% endblock %}
 
 {% block content %}
-<section class="page-hero"><div class="container">
+<div class="quote-backdrop">
+<section class="page-hero page-hero--compact"><div class="container">
   <span class="eyebrow">Cotizador</span><h1>Cotiza tu evento</h1>
   <p>Cuéntanos qué estás organizando y te ayudaremos a preparar una propuesta según tus necesidades.</p>
 </div></section>
 
-<section class="section" style="padding-top: var(--space-lg);"><div class="container">
+<section class="section quote-section"><div class="container">
 <div class="quote-wizard" id="quote-wizard">
 
-{% if error %}
-<div class="form-error-global" style="margin-bottom:1rem;">{{ error }}</div>
-{% endif %}
+<div class="form-error-global" id="quote-error" role="alert" {% if not error %}hidden{% endif %}>{{ error }}</div>
 
-{% if enviado %}
-<div class="wizard-confirmation" id="wizard-confirmation">
+<div class="wizard-confirmation" id="wizard-confirmation" {% if not enviado %}hidden{% endif %}>
   <div class="confirmation-icon">✓</div>
   <h2>¡Recibimos tu solicitud!</h2>
-  <p>Tu solicitud fue registrada con el código <strong>{{ codigo_servicio }}</strong>.</p>
-  <p>Revisaremos los antecedentes de tu evento y nos pondremos en contacto contigo.</p>
+  <p id="wizard-confirmation-text">{{ mensaje|default:"Tu solicitud de cotización fue enviada correctamente. Nos comunicaremos contigo por WhatsApp o correo." }}</p>
   <div class="confirmation-actions">
-    <a href="{{ whatsapp_url }}" class="btn btn-primary" target="_blank" rel="noopener">Continuar por WhatsApp</a>
     <a href="{% url 'index' %}" class="btn btn-outline">Volver al inicio</a>
   </div>
 </div>
-{% else %}
+
+{% if not enviado %}
 
 <div id="wizard-progress" class="progress-track">
   <div class="progress-step is-active" data-step="1"><span class="dot">1</span><span class="label">Tu evento</span></div>
@@ -56,8 +53,8 @@
   <p class="step-intro">Cuéntanos lo básico para entender el contexto de tu celebración.</p>
 
   <div data-field="tipoEvento">
-    <label style="font-size:0.85rem;font-weight:600;">Tipo de evento</label>
-    <div class="option-grid" style="margin-top:0.5rem;">
+    <label class="form-label">Tipo de evento</label>
+    <div class="option-grid">
       <label class="option-card"><input type="radio" name="tipoEvento" value="Matrimonio">Matrimonio</label>
       <label class="option-card"><input type="radio" name="tipoEvento" value="Cumpleaños">Cumpleaños</label>
       <label class="option-card"><input type="radio" name="tipoEvento" value="Evento empresarial">Evento empresarial</label>
@@ -72,7 +69,7 @@
   <div class="form-grid">
     <div class="form-field" data-field="fecha">
       <label for="fecha-evento">Fecha del evento</label>
-      <input type="date" id="fecha-evento" name="fecha" required>
+      <input type="date" id="fecha-evento" name="fecha" min="{% now 'Y-m-d' %}" required>
       <p class="field-error"></p>
     </div>
     <div class="form-field" data-field="invitados">
@@ -87,7 +84,7 @@
     </div>
     <div class="form-field" data-field="despacho">
       <label>¿Requieres despacho?</label>
-      <div class="option-grid" style="grid-template-columns: 1fr 1fr;">
+      <div class="option-grid">
         <label class="option-card"><input type="radio" name="despacho" value="Sí">Sí</label>
         <label class="option-card"><input type="radio" name="despacho" value="No, retiro yo">No, retiro yo</label>
       </div>
@@ -103,13 +100,16 @@
   {% if articulo_preseleccionado %}
     <p class="helper-note"><strong>Artículo seleccionado:</strong> {{ articulo_preseleccionado.nombre }}</p>
   {% endif %}
-  <p class="step-intro">Selecciona las categorías que te interesan.</p>
+  <p class="step-intro">Selecciona las categorías que te interesan o marca "Aún no estoy seguro/a".</p>
 
+  <div data-field="categorias">
   <div class="checkbox-grid">
     {% for categoria in categorias %}
-      <label class="checkbox-card"><input type="checkbox" name="categorias" value="{{ categoria.nombre }}">{{ categoria.nombre }}</label>
+      <label class="checkbox-card"><input type="checkbox" name="categorias" value="{{ categoria.id }}">{{ categoria.etiqueta }}</label>
     {% endfor %}
-    <label class="checkbox-card"><input type="checkbox" name="categorias" value="Aún no estoy seguro/a">Aún no estoy seguro/a</label>
+    <label class="checkbox-card"><input type="checkbox" name="categorias" value="{{ categoria_por_definir }}" data-por-definir>Aún no estoy seguro/a</label>
+  </div>
+  <p class="field-error"></p>
   </div>
 
   <div class="wizard-nav">
@@ -121,9 +121,13 @@
 
 <div class="wizard-step" data-step="3">
   <h2>Tus datos de contacto</h2>
-  <p class="step-intro">Así podremos enviarte tu propuesta y coordinar los siguientes pasos.</p>
+  {% if cliente_cuenta %}
+  <p class="step-intro">Usamos los datos de tu cuenta. Puedes ajustar el teléfono, el correo o la dirección para este evento.</p>
+  {% else %}
+  <p class="step-intro">Solo el nombre y el RUT son obligatorios. ¿Tienes cuenta? <a href="{% url 'gestion_login' %}?next={% url 'cotizador' %}">Inicia sesión</a> para no escribir tus datos.</p>
+  {% endif %}
 
-  <div class="form-grid">
+  <div class="form-grid form-grid--3">
 
     <div class="form-field" data-field="nombre">
       <label for="nombre">Nombre completo</label>
@@ -132,6 +136,7 @@
         id="nombre"
         name="nombre"
         placeholder="Ej: Juan Pérez"
+        {% if cliente_cuenta %}value="{{ cliente_cuenta.nombre }} {{ cliente_cuenta.apellido }}" readonly{% endif %}
         required
       >
       <p class="field-error"></p>
@@ -144,6 +149,7 @@
         id="rut"
         name="rut"
         placeholder="Ej: 12.345.678-9"
+        {% if cliente_cuenta %}value="{{ cliente_cuenta.rut }}" readonly{% endif %}
         maxlength="12"
         required
       >
@@ -151,37 +157,37 @@
     </div>
 
     <div class="form-field" data-field="telefono">
-      <label for="telefono">Teléfono</label>
+      <label for="telefono">Teléfono <span class="optional">(opcional)</span></label>
       <input
         type="tel"
         id="telefono"
         name="telefono"
+        {% if cliente_cuenta %}value="{{ cliente_cuenta.telefono }}"{% endif %}
         placeholder="+56 9 1234 5678"
-        required
       >
       <p class="field-error"></p>
     </div>
 
     <div class="form-field" data-field="correo">
-      <label for="correo">Correo electrónico</label>
+      <label for="correo">Correo electrónico <span class="optional">(opcional)</span></label>
       <input
         type="email"
         id="correo"
         name="correo"
+        {% if cliente_cuenta %}value="{{ cliente_cuenta.email }}"{% endif %}
         placeholder="tucorreo@ejemplo.cl"
-        required
       >
       <p class="field-error"></p>
     </div>
 
     <div class="form-field" data-field="direccion">
-      <label for="direccion">Dirección</label>
+      <label for="direccion">Dirección <span class="optional">(opcional)</span></label>
       <input
         type="text"
         id="direccion"
         name="direccion"
+        {% if cliente_cuenta %}value="{{ cliente_cuenta.direccion }}"{% endif %}
         placeholder="Ej: Av. Pajaritos 1234"
-        required
       >
       <p class="field-error"></p>
     </div>
@@ -201,9 +207,10 @@
 
 </div>
 
+  <div class="form-grid">
   <div data-field="medioContacto">
-    <label style="font-size:0.85rem;font-weight:600;">Medio de contacto preferido</label>
-    <div class="contact-pref-group" style="margin-top:0.5rem;">
+    <label class="form-label">Medio de contacto preferido <span class="optional">(opcional)</span></label>
+    <div class="contact-pref-group">
       <label class="option-card"><input type="radio" name="medioContacto" value="WhatsApp">WhatsApp</label>
       <label class="option-card"><input type="radio" name="medioContacto" value="Correo">Correo</label>
       <label class="option-card"><input type="radio" name="medioContacto" value="Llamada">Llamada</label>
@@ -211,23 +218,25 @@
     <p class="field-error"></p>
   </div>
 
-  <div class="form-field full" data-field="comentarios">
+  <div class="form-field" data-field="comentarios">
     <label for="comentarios">Comentarios adicionales <span class="optional">(opcional)</span></label>
-    <textarea id="comentarios" name="comentarios"></textarea>
+    <textarea id="comentarios" name="comentarios" rows="2"></textarea>
+  </div>
   </div>
 
   <div class="wizard-nav">
     <button type="button" class="btn btn-outline" data-back>Atrás</button>
     <span class="spacer"></span>
-    <button type="submit" class="btn btn-primary" id="btn-submit-quote">Solicitar cotización</button>
+    <button type="submit" class="btn btn-primary" id="btn-submit-quote"><span class="btn-spinner" aria-hidden="true"></span><span class="btn-text">Solicitar cotización</span></button>
   </div>
 </div>
 </form>
 {% endif %}
 </div>
 </div></section>
+</div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/cotizador-django.js' %}"></script>
+<script src="{% static 'js/cotizador-django.js' %}?v=5"></script>
 {% endblock %}

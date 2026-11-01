@@ -6,9 +6,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Clientes · Panel Entre Platos y Copas</title>
 <link rel="icon" href="{% static 'images/logo.jpg' %}">
-<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+<link rel="stylesheet" href="{% static 'css/admin.css' %}?v=clients-edit-1">
+<link rel="stylesheet" href="{% static 'css/operaciones.css' %}?v=22">
 </head>
-<body>
+<body class="clients-page">
 
 <div class="admin-shell">
 
@@ -57,7 +58,6 @@
         <input type="search" id="global-search" placeholder="Buscar productos, clientes, cotizaciones, reservas...">
       </div>
       <div class="topbar-actions">
-        <button class="icon-btn" aria-label="Notificaciones"><span class="dot"></span>🔔</button>
         <div class="topbar-user">
           <div class="user-avatar">HC</div>
           <div class="user-info"><strong>Helen Cortés</strong><span>Administradora</span></div>
@@ -65,7 +65,7 @@
       </div>
     </header>
 
-    <main class="admin-content">
+    <main class="admin-content clients-content">
       <div class="page-head">
         <div>
           <span class="eyebrow">Clientes</span>
@@ -77,29 +77,39 @@
         </div>
       </div>
 
-      <div class="toolbar">
+      {% if request.GET.aviso == "eliminado" %}
+      <div class="admin-notice is-success" role="status">Cliente eliminado correctamente.</div>
+      {% elif request.GET.aviso == "rut-duplicado" %}
+      <div class="admin-notice is-danger" role="alert">Ya existe un cliente con ese RUT. Búscalo en la lista para editarlo.</div>
+      {% elif request.GET.aviso == "con-servicios" %}
+      <div class="admin-notice is-danger" role="alert">No se puede eliminar este cliente porque tiene cotizaciones o reservas asociadas. Puedes marcarlo como inactivo desde su ficha.</div>
+      {% endif %}
+
+      <div class="client-directory">
+      <form class="client-search-panel" id="clientes-filter-form">
         <div class="search-field">
           <span class="icon">🔍</span>
           <input type="search" id="cli-search" placeholder="Buscar por nombre o RUT...">
         </div>
-        <div class="toolbar-filters">
-          <select class="select-filter" id="cli-tipo">
-            <option value="">Particulares y empresas</option>
-            <option value="Particular">Particular</option>
-            <option value="Empresa">Empresa</option>
-          </select>
-          <select class="select-filter" id="cli-estado">
-            <option value="">Todos los estados</option>
-            <option value="Activo">Activo</option>
-            <option value="Prospecto">Prospecto</option>
-          </select>
-        </div>
-      </div>
+        <select class="select-filter" id="cli-estado" aria-label="Filtrar por estado">
+          <option value="">Estado: todos</option>
+          <option value="Activo">Activo</option>
+          <option value="Inactivo">Inactivo</option>
+        </select>
+        <button type="reset" class="btn btn-ghost btn-sm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 2.64-6.36L3 8"/><path d="M3 3v5h5"/></svg>
+          Limpiar
+        </button>
+        <button type="submit" class="btn btn-accent btn-sm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.2 4.2"/></svg>
+          Buscar
+        </button>
+      </form>
 
-      <p class="result-count" id="cli-result-count"></p>
+      <p class="result-count client-search-feedback" id="cli-result-count" aria-live="polite" hidden></p>
 
-      <div class="table-wrap">
-        <table class="data-table">
+      <div class="table-wrap client-table-wrap">
+        <table class="data-table tabla-fina">
           <thead>
             <tr>
               <th>Cliente</th><th>RUT</th><th>Teléfono</th><th>Comuna</th>
@@ -111,20 +121,60 @@
 {% for cliente in clientes %}
 <tr data-cliente data-nombre="{{ cliente.nombre }} {{ cliente.apellido }}" data-rut="{{ cliente.rut }}" data-estado="{% if cliente.activo %}Activo{% else %}Inactivo{% endif %}">
   <td><a class="cell-strong" href="{% url 'gestion_cliente' cliente.id %}">{{ cliente.nombre }} {{ cliente.apellido }}</a><div class="cell-muted">{{ cliente.email }}</div></td>
-  <td>{{ cliente.rut|default:"—" }}</td>
-  <td>{{ cliente.telefono|default:"—" }}</td>
-  <td>{{ cliente.comuna|default:"—" }}</td>
+  <td class="tabla-fina__fecha is-suave">{{ cliente.rut_formateado|default:"—" }}</td>
+  <td class="tabla-fina__fecha">{{ cliente.telefono|default:"—" }}</td>
+  <td class="is-suave-texto">{{ cliente.comuna|default:"—" }}</td>
   <td class="cell-num">{{ cliente.servicios_count|default:"0" }}</td>
-  <td>{{ cliente.ultima_reserva|date:"d/m/Y"|default:"—" }}</td>
+  <td class="tabla-fina__fecha">{{ cliente.ultima_reserva|date:"d/m/Y"|default:"—" }}</td>
   <td><span class="status-pill {% if cliente.activo %}is-success{% else %}is-muted{% endif %}">{% if cliente.activo %}Activo{% else %}Inactivo{% endif %}</span></td>
-  <td><a class="icon-btn" href="{% url 'gestion_cliente' cliente.id %}" title="Ver cliente">👁</a></td>
+  <td>
+    <div class="table-actions">
+      <a class="icon-btn" href="{% url 'gestion_cliente' cliente.id %}" title="Ver cliente">👁</a>
+      <a class="icon-btn icon-btn--edit" href="{% url 'gestion_cliente' cliente.id %}?editar=1" title="Editar cliente" aria-label="Editar cliente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg></a>
+      {% if cliente.servicios_count %}
+      <button type="button" class="icon-btn icon-btn--danger" disabled title="No se puede eliminar: tiene cotizaciones o reservas asociadas" aria-label="Eliminar cliente (no disponible)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M9 7V4h6v3"/></svg></button>
+      {% else %}
+      <form method="post" action="{% url 'gestion_cliente' cliente.id %}" data-confirm-delete="{{ cliente.nombre }} {{ cliente.apellido }}">
+        {% csrf_token %}
+        <input type="hidden" name="accion" value="eliminar">
+        <input type="hidden" name="origen" value="lista">
+        <button type="submit" class="icon-btn icon-btn--danger" title="Eliminar cliente" aria-label="Eliminar cliente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M9 7V4h6v3"/></svg></button>
+      </form>
+      {% endif %}
+    </div>
+  </td>
 </tr>
 {% empty %}
 <tr><td colspan="8" class="empty-state">No hay clientes registrados.</td></tr>
 {% endfor %}
+<tr id="cli-empty-results" hidden>
+  <td colspan="8" class="empty-state">No encontramos clientes con ese criterio.</td>
+</tr>
 
 </tbody>
         </table>
+      </div>
+
+      <footer class="client-pagination" id="cli-pagination">
+        <div class="client-pagination-meta">
+          <label for="cli-page-size">Filas por página</label>
+          <select id="cli-page-size">
+            <option value="5" selected>5</option>
+            <option value="10">10</option>
+            <option value="25">25</option>
+          </select>
+          <span id="cli-page-summary" aria-live="polite"></span>
+        </div>
+        <nav class="client-pagination-controls" aria-label="Páginas de clientes">
+          <button type="button" id="cli-page-previous" aria-label="Página anterior" disabled>
+            <span aria-hidden="true">‹</span>
+          </button>
+          <div class="client-page-numbers" id="cli-page-numbers"></div>
+          <button type="button" id="cli-page-next" aria-label="Página siguiente" disabled>
+            <span aria-hidden="true">›</span>
+          </button>
+        </nav>
+      </footer>
       </div>
     </main>
   </div>
@@ -154,9 +204,10 @@
   </div>
 </div>
 
-<script src="{% static 'js/admin-nav.js' %}"></script>
-<script src="{% static 'js/admin-search.js' %}"></script>
+<script src="{% static 'js/admin-nav.js' %}?v=sidebar-icons-2"></script>
+<script src="{% static 'js/admin-search.js' %}?v=2"></script>
 
-<script src="{% static 'js/gestion-django.js' %}"></script>
+<script src="{% static 'js/clientes-django.js' %}?v=rut-search-1"></script>
+<script src="{% static 'js/clientes-eliminar.js' %}?v=3"></script>
 </body>
 </html>

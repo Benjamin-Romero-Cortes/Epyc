@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Mi cuenta · Entre Platos y Copas{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/cuenta.css' %}?v=4">
+{% endblock %}
+
+{% block content %}
+<section class="cuenta-hero" style="--foto: url('{% static 'images/montaje-01.jpg' %}');">
+  <div class="container cuenta__contenedor cuenta-hero__inner">
+    <div class="cuenta-hero__perfil">
+      <span class="avatar" aria-hidden="true">{{ iniciales }}</span>
+      <div>
+        <span class="cuenta-hero__eyebrow">Mi cuenta</span>
+        <h1>Hola, {{ cliente.nombre }}</h1>
+        <p>Cliente desde {{ cliente.fecha_registro|default:cliente.fecha_creacion|date:"F \d\e Y" }}</p>
+      </div>
+    </div>
+    <div class="cuenta-hero__acciones">
+      <a href="{% url 'cotizador' %}" class="btn btn-accent">+ Cotizar un evento</a>
+      <form method="post" action="{% url 'cliente_logout' %}">{% csrf_token %}<button type="submit" class="btn btn-ghost-claro">Cerrar sesión</button></form>
+    </div>
+    <dl class="cuenta-hero__stats">
+      <div>
+        <dt>Próximo evento</dt>
+        <dd>{% if proximo %}{% if proximo.dias_restantes == 0 %}¡Hoy!{% elif proximo.dias_restantes == 1 %}Mañana{% else %}En {{ proximo.dias_restantes }} días{% endif %}{% else %}—{% endif %}</dd>
+      </div>
+      <div><dt>Solicitudes en curso</dt><dd>{{ resumen.en_curso }}</dd></div>
+      <div><dt>Reservas confirmadas</dt><dd>{{ resumen.confirmadas }}</dd></div>
+      <div><dt>Eventos realizados</dt><dd>{{ resumen.realizados }}</dd></div>
+    </dl>
+  </div>
+</section>
+
+<section class="cuenta cuenta--panel">
+  <div class="container cuenta__contenedor">
+
+
+    <div class="cuenta__grid">
+      <div class="cuenta__principal">
+
+        {% if proximo %}
+        <a class="proximo" href="{% url 'cliente_reserva' proximo.id %}">
+          <div class="proximo__fecha">
+            <span>{{ proximo.fecha_evento|date:"l"|capfirst }}</span>
+            <strong>{{ proximo.fecha_evento|date:"d" }}</strong>
+            <span>{{ proximo.fecha_evento|date:"F Y"|capfirst }}</span>
+          </div>
+          <div class="proximo__cuerpo">
+            <span class="cuenta__eyebrow">Tu próximo evento</span>
+            <h2>{{ proximo.tipo_servicio|default:"Evento" }}{% if proximo.cantidad_personas %} · {{ proximo.cantidad_personas }} invitados{% endif %}</h2>
+            <p>{{ proximo.direccion_evento|default:"Dirección por confirmar" }}{% if proximo.comuna_evento %}, {{ proximo.comuna_evento }}{% endif %} · {% if proximo.requiere_despacho %}Despacho a domicilio{% else %}Retiro en bodega{% endif %}</p>
+            {% if proximo.etapas %}
+            <ol class="etapas etapas--mini" aria-label="Avance">
+              {% for e in proximo.etapas %}<li class="{% if e.hecha %}is-hecha{% elif e.actual %}is-actual{% endif %}"><span class="etapas__punto" aria-hidden="true">{% if e.hecha %}✓{% else %}{{ forloop.counter }}{% endif %}</span><span>{{ e.nombre }}</span></li>{% endfor %}
+            </ol>
+            {% endif %}
+          </div>
+          <div class="proximo__lado">
+            <span class="estado estado--{{ proximo.clase_publica }}">{{ proximo.estado_publico }}</span>
+            {% if proximo.es_reserva and proximo.total %}<strong>${{ proximo.total|floatformat:"0g" }}</strong>{% endif %}
+            <span class="proximo__ver">Ver detalle →</span>
+          </div>
+        </a>
+        {% endif %}
+
+        <div class="pestanas" role="tablist" aria-label="Mis solicitudes">
+          <button type="button" role="tab" class="is-activa" aria-selected="true" data-pestana="curso">En curso <span>{{ en_curso|length }}</span></button>
+          <button type="button" role="tab" aria-selected="false" data-pestana="historial">Historial <span>{{ historial|length }}</span></button>
+        </div>
+
+        <div data-panel="curso">
+          {% for s in en_curso %}{% include "cuenta-tarjeta.html" %}
+          {% empty %}
+          <div class="bienvenida">
+            <h3>Organiza tu primer evento con nosotros</h3>
+            <p>Así funciona:</p>
+            <ol class="pasos">
+              <li><span>1</span><strong>Cotiza en línea</strong><em>Cuéntanos la fecha, los invitados y lo que necesitas.</em></li>
+              <li><span>2</span><strong>Recibe tu propuesta</strong><em>Te contactamos con los artículos y el valor.</em></li>
+              <li><span>3</span><strong>Confirmamos y entregamos</strong><em>Sigue aquí el avance hasta el día del evento.</em></li>
+            </ol>
+            <div class="bienvenida__acciones">
+              <a href="{% url 'cotizador' %}" class="btn btn-accent">Cotizar mi primer evento</a>
+              <a href="{% url 'catalogo' %}" class="btn btn-outline">Ver catálogo</a>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div data-panel="historial" hidden>
+          {% for s in historial %}{% include "cuenta-tarjeta.html" %}
+          {% empty %}<p class="cuenta__vacio-texto">Aquí aparecerán tus eventos finalizados o cancelados.</p>{% endfor %}
+        </div>
+      </div>
+
+      <aside class="cuenta__lateral">
+        <div class="perfil">
+          <div class="perfil__cabeza">
+            <span class="avatar avatar--chico" aria-hidden="true">{{ iniciales }}</span>
+            <div><strong>{{ cliente.nombre }} {{ cliente.apellido }}</strong><span>RUT {{ cliente.rut_formateado }}</span></div>
+          </div>
+          <ul class="perfil__datos">
+            <li><span aria-hidden="true">✉</span>{{ cliente.email }}</li>
+            <li><span aria-hidden="true">☎</span>{{ cliente.telefono|default:"Sin teléfono" }}</li>
+            <li><span aria-hidden="true">⌂</span>{% if cliente.direccion %}{{ cliente.direccion }}{% if cliente.comuna %}, {{ cliente.comuna }}{% endif %}{% else %}Sin dirección{% endif %}</li>
+          </ul>
+
+          {# name="perfil-edicion": al abrir un panel, el navegador cierra el otro (acordeón). #}
+          <details class="plegable" name="perfil-edicion" {% if abrir == "datos" and errores %}open{% endif %}>
+            <summary>
+              <span class="plegable__icono" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg></span>
+              Editar mis datos
+            </summary>
+            <form method="post" class="cuenta__form" novalidate>
+              {% csrf_token %}<input type="hidden" name="accion" value="datos">
+              <div class="campo{% if errores.telefono %} is-error{% endif %}">
+                <label for="c-telefono">Teléfono</label>
+                <div class="campo__control">
+                  <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>
+                  <input type="tel" id="c-telefono" name="telefono" value="{{ cliente.telefono }}" placeholder="+56 9 1234 5678" autocomplete="tel">
+                </div>
+                {% if errores.telefono %}<span class="campo-error">{{ errores.telefono }}</span>{% endif %}
+              </div>
+              <div class="campo">
+                <label for="c-direccion">Dirección</label>
+                <div class="campo__control">
+                  <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>
+                  <input type="text" id="c-direccion" name="direccion" value="{{ cliente.direccion }}" maxlength="255" placeholder="Calle y número" autocomplete="street-address">
+                </div>
+              </div>
+              <div class="campo">
+                <label for="c-comuna">Comuna</label>
+                <div class="campo__control">
+                  <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg>
+                  <input type="text" id="c-comuna" name="comuna" value="{{ cliente.comuna }}" maxlength="100" placeholder="Ej: Maipú">
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary btn-block">Guardar cambios</button>
+              <p class="cuenta__nota">Para cambiar tu nombre, RUT o correo, escríbenos.</p>
+            </form>
+          </details>
+
+          <details class="plegable" name="perfil-edicion" {% if abrir == "clave" and errores %}open{% endif %}>
+            <summary>
+              <span class="plegable__icono" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+              Cambiar contraseña
+            </summary>
+            <form method="post" class="cuenta__form" novalidate>
+              {% csrf_token %}<input type="hidden" name="accion" value="clave">
+              {% for campo, etiqueta, auto in campos_clave %}
+              <div class="campo{% if campo in errores %} is-error{% endif %}">
+                <label for="c-{{ campo }}">{{ etiqueta }}</label>
+                <div class="campo__control">
+                  <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                  <input type="password" id="c-{{ campo }}" name="{{ campo }}" autocomplete="{{ auto }}" required>
+                  <button type="button" class="campo__ver" data-ver-clave aria-label="Mostrar contraseña" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </div>
+                {% for clave, mensaje in errores.items %}{% if clave == campo %}<span class="campo-error">{{ mensaje }}</span>{% endif %}{% endfor %}
+                {% if campo == "nueva" %}<span class="campo-ayuda">Mínimo 8 caracteres, que no sean solo números.</span>{% endif %}
+              </div>
+              {% endfor %}
+              <button type="submit" class="btn btn-primary btn-block">Actualizar contraseña</button>
+            </form>
+          </details>
+        </div>
+
+        <div class="ayuda-card">
+          <strong>¿Necesitas ayuda?</strong>
+          <p>Escríbenos para cambiar una reserva, agregar artículos o resolver dudas.</p>
+          <a href="https://wa.me/56942058820?text=Hola%2C%20soy%20{{ cliente.nombre|urlencode }}%20y%20tengo%20una%20consulta" target="_blank" rel="noopener" class="btn btn-whatsapp btn-sm">Escribir por WhatsApp</a>
+          <a href="mailto:contacto@entreplatosycopas.cl" class="ayuda-card__mail">contacto@entreplatosycopas.cl</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Acordeón del perfil: si el navegador no soporta <details name>, se cierra el otro a mano.
+  document.querySelectorAll('details[name="perfil-edicion"]').forEach((panel, _, todos) => {
+    panel.addEventListener('toggle', () => {
+      if (panel.open) todos.forEach((otro) => { if (otro !== panel) otro.open = false; });
+    });
+  });
+
+  // Mostrar u ocultar contraseña
+  document.querySelectorAll('[data-ver-clave]').forEach((boton) => {
+    boton.addEventListener('click', () => {
+      const input = boton.parentElement.querySelector('input');
+      const visible = input.type === 'password';
+      input.type = visible ? 'text' : 'password';
+      boton.setAttribute('aria-pressed', visible);
+      boton.setAttribute('aria-label', visible ? 'Ocultar contraseña' : 'Mostrar contraseña');
+    });
+  });
+
+  // Pestañas "En curso" / "Historial"
+  document.querySelectorAll('[data-pestana]').forEach((boton) => {
+    boton.addEventListener('click', () => {
+      document.querySelectorAll('[data-pestana]').forEach((b) => {
+        const activa = b === boton;
+        b.classList.toggle('is-activa', activa);
+        b.setAttribute('aria-selected', activa);
+        document.querySelector(`[data-panel="${b.dataset.pestana}"]`).hidden = !activa;
+      });
+    });
+  });
+</script>
+{% endblock %}

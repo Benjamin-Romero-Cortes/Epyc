@@ -1,9 +1,4 @@
-/**
- * reservas.js
- * Listado de reservas con filtros por estado y accesos rápidos a
- * próximas entregas/retiros (relativos a la fecha de referencia del
- * panel, 2026-08-19).
- */
+// Listado de reservas con filtros por estado y accesos rápidos a próximas entregas/retiros
 (function () {
   const tbody = document.getElementById('res-tbody');
   if (!tbody) return;

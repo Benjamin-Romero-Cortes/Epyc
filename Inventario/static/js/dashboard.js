@@ -1,10 +1,4 @@
-/**
- * dashboard.js
- * Arma el Resumen general a partir de los datos demostrativos. La fecha
- * "de hoy" del panel se fija en 2026-08-19 (en vez de la fecha real del
- * sistema) para que las operaciones del día, entregas y retiros calcen
- * de forma realista con las reservas de ejemplo.
- */
+// Arma el Resumen general a partir de los datos demostrativos.
 (function () {
   const dashboard = document.getElementById('proximos-eventos');
   if (!dashboard) return;

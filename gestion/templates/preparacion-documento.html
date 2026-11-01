@@ -6,7 +6,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hoja de preparación · Panel Entre Platos y Copas</title>
 <link rel="icon" href="{% static 'images/logo.jpg' %}">
-<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+<link rel="stylesheet" href="{% static 'css/admin.css' %}?v=sidebar-design-2">
+<link rel="stylesheet" href="{% static 'css/operaciones.css' %}?v=7">
+<link rel="stylesheet" href="{% static 'css/cotizacion-detalle.css' %}?v=5">
 </head>
 <body>
 
@@ -56,35 +58,145 @@
 
     <main class="admin-content">
       <div class="breadcrumb no-print"><a href="{% url 'gestion_preparacion' %}">← Volver a preparación de pedidos</a></div>
-      <div class="toolbar no-print" style="justify-content:flex-start;">
-        <button class="btn btn-outline btn-sm" onclick="window.print()">🖨 Imprimir / Guardar como PDF</button>
-        <span class="cell-muted" style="font-size:0.82rem;">Se genera una hoja por categoría, sin precios, para repartir entre el personal.</span>
+
+      {% for mensaje in messages %}
+      <div class="admin-notice no-print is-{% if mensaje.tags == 'error' %}danger{% else %}success{% endif %}" role="status">{{ mensaje }}</div>
+      {% endfor %}
+      {% if errores %}
+      <div class="admin-notice no-print is-danger" role="alert">
+        <strong>{{ errores.0 }}</strong>
+        {% if errores|length > 1 %}<ul>{% for e in errores|slice:"1:" %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
       </div>
-      <div id="preparacion-doc">
+      {% endif %}
 
-<div class="card">
-  <div class="card-head"><div><span class="eyebrow">Preparación</span><h2>{{ preparacion.servicio.codigo }}</h2></div><button class="btn btn-outline btn-sm no-print" onclick="window.print()">Imprimir</button></div>
-  <p><strong>Cliente:</strong> {{ preparacion.servicio.cliente.nombre }} {{ preparacion.servicio.cliente.apellido }}</p>
-  <p><strong>Fecha evento:</strong> {{ preparacion.servicio.fecha_evento|date:"d/m/Y"|default:"—" }}</p>
-  <p><strong>Estado:</strong> {{ preparacion.estado }}</p>
-  <form method="post" action="{% url 'gestion_preparacion_documento' preparacion.id %}">
-  {% csrf_token %}<input type="hidden" name="accion" value="actualizar_preparacion">
-  <table class="data-table"><thead><tr><th>Artículo</th><th class="cell-num">Solicitado</th><th class="cell-num">Preparado</th></tr></thead><tbody>
-  {% for d in detalles %}<tr><td>{{ d.articulo.nombre }}</td><td class="cell-num">{{ d.cantidad_solicitada }}</td><td class="cell-num"><input type="number" name="preparado_{{ d.id }}" min="0" max="{{ d.cantidad_solicitada }}" value="{{ d.cantidad_preparada }}" style="width:90px;"></td></tr>
-  {% empty %}<tr><td colspan="3">Sin detalles.</td></tr>{% endfor %}
-  </tbody></table>
-  <div class="form-field no-print" style="margin-top:1rem;"><label>Observaciones</label><textarea name="observaciones">{{ preparacion.observaciones }}</textarea></div>
-  <button class="btn btn-primary no-print" type="submit">Guardar preparación</button>
-  </form>
-</div>
+      <div class="no-print">
+      <div class="card ficha">
+        <div class="ficha__head">
+          <div>
+            <span class="eyebrow">Preparación · {{ servicio.codigo }}</span>
+            <h2>{{ servicio.tipo_servicio|default:"Evento" }} · {{ servicio.cliente.nombre }} {{ servicio.cliente.apellido }}</h2>
+          </div>
+          <div class="card-head-actions">
+            <span class="status-pill is-{{ preparacion.clase_estado }}">{% if preparacion.estado == "Completa" %}Preparado{% else %}{{ preparacion.get_estado_display }}{% endif %}</span>
+            {% if despacho %}<a class="btn btn-outline btn-sm" href="{% url 'gestion_despacho_documento' despacho.id %}">Ver despacho</a>
+            {% elif servicio.estado == "Preparado" %}<a class="btn btn-primary btn-sm" href="{% url 'gestion_registrar_despacho' servicio.id %}">Registrar despacho</a>{% endif %}
+          </div>
+        </div>
 
-</div>
+        <div class="ficha__cols">
+          <section aria-label="Cliente">
+            <h3 class="ficha__titulo">Cliente</h3>
+            <dl class="ficha__datos">
+              <div><dt>RUT</dt><dd>{{ servicio.cliente.rut_formateado|default:"—" }}</dd></div>
+              <div><dt>Teléfono</dt><dd>{{ servicio.cliente.telefono|default:"—" }}</dd></div>
+              <div class="ancho"><dt>Correo</dt><dd>{{ servicio.cliente.email|default:"—" }}</dd></div>
+            </dl>
+          </section>
+          <section aria-label="Evento">
+            <h3 class="ficha__titulo">Evento y entrega</h3>
+            <dl class="ficha__datos">
+              <div><dt>Fecha</dt><dd>{{ servicio.fecha_evento|date:"d/m/Y"|default:"—" }}</dd></div>
+              <div><dt>Invitados</dt><dd>{{ servicio.cantidad_personas|default:"—" }}</dd></div>
+              <div><dt>Entrega</dt><dd>{% if servicio.requiere_despacho %}Despacho{% else %}Retiro en bodega{% endif %}</dd></div>
+              <div><dt>Responsable</dt><dd>{% if preparacion.usuario %}{{ preparacion.usuario.nombre }} {{ preparacion.usuario.apellido }}{% else %}—{% endif %}</dd></div>
+              <div class="ancho"><dt>Dirección</dt><dd>{{ servicio.direccion_evento|default:"—" }}{% if servicio.comuna_evento %}, {{ servicio.comuna_evento }}{% endif %}</dd></div>
+            </dl>
+          </section>
+        </div>
+        {% if servicio.comentarios %}<div class="ficha__notas"><p><strong>Comentarios del cliente:</strong> {{ servicio.comentarios }}</p></div>{% endif %}
+        <p class="ficha__pie">{{ detalles|length }} artículo{{ detalles|length|pluralize }} · {{ resumen.requeridas }} unidades · {{ por_categoria|length }} hoja{{ por_categoria|length|pluralize }} por categoría · creada el {{ preparacion.fecha_creacion|date:"d/m/Y H:i" }}{% if preparacion.fecha_finalizacion %} · preparada el {{ preparacion.fecha_finalizacion|date:"d/m/Y H:i" }}{% endif %}</p>
+      </div>
+
+      <form class="card" style="margin-top:1rem;" method="post" action="{% url 'gestion_preparacion_documento' preparacion.id %}" data-un-envio>
+        {% csrf_token %}
+        <div class="card-head">
+          <div><span class="eyebrow">Pedido</span><h2>Artículos a preparar</h2></div>
+          <button type="button" class="btn btn-outline btn-sm" data-imprimir-hojas>🖨 Imprimir hojas por categoría</button>
+        </div>
+        <div class="table-wrap">
+        <table class="data-table pedido-tabla">
+          <thead><tr><th>Artículo</th><th>Código</th><th class="cell-num">Cantidad</th></tr></thead>
+          {% for g in por_categoria %}
+          <tbody>
+            <tr class="pedido-tabla__grupo">
+              <th colspan="2">{{ g.etiqueta }} <span>{{ g.detalles|length }} artículo{{ g.detalles|length|pluralize }} · {{ g.unidades }} u.</span></th>
+              <th class="cell-num"><button type="button" class="pedido-tabla__imprimir" data-imprimir-hoja="{{ g.id }}" title="Imprimir solo la hoja de {{ g.etiqueta }}">🖨 Imprimir hoja</button></th>
+            </tr>
+            {% for d in g.detalles %}
+            <tr><td><span class="cell-strong">{{ d.articulo.nombre }}</span>{% if d.observaciones %}<div class="cell-muted">{{ d.observaciones }}</div>{% endif %}</td><td class="cell-muted">{{ d.articulo.codigo }}</td><td class="cell-num"><strong>{{ d.cantidad_solicitada }}</strong></td></tr>
+            {% endfor %}
+          </tbody>
+          {% empty %}<tbody><tr><td colspan="3" class="empty-state">Sin artículos.</td></tr></tbody>{% endfor %}
+        </table>
+        </div>
+
+        <div class="form-field prep-observaciones">
+          <label for="prep-observaciones">Observaciones</label>
+          {% if editable %}<textarea id="prep-observaciones" name="observaciones" rows="2" placeholder="Indicaciones para quienes preparan o para el despacho (aparecen en las hojas impresas)">{{ preparacion.observaciones }}</textarea>
+          {% else %}<p>{{ preparacion.observaciones|default:"—" }}</p>{% endif %}
+        </div>
+
+        {% if editable %}
+        <div class="ops-actions">
+          <span class="hint">Imprime las hojas y entrégalas a cada encargado. Lo enviado se verifica al registrar el despacho.</span>
+          <button type="submit" class="btn btn-outline" name="accion" value="observaciones" data-texto-cargando="Guardando...">Guardar observaciones</button>
+          <button type="submit" class="btn btn-accent" name="accion" value="completar" data-texto-cargando="Guardando..."
+            data-confirmar="El pedido quedará como preparado y podrás registrar su despacho.">✓ Marcar pedido como preparado</button>
+        </div>
+        {% endif %}
+      </form>
+
+      </div>
+
+      {# Hojas para imprimir: una página por categoría, para repartir entre los encargados. #}
+      <div class="hojas-impresion" aria-hidden="true">
+        {% for g in por_categoria %}
+        <section class="hoja" data-hoja="{{ g.id }}">
+          <header class="hoja__cabeza">
+            <img src="{% static 'images/logo2.jpg' %}" alt="">
+            <div>
+              <span>Hoja de preparación · {{ forloop.counter }} de {{ por_categoria|length }}</span>
+              <strong>{{ g.etiqueta }}</strong>
+            </div>
+          </header>
+          <dl class="hoja__datos">
+            <div><dt>Pedido</dt><dd>{{ servicio.codigo }}</dd></div>
+            <div><dt>Cliente</dt><dd>{{ servicio.cliente.nombre }} {{ servicio.cliente.apellido }}</dd></div>
+            <div><dt>Evento</dt><dd>{{ servicio.tipo_servicio|default:"—" }} · {{ servicio.fecha_evento|date:"d/m/Y"|default:"—" }}</dd></div>
+            <div><dt>Entrega</dt><dd>{% if servicio.requiere_despacho %}Despacho{% else %}Retiro en bodega{% endif %}</dd></div>
+          </dl>
+          <table class="hoja__tabla">
+            <thead><tr><th>Artículo</th><th>Código</th><th class="num">Cantidad</th><th class="num">Listo</th></tr></thead>
+            <tbody>
+              {% for d in g.detalles %}<tr><td>{{ d.articulo.nombre }}</td><td>{{ d.articulo.codigo }}</td><td class="num"><strong>{{ d.cantidad_solicitada }}</strong></td><td class="num"><span class="casilla"></span></td></tr>{% endfor %}
+            </tbody>
+            <tfoot><tr><td colspan="2">Total {{ g.etiqueta|lower }}</td><td class="num"><strong>{{ g.unidades }}</strong></td><td></td></tr></tfoot>
+          </table>
+          <div class="hoja__obs"><span>Observaciones</span>{% if preparacion.observaciones %}<p>{{ preparacion.observaciones }}</p>{% endif %}</div>
+          <div class="hoja__firmas"><div>Preparado por</div><div>Revisado por</div><div>Fecha y hora</div></div>
+          <p class="hoja__pie">Impresa el {% now "d/m/Y H:i" %} · Entre Platos y Copas</p>
+        </section>
+        {% endfor %}
+      </div>
     </main>
   </div>
 </div>
 
-<script src="{% static 'js/admin-nav.js' %}"></script>
+<script src="{% static 'js/admin-nav.js' %}?v=sidebar-icons-2"></script>
 
-<script src="{% static 'js/gestion-django.js' %}"></script>
+<script src="{% static 'js/gestion-django.js' %}?v=2"></script>
+<script src="{% static 'js/operaciones.js' %}?v=7"></script>
+<script>
+  // Imprimir todas las hojas (una por categoría) o solo la de una categoría.
+  document.querySelector('[data-imprimir-hojas]')?.addEventListener('click', () => window.print());
+  document.querySelectorAll('[data-imprimir-hoja]').forEach((boton) => {
+    boton.addEventListener('click', () => {
+      document.querySelectorAll('.hoja').forEach((h) => h.classList.toggle('is-elegida', h.dataset.hoja === boton.dataset.imprimirHoja));
+      document.body.classList.add('imprimir-una');
+      window.print();
+    });
+  });
+  window.addEventListener('afterprint', () => document.body.classList.remove('imprimir-una'));
+</script>
 </body>
 </html>

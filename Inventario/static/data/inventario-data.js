@@ -1,4 +1,4 @@
-/* Copia embebida de inventario.json para vistas sin servidor (ver admin-datos.js). */
+// Copia embebida de inventario.json para vistas sin servidor (ver admin-datos.js).
 var INVENTARIO_DATA = [
   {
     "codigo": "VAJ-001",

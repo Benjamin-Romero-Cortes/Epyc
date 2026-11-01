@@ -1,8 +1,4 @@
-/**
- * despacho-documento.js
- * Hoja de despacho / detalle de reserva imprimible, con espacio para
- * firma y observaciones de entrega en terreno.
- */
+// Hoja de despacho / detalle de reserva imprimible
 (function () {
   const contenedor = document.getElementById('despacho-doc');
   if (!contenedor) return;

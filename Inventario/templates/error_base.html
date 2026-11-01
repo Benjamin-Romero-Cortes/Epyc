@@ -1,0 +1,34 @@
+{% load static %}<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block titulo %}Error{% endblock %} · Entre Platos y Copas</title>
+<link rel="icon" href="{% static 'images/logo.jpg' %}">
+<style>
+  :root { --tinta: #2E2E2E; --suave: #6B6B6B; --acento: #C41230; --fondo: #F2F2F2; }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 16px; background: var(--fondo); color: var(--tinta); font-family: Arial, Helvetica, sans-serif; }
+  main { width: 100%; max-width: 480px; background: #fff; border-radius: 18px; padding: 2.2rem 2rem; text-align: center; box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
+  .codigo { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.12em; color: var(--acento); text-transform: uppercase; }
+  h1 { font-size: 1.5rem; margin: 0.5rem 0 0.75rem; }
+  p { color: var(--suave); line-height: 1.55; margin: 0 0 1.5rem; }
+  .acciones { display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap; }
+  a { display: inline-block; padding: 0.65rem 1.2rem; border-radius: 999px; font-weight: 700; font-size: 0.9rem; text-decoration: none; }
+  a.principal { background: #000; color: #fff; }
+  a.secundario { border: 1px solid #DADADA; color: var(--tinta); }
+  a:focus-visible { outline: 3px solid var(--acento); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<main>
+  <span class="codigo">Error {% block codigo %}{% endblock %}</span>
+  <h1>{% block encabezado %}{% endblock %}</h1>
+  <p>{% block mensaje %}{% endblock %}</p>
+  <div class="acciones">
+    <a class="principal" href="/">Ir al inicio</a>
+    <a class="secundario" href="javascript:history.back()">Volver atrás</a>
+  </div>
+</main>
+</body>
+</html>

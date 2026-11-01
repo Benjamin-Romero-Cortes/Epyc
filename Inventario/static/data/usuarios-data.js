@@ -1,4 +1,4 @@
-/* Copia embebida de usuarios.json para vistas sin servidor (ver admin-datos.js). */
+// Copia embebida de usuarios.json para vistas sin servidor (ver admin-datos.js).
 var USUARIOS_DATA = [
   {
     "id": 1,

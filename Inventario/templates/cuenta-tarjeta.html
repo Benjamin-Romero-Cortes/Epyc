@@ -1,0 +1,14 @@
+<a class="reserva-card{% if s.estado == 'Cancelado' %} is-cancelada{% endif %}" href="{% url 'cliente_reserva' s.id %}">
+  <div class="reserva-card__fecha">
+    {% if s.fecha_evento %}<strong>{{ s.fecha_evento|date:"d" }}</strong><span>{{ s.fecha_evento|date:"M Y" }}</span>{% else %}<span>Sin fecha</span>{% endif %}
+  </div>
+  <div class="reserva-card__cuerpo">
+    <strong>{{ s.tipo_servicio|default:"Evento" }}{% if s.cantidad_personas %} · {{ s.cantidad_personas }} invitados{% endif %}</strong>
+    <span>{{ s.comuna_evento|default:"Sin comuna" }} · Solicitud {{ s.codigo }}{% if s.dias_restantes is not None and s.dias_restantes > 1 and s.estado != "Cancelado" and s.estado != "Finalizado" and s.estado != "Cerrado" %} · faltan {{ s.dias_restantes }} días{% endif %}</span>
+  </div>
+  <div class="reserva-card__estado">
+    <span class="estado estado--{{ s.clase_publica }}">{{ s.estado_publico }}</span>
+    {% if s.es_reserva and s.total %}<span class="reserva-card__total">${{ s.total|floatformat:"0g" }}</span>{% endif %}
+  </div>
+  <span class="reserva-card__ir" aria-hidden="true">›</span>
+</a>

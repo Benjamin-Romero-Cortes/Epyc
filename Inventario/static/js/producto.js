@@ -1,11 +1,4 @@
-/**
- * producto.js
- * Ficha de producto: información general, resumen visual de stock,
- * historial de movimientos y acciones de inventario (ingreso, ajuste).
- * Todas las acciones se simulan en memoria: actualizan los números en
- * pantalla y agregan una fila al historial, pero se pierden al recargar
- * (no hay backend todavía).
- */
+// Ficha de producto
 (function () {
   const contenedor = document.getElementById('producto-detalle');
   if (!contenedor) return;

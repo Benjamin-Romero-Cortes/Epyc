@@ -1,9 +1,4 @@
-/**
- * mermas.js
- * Registro histórico de pérdidas y bajas de inventario, con filtro por
- * categoría (cruzando con inventario.json para conocer la categoría de
- * cada producto).
- */
+// Registro histórico de pérdidas y bajas de inventario, con filtro por categoría
 (function () {
   const tbody = document.getElementById('mer-tbody');
   if (!tbody) return;
@@ -73,7 +68,7 @@
   document.getElementById('mer-search').addEventListener('input', (e) => { termino = e.target.value.trim().toLowerCase(); renderizar(); });
   document.getElementById('mer-categoria').addEventListener('change', (e) => { categoria = e.target.value; renderizar(); });
 
-  // ---------- Modal: registrar merma de bodega ----------
+  // Modal: registrar merma de bodega
   const modal = document.getElementById('modal-nueva-merma');
   const form = document.getElementById('form-nueva-merma');
   const prodBuscar = document.getElementById('nm-producto-buscar');

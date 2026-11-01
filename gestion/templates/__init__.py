@@ -200,7 +200,7 @@
 <script src="{% static 'data/mermas-data.js' %}"></script>
 <script src="{% static 'data/usuarios-data.js' %}"></script>
 <script src="{% static 'js/admin-datos.js' %}"></script>
-<script src="{% static 'js/admin-nav.js' %}"></script>
+<script src="{% static 'js/admin-nav.js' %}?v=active-nav-1"></script>
 <script src="{% static 'js/admin-search.js' %}"></script>
 <script src="{% static 'js/charts.js' %}"></script>
 <script src="{% static 'js/dashboard.js' %}"></script>

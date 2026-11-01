@@ -6,22 +6,98 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Calendario · Panel Entre Platos y Copas</title>
 <link rel="icon" href="{% static 'images/logo.jpg' %}">
-<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+<link rel="stylesheet" href="{% static 'css/admin.css' %}?v=sidebar-design-2">
 <style>
-  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; background-color: var(--color-gray-light); border: 1px solid var(--color-gray-light); border-radius: var(--radius-md); overflow: hidden; }
-  .cal-dow { background-color: var(--color-black); color: var(--color-white-warm); text-align: center; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.5rem 0; }
-  .cal-cell { background-color: var(--color-white-warm); min-height: 110px; padding: 0.4rem; display: flex; flex-direction: column; gap: 0.25rem; }
-  .cal-cell.is-outside { background-color: var(--color-beige-soft); opacity: 0.5; }
-  .cal-cell.is-today .cal-daynum { background-color: var(--color-accent); color: var(--color-white-warm); }
-  .cal-daynum { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; font-size: 0.8rem; font-weight: 700; }
-  .cal-event { font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: 4px; text-decoration: none; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .cal-event--evento { background-color: var(--status-info-bg); color: var(--status-info); }
-  .cal-event--entrega { background-color: var(--status-success-bg); color: var(--status-success); }
-  .cal-event--retiro { background-color: var(--status-warning-bg); color: var(--status-warning); }
-  .view-toggle { display: flex; gap: 0.3rem; }
-  .view-toggle button { padding: 0.5rem 0.9rem; border-radius: 999px; font-size: 0.8rem; font-weight: 600; background-color: var(--color-beige-soft); }
-  .view-toggle button.is-active { background-color: var(--color-black); color: var(--color-white-warm); }
-  .agenda-list .list-row { text-decoration: none; color: inherit; }
+  /* Calendario estilo Google Calendar */
+  .gcal { --cal-line: #E3E3E3; --cal-muted: #70757A; --c-evento: #3B6E91; --c-entrega: #4F7D52; --c-retiro: #B07A22; --c-devolucion: #7A5C99; }
+  .gcal-toolbar { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .gcal-title { font-size: 1.35rem; font-weight: 400; color: var(--color-black); margin: 0 0.6rem 0 0.4rem; }
+  .gcal-btn { border: 1px solid #DADCE0; background: #fff; border-radius: 999px; padding: 0.45rem 1.1rem; font-size: 0.85rem; font-weight: 600; color: var(--color-gray-dark); cursor: pointer; }
+  .gcal-btn:hover { background: var(--color-beige-soft); }
+  .gcal-arrow { width: 36px; height: 36px; border-radius: 50%; border: 0; background: transparent; font-size: 1.4rem; line-height: 1; color: var(--color-gray-dark); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+  .gcal-arrow:hover { background: var(--color-gray-light); }
+  .gcal-spacer { flex: 1; }
+  .gcal-legend { display: flex; flex-wrap: wrap; gap: 0.9rem; font-size: 0.78rem; color: var(--cal-muted); }
+  .gcal-legend span { display: inline-flex; align-items: center; gap: 0.35rem; }
+  .gcal-legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+  .gcal-legend i.is-tentativo { background: repeating-linear-gradient(135deg, #fff 0 2px, #9DB5C6 2px 4px); box-shadow: inset 0 0 0 1px var(--c-evento); }
+  .gcal-views { display: inline-flex; border: 1px solid #DADCE0; border-radius: 999px; overflow: hidden; background: #fff; }
+  .gcal-views button { border: 0; background: transparent; padding: 0.45rem 1rem; font-size: 0.85rem; font-weight: 600; color: var(--color-gray-dark); cursor: pointer; }
+  .gcal-views button + button { border-left: 1px solid #DADCE0; }
+  .gcal-views button.is-active { background: #FBE7EA; color: var(--color-accent-dark); }
+
+  .gcal-surface { background: #fff; border: 1px solid var(--cal-line); border-radius: var(--radius-md); overflow: hidden; }
+
+  /* Vista mes */
+  .gcal-month { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .gcal-dow { text-align: center; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; color: var(--cal-muted); text-transform: uppercase; padding: 0.55rem 0 0.25rem; border-right: 1px solid var(--cal-line); }
+  .gcal-day { min-height: 118px; border-right: 1px solid var(--cal-line); border-top: 1px solid var(--cal-line); padding: 0.25rem 0.3rem 0.35rem; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .gcal-dow:nth-child(7n), .gcal-day:nth-child(7n) { border-right: 0; }
+  .gcal-day.is-outside { background: #FCFCFC; }
+  .gcal-day.is-outside .gcal-num { color: #B0B4B8; }
+  .gcal-num { align-self: center; width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 600; color: var(--color-gray-dark); margin-bottom: 2px; border: 0; background: transparent; cursor: pointer; }
+  .gcal-num:hover { background: var(--color-gray-light); }
+  .gcal-day.is-today .gcal-num, .gcal-colhead.is-today .gcal-bignum { background: var(--color-accent); color: #fff; }
+  .gcal-colhead.is-today .dow { color: var(--color-accent); }
+  .gcal-more { font-size: 0.72rem; font-weight: 700; color: var(--color-gray-dark); padding: 1px 6px; border-radius: 4px; text-align: left; border: 0; background: transparent; cursor: pointer; }
+  .gcal-more:hover { background: var(--color-beige-soft); }
+
+  /* Chips de evento */
+  .tipo-evento { --chip: var(--c-evento); --chip-soft: #E3ECF2; }
+  .tipo-entrega { --chip: var(--c-entrega); --chip-soft: #E4EEE4; }
+  .tipo-retiro { --chip: var(--c-retiro); --chip-soft: #F6EBD8; }
+  .tipo-devolucion { --chip: var(--c-devolucion); --chip-soft: #EEE7F4; }
+  .gcal-chip.is-atrasado, .gcal-timed.is-atrasado { --chip: var(--color-accent); font-weight: 700; }
+  .gcal-chip { display: block; width: 100%; text-align: left; border: 0; font: inherit; font-size: 0.72rem; line-height: 1.4; padding: 1px 6px; border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; color: #fff; background: var(--chip); }
+  .gcal-chip:hover { filter: brightness(0.92); }
+  .gcal-chip--timed { background: transparent; color: var(--color-gray-dark); }
+  .gcal-chip--timed::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--chip); margin-right: 5px; }
+  .gcal-chip--timed:hover { background: var(--color-beige-soft); filter: none; }
+  .gcal-chip .t { margin-right: 4px; }
+  .gcal-chip--timed .t { color: var(--cal-muted); }
+  .gcal-chip.is-tentativo, .gcal-timed.is-tentativo { color: var(--chip); background: repeating-linear-gradient(135deg, #fff 0 6px, var(--chip-soft) 6px 12px); box-shadow: inset 0 0 0 1px var(--chip); }
+
+  /* Vistas semana y día */
+  .gcal-week { display: grid; grid-template-columns: 56px repeat(var(--cols), minmax(0, 1fr)); }
+  .gcal-colhead { text-align: center; padding: 0.5rem 0 0.4rem; border-left: 1px solid var(--cal-line); }
+  .gcal-colhead .dow { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; color: var(--cal-muted); text-transform: uppercase; }
+  .gcal-bignum { width: 42px; height: 42px; margin: 0.15rem auto 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.35rem; color: var(--color-gray-dark); border: 0; background: transparent; cursor: pointer; }
+  .gcal-bignum:hover { background: var(--color-gray-light); }
+  .gcal-allday-label { font-size: 0.62rem; color: var(--cal-muted); text-align: right; padding: 0.4rem 0.45rem 0 0; border-top: 1px solid var(--cal-line); }
+  .gcal-allday { border-left: 1px solid var(--cal-line); border-top: 1px solid var(--cal-line); padding: 3px 3px 5px; display: flex; flex-direction: column; gap: 2px; min-width: 0; min-height: 30px; }
+  /* Misma reserva para la barra de scroll arriba y abajo, así las columnas quedan alineadas. */
+  .gcal-head { overflow-y: hidden; scrollbar-gutter: stable; }
+  .gcal-scroll { max-height: 620px; overflow-y: auto; scrollbar-gutter: stable; border-top: 1px solid var(--cal-line); }
+  .gcal-scroll .gcal-week { grid-template-rows: 1152px; }
+  .gcal-hours { font-size: 0.65rem; color: var(--cal-muted); text-align: right; padding-right: 0.45rem; }
+  .gcal-hours div { height: 48px; transform: translateY(-0.5em); }
+  .gcal-hours div:first-child { visibility: hidden; }
+  .gcal-col { position: relative; border-left: 1px solid var(--cal-line); background: repeating-linear-gradient(to bottom, var(--cal-line) 0 1px, transparent 1px 48px); }
+  .gcal-timed { position: absolute; border: 0; text-align: left; border-radius: 6px; padding: 2px 6px; font: inherit; font-size: 0.72rem; line-height: 1.3; color: #fff; background: var(--chip); overflow: hidden; cursor: pointer; box-shadow: 0 0 0 1px #fff; }
+  .gcal-timed:hover { filter: brightness(0.92); }
+  .gcal-timed strong { display: block; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gcal-now { position: absolute; left: -1px; right: 0; height: 2px; background: var(--color-accent); z-index: 2; pointer-events: none; }
+  .gcal-now::before { content: ''; position: absolute; left: -5px; top: -4px; width: 10px; height: 10px; border-radius: 50%; background: var(--color-accent); }
+
+  /* Ventana de detalle */
+  .gcal-pop { position: fixed; z-index: 1000; width: 360px; max-width: calc(100vw - 24px); background: #fff; border-radius: 10px; box-shadow: 0 12px 40px rgba(0,0,0,0.22); padding: 0.5rem 1.1rem 1.1rem; }
+  .gcal-pop[hidden] { display: none; }
+  .gcal-pop-close { display: block; margin-left: auto; width: 32px; height: 32px; border-radius: 50%; border: 0; background: transparent; font-size: 1rem; cursor: pointer; color: var(--cal-muted); }
+  .gcal-pop-close:hover { background: var(--color-beige-soft); }
+  .gcal-pop-head { display: grid; grid-template-columns: 16px 1fr; gap: 0.8rem; align-items: start; }
+  .gcal-pop-head i { width: 14px; height: 14px; border-radius: 4px; background: var(--chip); margin-top: 0.3rem; }
+  .gcal-pop h3 { font-size: 1.05rem; font-weight: 600; margin: 0; color: var(--color-black); }
+  .gcal-pop .when { font-size: 0.82rem; color: var(--cal-muted); margin-top: 0.2rem; }
+  .gcal-pop dl { display: grid; grid-template-columns: 16px 1fr; gap: 0.4rem 0.8rem; margin: 0.9rem 0 0; font-size: 0.82rem; }
+  .gcal-pop dt { color: var(--cal-muted); display: flex; justify-content: center; padding-top: 1px; }
+  .gcal-pop dd { margin: 0; }
+  .gcal-pop-actions { display: flex; justify-content: flex-end; margin-top: 1rem; }
+
+  @media (max-width: 760px) {
+    .gcal-day { min-height: 84px; }
+    .gcal-chip--timed .t { display: none; }
+    .gcal-legend { order: 10; width: 100%; }
+  }
 </style>
 </head>
 <body>
@@ -73,7 +149,6 @@
         <input type="search" id="global-search" placeholder="Buscar productos, clientes, cotizaciones, reservas...">
       </div>
       <div class="topbar-actions">
-        <button class="icon-btn" aria-label="Notificaciones"><span class="dot"></span>🔔</button>
         <div class="topbar-user">
           <div class="user-avatar">HC</div>
           <div class="user-info"><strong>Helen Cortés</strong><span>Administradora</span></div>
@@ -82,48 +157,41 @@
     </header>
 
     <main class="admin-content">
-      <div class="page-head">
-        <div>
-          <span class="eyebrow">Calendario</span>
-          <h1 id="cal-titulo">Eventos, entregas y retiros</h1>
-        </div>
-        <div class="page-head-actions">
-          <div class="view-toggle">
-            <button data-vista="mes" class="is-active">Mes</button>
-            <button data-vista="semana">Semana</button>
-            <button data-vista="dia">Día</button>
+      <section class="gcal" id="gcal">
+        <div class="gcal-toolbar">
+          <button type="button" class="gcal-btn" id="cal-hoy">Hoy</button>
+          <button type="button" class="gcal-arrow" id="cal-prev" aria-label="Anterior">‹</button>
+          <button type="button" class="gcal-arrow" id="cal-next" aria-label="Siguiente">›</button>
+          <h2 class="gcal-title" id="cal-titulo" aria-live="polite"></h2>
+          <span class="gcal-spacer"></span>
+          <div class="gcal-legend" aria-label="Leyenda">
+            <span><i style="background:var(--c-evento)"></i>Evento</span>
+            <span><i style="background:var(--c-entrega)"></i>Entrega</span>
+            <span><i style="background:var(--c-retiro)"></i>Devolución recibida</span>
+            <span><i style="background:var(--c-devolucion)"></i>Devolución esperada</span>
+            <span><i style="background:var(--color-accent)"></i>⚠ Atrasada</span>
+            <span><i class="is-tentativo"></i>Cotización (sin confirmar)</span>
           </div>
-          <button class="btn btn-outline btn-sm" id="cal-prev">← Anterior</button>
-          <button class="btn btn-outline btn-sm" id="cal-hoy">Hoy</button>
-          <button class="btn btn-outline btn-sm" id="cal-next">Siguiente →</button>
+          <div class="gcal-views" role="group" aria-label="Vista">
+            <button type="button" data-vista="mes" class="is-active">Mes</button>
+            <button type="button" data-vista="semana">Semana</button>
+            <button type="button" data-vista="dia">Día</button>
+          </div>
         </div>
-      </div>
 
-      <div style="display:flex;gap:1rem;margin-bottom:1rem;font-size:0.8rem;">
-        <span><span class="cal-event cal-event--evento" style="padding:0.1rem 0.5rem;">●</span> Evento</span>
-        <span><span class="cal-event cal-event--entrega" style="padding:0.1rem 0.5rem;">●</span> Entrega</span>
-        <span><span class="cal-event cal-event--retiro" style="padding:0.1rem 0.5rem;">●</span> Retiro</span>
-      </div>
+        <div class="gcal-surface" id="cal-contenido"></div>
 
-      <div id="cal-contenido">
-
-<div class="stack">
-{% for servicio in servicios %}
-<div class="card">
-  <div class="card-head"><div><span class="eyebrow">{{ servicio.fecha_evento|date:"d/m/Y"|default:"Sin fecha" }}</span><h2 style="font-size:1rem;">{{ servicio.codigo }} · {{ servicio.cliente.nombre }} {{ servicio.cliente.apellido }}</h2></div><span class="status-pill">{{ servicio.estado }}</span></div>
-  <p>{{ servicio.tipo_servicio|default:"Evento" }} · {{ servicio.comuna_evento|default:"Sin comuna" }}</p>
-</div>
-{% empty %}<p class="empty-state">No hay servicios para mostrar.</p>{% endfor %}
-</div>
-
-</div>
+        <div class="gcal-pop" id="cal-pop" role="dialog" hidden></div>
+      </section>
     </main>
   </div>
 </div>
 
-<script src="{% static 'js/admin-nav.js' %}"></script>
-<script src="{% static 'js/admin-search.js' %}"></script>
+<script src="{% static 'js/admin-nav.js' %}?v=sidebar-icons-2"></script>
+<script src="{% static 'js/admin-search.js' %}?v=2"></script>
 
-<script src="{% static 'js/gestion-django.js' %}"></script>
+<script src="{% static 'js/gestion-django.js' %}?v=2"></script>
+{{ eventos|json_script:"cal-eventos" }}
+<script src="{% static 'js/calendario.js' %}?v=2"></script>
 </body>
 </html>

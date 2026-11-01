@@ -1,14 +1,4 @@
-/**
- * productos-data.js
- * Copia embebida de data/productos.json, usada como respaldo cuando el
- * sitio se abre directamente desde el disco (doble clic) y el navegador
- * bloquea la carga de productos.json por seguridad. El catálogo intenta
- * primero cargar productos.json (necesario para cuando el sitio esté en
- * un servidor real o conectado a una API); si eso falla, usa esta copia.
- *
- * IMPORTANTE: si actualizas data/productos.json, vuelve a generar este
- * archivo para que ambos queden sincronizados.
- */
+// Copia embebida de data/productos.json
 const PRODUCTOS_DATA = [
   {
     "id": "vaj-001",

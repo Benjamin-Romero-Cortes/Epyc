@@ -1,10 +1,4 @@
-/**
- * cliente.js
- * Ficha de cliente con pestañas (información general, cotizaciones,
- * reservas, historial). Todo se calcula cruzando clientes.json con
- * cotizaciones.json y reservas.json por clienteId, para que el total de
- * reservas y montos coincida siempre con lo que muestran esos módulos.
- */
+// Ficha de cliente con pestañas (información general, cotizaciones, reservas, historial).
 (function () {
   const contenedor = document.getElementById('cliente-detalle');
   if (!contenedor) return;
@@ -147,7 +141,7 @@
     document.getElementById('btn-editar-cliente').addEventListener('click', abrirEdicion);
   }
 
-  // ---------- Editar cliente ----------
+  // Editar cliente
   const modal = document.getElementById('modal-editar-cliente');
   const form = document.getElementById('form-editar-cliente');
 

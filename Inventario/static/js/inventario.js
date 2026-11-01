@@ -1,16 +1,4 @@
-/**
- * inventario.js
- *
- * Inventario renderizado por Django/PostgreSQL.
- * Este archivo controla:
- * - búsqueda por nombre
- * - filtro por categoría
- * - filtro por estado
- * - filtro rápido de stock bajo
- * - contador de resultados
- * - apertura/cierre del modal
- * - carga de datos al editar
- */
+// Inventario renderizado por Django/PostgreSQL.
 
 (function () {
 
@@ -19,9 +7,7 @@
     if (!tbody) return;
 
 
-    // =========================
     // ELEMENTOS PRINCIPALES
-    // =========================
 
     const filas = Array.from(
         tbody.querySelectorAll('tr[data-producto]')
@@ -43,9 +29,7 @@
         document.getElementById('inv-result-count');
 
 
-    // =========================
     // MODAL
-    // =========================
 
     const modal =
         document.getElementById('modal-nuevo-producto');
@@ -59,9 +43,7 @@
     let editandoCodigo = null;
 
 
-    // =========================
     // VARIABLES DE FILTRO
-    // =========================
 
     let termino = '';
     let categoria = '';
@@ -69,9 +51,7 @@
     let soloBajo = false;
 
 
-    // =========================
     // NORMALIZAR TEXTO
-    // =========================
 
     function normalizar(texto) {
 
@@ -84,9 +64,7 @@
     }
 
 
-    // =========================
     // CONSTRUIR CATEGORÍAS
-    // =========================
 
     function construirFiltroCategorias() {
 
@@ -119,9 +97,7 @@
     }
 
 
-    // =========================
     // FILTROS DESDE URL
-    // =========================
 
     function aplicarFiltrosDesdeURL() {
 
@@ -166,9 +142,7 @@
     }
 
 
-    // =========================
     // RENDERIZAR FILTROS
-    // =========================
 
     function renderizar() {
 
@@ -228,9 +202,7 @@
         });
 
 
-        // =========================
         // CONTADOR
-        // =========================
 
         if (resultCount) {
 
@@ -243,9 +215,7 @@
         }
 
 
-        // =========================
         // ESTADO VACÍO
-        // =========================
 
         let filaVacia =
             tbody.querySelector(
@@ -290,9 +260,7 @@
     }
 
 
-    // =========================
     // BÚSQUEDA
-    // =========================
 
     if (searchInput) {
 
@@ -311,9 +279,7 @@
     }
 
 
-    // =========================
     // FILTRO CATEGORÍA
-    // =========================
 
     if (categoriaSelect) {
 
@@ -332,9 +298,7 @@
     }
 
 
-    // =========================
     // FILTRO ESTADO
-    // =========================
 
     if (estadoSelect) {
 
@@ -353,9 +317,7 @@
     }
 
 
-    // =========================
     // SOLO STOCK BAJO
-    // =========================
 
     if (chipBajo) {
 
@@ -379,9 +341,7 @@
     }
 
 
-    // =========================
     // NUEVO PRODUCTO
-    // =========================
 
     if (
         btnNuevo &&
@@ -431,9 +391,7 @@
     }
 
 
-    // =========================
     // BOTONES EDITAR
-    // =========================
 
     document
         .querySelectorAll('[data-editar]')
@@ -456,9 +414,7 @@
         });
 
 
-    // =========================
     // ABRIR EDICIÓN
-    // =========================
 
     function abrirEdicion(codigo) {
 
@@ -489,9 +445,7 @@
             codigo;
 
 
-        // =========================
         // TÍTULO
-        // =========================
 
         const tituloModal =
             modal.querySelector('h2');
@@ -505,9 +459,7 @@
         }
 
 
-        // =========================
         // NOMBRE
-        // =========================
 
         const inputNombre =
             document.getElementById(
@@ -523,9 +475,7 @@
         }
 
 
-        // =========================
         // CATEGORÍA
-        // =========================
 
         const inputCategoria =
             document.getElementById(
@@ -541,9 +491,7 @@
         }
 
 
-        // =========================
         // STOCK TOTAL
-        // =========================
 
         const inputStock =
             document.getElementById(
@@ -559,9 +507,7 @@
         }
 
 
-        // =========================
         // STOCK TRABAJABLE
-        // =========================
 
         const inputDisponible =
             document.getElementById(
@@ -577,9 +523,7 @@
         }
 
 
-        // =========================
         // PRECIO
-        // =========================
 
         const inputPrecio =
             document.getElementById(
@@ -595,9 +539,7 @@
         }
 
 
-        // =========================
         // VALOR REPOSICIÓN
-        // =========================
 
         const inputReposicion =
             document.getElementById(
@@ -613,9 +555,7 @@
         }
 
 
-        // =========================
         // ABRIR MODAL
-        // =========================
 
         if (
             typeof abrirModal ===
@@ -633,9 +573,7 @@
     }
 
 
-    // =========================
     // CERRAR MODALES
-    // =========================
 
     document
         .querySelectorAll(
@@ -678,10 +616,7 @@
         });
 
 
-    // =========================
     // CERRAR AL HACER CLICK
-    // FUERA DEL MODAL
-    // =========================
 
     if (modal) {
 
@@ -717,9 +652,7 @@
     }
 
 
-    // =========================
     // ESC PARA CERRAR
-    // =========================
 
     document.addEventListener(
         'keydown',
@@ -750,9 +683,7 @@
     );
 
 
-    // =========================
 // GUARDAR PRODUCTO
-// =========================
 
 if (form) {
 
@@ -799,9 +730,7 @@ if (form) {
                 );
 
 
-            // =========================
             // VALIDACIÓN CLIENTE
-            // =========================
 
             if (!nombre) {
 
@@ -850,9 +779,7 @@ if (form) {
             };
 
 
-            // =========================
             // CSRF
-            // =========================
 
             const csrfInput =
                 form.querySelector(
@@ -874,9 +801,7 @@ if (form) {
                 csrfInput.value;
 
 
-            // =========================
             // BOTÓN GUARDAR
-            // =========================
 
             const botonGuardar =
                 form.querySelector(
@@ -937,9 +862,7 @@ if (form) {
                 }
 
 
-                // =========================
                 // ÉXITO
-                // =========================
 
                 if (
                     typeof mostrarToast ===
@@ -976,11 +899,7 @@ if (form) {
                 }
 
 
-                /*
-                 * Recargamos porque Django
-                 * obtiene nuevamente los
-                 * productos desde PostgreSQL.
-                 */
+                // Recargamos porque Django obtiene nuevamente los productos desde PostgreSQL.
 
                 window.location.reload();
 
@@ -1017,9 +936,7 @@ if (form) {
 }
 
 
-    // =========================
     // INICIALIZACIÓN
-    // =========================
 
     construirFiltroCategorias();
 

@@ -6,7 +6,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Inventario · Panel Entre Platos y Copas</title>
 <link rel="icon" href="{% static 'images/logo.jpg' %}">
-<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+<link rel="stylesheet" href="{% static 'css/admin.css' %}?v=inventario-4">
+<link rel="stylesheet" href="{% static 'css/inventario-categorias.css' %}?v=4">
 </head>
 <body>
 
@@ -57,7 +58,6 @@
         <input type="search" id="global-search" placeholder="Buscar productos, clientes, cotizaciones, reservas...">
       </div>
       <div class="topbar-actions">
-        <button class="icon-btn" aria-label="Notificaciones"><span class="dot"></span>🔔</button>
         <div class="topbar-user">
           <div class="user-avatar">HC</div>
           <div class="user-info"><strong>Helen Cortés</strong><span>Administradora</span></div>
@@ -72,61 +72,105 @@
           <h1>Todos los productos</h1>
           <p>Consulta el stock total, disponible y comprometido de cada producto del catálogo de arriendo.</p>
         </div>
-        <div class="page-head-actions">
-          <button class="btn btn-primary" id="btn-nuevo-producto">+ Nuevo producto</button>
-        </div>
       </div>
 
-      <div class="toolbar">
+      {% for mensaje in messages %}
+      <div class="admin-notice is-{% if mensaje.tags == 'error' %}danger{% else %}success{% endif %}" role="status">{{ mensaje }}</div>
+      {% endfor %}
+
+      <div class="client-directory">
+      <form class="inventory-search-panel" id="inventario-filter-form">
         <div class="search-field">
           <span class="icon">🔍</span>
-          <input type="search" id="inv-search" placeholder="Buscar por nombre...">
+          <input type="search" id="inv-search" placeholder="Buscar producto por nombre o código..." aria-label="Buscar producto">
         </div>
         <div class="toolbar-filters">
-          <select class="select-filter" id="inv-categoria">
-            <option value="">Todas las categorías</option>
-          </select>
-          <select class="select-filter" id="inv-estado">
-            <option value="">Todos los estados</option>
-            <option value="Activo">Activo</option>
-            <option value="Stock bajo">Stock bajo</option>
-            <option value="Revisar mermas">Revisar mermas</option>
-          </select>
-          <button class="chip-filter" id="inv-chip-bajo">Solo stock bajo</button>
+          <!-- La categoría se elige con las tarjetas; este campo guarda la selección para el filtro. -->
+          <input type="hidden" id="inv-categoria" value="">
+          <button type="button" class="chip-filter" id="inv-chip-bajo" aria-pressed="false">⚠ Solo stock bajo</button>
+          <button type="reset" class="btn btn-ghost btn-sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 2.64-6.36L3 8"/><path d="M3 3v5h5"/></svg>
+            Limpiar
+          </button>
+          <button type="button" class="btn btn-primary btn-sm" id="btn-nuevo-producto">+ Nuevo producto</button>
         </div>
+      </form>
+
+      <section class="inv-resumen" aria-label="Resumen del inventario">
+        <div><span>Productos</span><strong>{{ totales_inventario.productos }}</strong></div>
+        <div><span>Disponibles hoy</span><strong>{{ totales_inventario.disponible }}<small> de {{ totales_inventario.trabajable }}</small></strong></div>
+        <div><span>Comprometidas en reservas</span><strong>{{ totales_inventario.comprometido }}</strong></div>
+        <div><span>En cliente</span><strong>{{ totales_inventario.en_cliente }}</strong></div>
+        <div class="{% if totales_inventario.bajos %}is-alerta{% endif %}"><span>Sin stock, agotados o bajos</span><strong>{% if totales_inventario.bajos %}⚠ {% endif %}{{ totales_inventario.bajos }}</strong></div>
+      </section>
+
+      <div class="inv-leyenda" aria-hidden="true"><span><i class="inv-leyenda__disp"></i>Disponible</span><span><i class="inv-leyenda__comp"></i>Comprometido en reservas</span><span><i class="inv-leyenda__bajo"></i>Stock bajo</span></div>
+      <div class="inv-cats" role="list" aria-label="Categorías">
+        {% for g in categorias_inventario %}
+        <button type="button" class="inv-cat nivel-{{ g.nivel }}" role="listitem" data-ir-categoria="{{ g.categoria.nombre }}" aria-controls="cat-{{ g.slug }}">
+          <span class="inv-cat__nombre">{{ g.etiqueta }}</span>
+          <span class="inv-cat__meta">{{ g.productos|length }} producto{{ g.productos|length|pluralize }}{% if g.bajos %} · <b>⚠ {{ g.bajos }} bajo{{ g.bajos|pluralize }}</b>{% endif %}</span>
+          <span class="inv-cat__cifra"><strong>{{ g.disponible }}</strong> de {{ g.trabajable }} disponibles</span>
+          <span class="inv-meter" role="img" aria-label="{{ g.porcentaje }} % disponible, {{ g.porcentaje_comprometido }} % comprometido"><span class="inv-meter__disp" style="width:{{ g.porcentaje }}%"></span><span class="inv-meter__comp" style="width:{{ g.porcentaje_comprometido }}%"></span></span>
+          <span class="inv-cat__meta">{% if g.comprometido %}−{{ g.comprometido }} por reservas{% else %}Sin reservas vigentes{% endif %}{% if g.en_cliente %} · {{ g.en_cliente }} en cliente{% endif %}</span>
+        </button>
+        {% endfor %}
       </div>
 
-      <p class="result-count" id="inv-result-count"></p>
-
-      <div class="table-wrap">
-        <table class="data-table">
+      <p class="inv-ayuda" id="inv-ayuda-categoria">Selecciona una categoría para ver sus productos, o usa el buscador.</p>
+      <div id="inv-grupos">
+      {% for g in categorias_inventario %}
+      <details class="inv-grupo" id="cat-{{ g.slug }}" data-grupo="{{ g.categoria.nombre }}" open hidden>
+        <summary>
+          <span class="inv-grupo__titulo">{{ g.etiqueta }} <span class="inv-grupo__count" data-contador>{{ g.productos|length }}</span></span>
+          <span class="inv-grupo__totales">
+            <span>Total <b>{{ g.total }}</b></span>
+            <span>Trabajable <b>{{ g.trabajable }}</b></span>
+            <span class="nivel-{{ g.nivel }}">Disponible <b>{{ g.disponible }}</b></span>
+            <span>Comprometido <b>{{ g.comprometido }}</b></span>
+          </span>
+          <span class="inv-grupo__chevron" aria-hidden="true">▾</span>
+        </summary>
+        <div class="table-wrap">
+        <table class="data-table inv-tabla">
           <thead>
             <tr>
               <th>Producto</th>
-              <th>Categoría</th>
               <th class="cell-num">Stock total</th>
-              <th class="cell-num">Disponible</th>
-              <th class="cell-num">Arrendado</th>
+              <th class="cell-num" title="Unidades que decides considerar para arrendar">Trabajable</th>
+              <th title="Stock trabajable menos lo comprometido en reservas vigentes">Disponible</th>
+              <th class="cell-num" title="Reservas confirmadas con evento de hoy en adelante, más lo que sigue en clientes">Comprometido</th>
               <th class="cell-num">Precio</th>
               <th></th>
             </tr>
           </thead>
-          <tbody id="inv-tbody">
-
-{% for p in inventario %}
-<tr data-producto data-codigo="{{ p.codigo }}" data-nombre="{{ p.nombre }}" data-categoria="{{ p.categoria.nombre }}" data-stock-total="{{ p.stock_total }}" data-stock-trabajable="{{ p.stock_trabajable }}">
-  <td><div style="display:flex;align-items:center;gap:0.7rem;"><img src="{{ p.imagen }}" alt="{{ p.nombre }}" class="row-thumb"><div><a class="cell-strong" href="{% url 'gestion_producto' p.id %}">{{ p.nombre }}</a><div class="cell-muted">{{ p.codigo }}</div></div></div></td>
-  <td>{{ p.categoria.nombre }}</td>
-  <td class="cell-num">{{ p.stock_total }}</td>
-  <td class="cell-num">{{ p.stock_trabajable }}</td>
-  <td class="cell-num">{{ p.stock_comprometido|default:"0" }}</td>
-  <td class="cell-num">{{ p.precio_arriendo }}</td>
-  <td><div class="table-actions"><a href="{% url 'gestion_producto' p.id %}" class="icon-btn" title="Ver detalle">👁</a></div></td>
-</tr>
-{% empty %}<tr><td colspan="6" class="empty-state">No hay artículos registrados.</td></tr>{% endfor %}
-
-</tbody>
+          <tbody>
+          {% for p in g.productos %}
+          <tr data-producto data-codigo="{{ p.codigo }}" data-nombre="{{ p.nombre }}" data-categoria="{{ p.categoria.nombre }}" data-nivel="{{ p.nivel_stock }}" data-mermas="{{ p.mermas_vigentes }}" data-activo="{{ p.activo|yesno:'1,0' }}">
+            <td><div style="display:flex;align-items:center;gap:0.7rem;"><img src="{{ p.imagen }}" alt="" class="row-thumb"><div><a class="cell-strong" href="{% url 'gestion_producto' p.id %}">{{ p.nombre }}</a><div class="cell-muted">{{ p.codigo }}{% if not p.activo %} · inactivo{% endif %}{% if p.mermas_vigentes %} · {{ p.mermas_vigentes }} en merma{% endif %}</div></div></div></td>
+            <td class="cell-num">{{ p.stock_total }}</td>
+            <td class="cell-num">{{ p.stock_trabajable }}</td>
+            <td>
+              <div class="inv-disp nivel-{{ p.nivel_stock }}">
+                <span class="inv-disp__num"><strong>{{ p.stock_disponible }}</strong>{% if p.stock_trabajable %} / {{ p.stock_trabajable }}{% endif %}</span>
+                <span class="inv-meter" role="img" aria-label="{{ p.porcentaje_disponible }} % disponible, {{ p.porcentaje_comprometido }} % comprometido"><span class="inv-meter__disp" style="width:{{ p.porcentaje_disponible }}%"></span><span class="inv-meter__comp" style="width:{{ p.porcentaje_comprometido }}%"></span></span>
+                <span class="inv-disp__estado">{% if p.nivel_stock == "agotado" %}⚠ Agotado{% elif p.nivel_stock == "bajo" %}⚠ Stock bajo{% elif p.nivel_stock == "sin-stock" %}Sin stock cargado{% elif p.stock_comprometido %}−{{ p.stock_comprometido }} por reservas{% else %}Todo disponible{% endif %}</span>
+              </div>
+            </td>
+            <td class="cell-num">{{ p.stock_comprometido }}{% if p.fuera_de_bodega %}<div class="cell-muted" title="Unidades despachadas que aún no vuelven a bodega">{{ p.fuera_de_bodega }} en cliente</div>{% endif %}</td>
+            <td class="cell-num">${{ p.precio_arriendo|floatformat:0 }}</td>
+            <td><div class="table-actions"><a href="{% url 'gestion_producto' p.id %}" class="icon-btn" title="Ver detalle" aria-label="Ver {{ p.nombre }}">👁</a><a href="{% url 'gestion_producto' p.id %}?editar=1" class="icon-btn icon-btn--edit" title="Editar producto y stock" aria-label="Editar {{ p.nombre }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg></a>{% if p.en_uso %}<button type="button" class="icon-btn icon-btn--danger" disabled title="No se puede eliminar: tiene reservas u operaciones asociadas" aria-label="Eliminar {{ p.nombre }} (no disponible)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M9 7V4h6v3"/></svg></button>{% else %}<form method="post" action="{% url 'gestion_inventario' %}" data-confirm-delete="{{ p.nombre }}">{% csrf_token %}<input type="hidden" name="accion" value="eliminar"><input type="hidden" name="articulo_id" value="{{ p.id }}"><button type="submit" class="icon-btn icon-btn--danger" title="Eliminar producto" aria-label="Eliminar {{ p.nombre }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M9 7V4h6v3"/></svg></button></form>{% endif %}</div></td>
+          </tr>
+          {% endfor %}
+          </tbody>
         </table>
+        </div>
+      </details>
+      {% empty %}
+      <p class="empty-state">No hay artículos registrados.</p>
+      {% endfor %}
+      <p class="empty-state" id="inv-sin-resultados" hidden>No encontramos productos con ese criterio.</p>
+      </div>
       </div>
     </main>
   </div>
@@ -141,7 +185,7 @@
     <form id="form-nuevo-producto" method="post" action="{% url 'gestion_inventario' %}">
 {% csrf_token %}<input type="hidden" name="accion" value="crear">
 <div class="form-grid" style="margin-top:1rem;">
-  <div class="form-field"><label>Código</label><input type="text" name="codigo" required></div>
+  <div class="form-field"><label>Código <span class="optional">(opcional)</span></label><input type="text" name="codigo" placeholder="Se genera automáticamente"></div>
   <div class="form-field"><label>Nombre</label><input type="text" name="nombre" required></div>
   <div class="form-field"><label>Categoría</label><select name="categoria_id" required>{% for categoria in categorias %}<option value="{{ categoria.id }}">{{ categoria.nombre }}</option>{% endfor %}</select></div>
   <div class="form-field"><label>Etiqueta de categoría</label><input type="text" name="categoria_label"></div>
@@ -152,9 +196,10 @@
   <div class="form-field"><label>Capacidad</label><input type="text" name="capacidad"></div>
   <div class="form-field"><label>Color</label><input type="text" name="color"></div>
   <div class="form-field"><label>Precio arriendo</label><input type="number" name="precio_arriendo" min="0" required></div>
+  <div class="form-field"><label>Costo de reposición por unidad</label><input type="number" name="costo_reposicion" min="0" value="0"></div>
   <div class="form-field"><label>Unidad precio</label><input type="text" name="unidad_precio" placeholder="por unidad / evento"></div>
-  <div class="form-field"><label>Stock total</label><input type="number" name="stock_total" min="0" required></div>
-  <div class="form-field"><label>Stock trabajable</label><input type="number" name="stock_trabajable" min="0" required></div>
+  <div class="form-field"><label>Stock total</label><input type="number" name="stock_total" min="0" value="0" required></div>
+  <div class="form-field"><label>Stock trabajable (para arrendar)</label><input type="number" name="stock_trabajable" min="0" value="0" required></div>
   <div class="form-field full"><label>Ruta imagen</label><input type="text" name="imagen" placeholder="/static/images/..."></div>
   <div class="form-field"><label><input type="checkbox" name="destacado"> Destacado</label></div>
   <div class="form-field"><label><input type="checkbox" name="activo" checked> Activo</label></div>
@@ -164,9 +209,10 @@
   </div>
 </div>
 
-<script src="{% static 'js/admin-nav.js' %}"></script>
-<script src="{% static 'js/admin-search.js' %}"></script>
+<script src="{% static 'js/admin-nav.js' %}?v=sidebar-icons-2"></script>
+<script src="{% static 'js/admin-search.js' %}?v=2"></script>
 <!---->
-<script src="{% static 'js/gestion-django.js' %}"></script>
+<script src="{% static 'js/gestion-django.js' %}?v=2"></script>
+<script src="{% static 'js/inventario-django.js' %}?v=8"></script>
 </body>
 </html>
