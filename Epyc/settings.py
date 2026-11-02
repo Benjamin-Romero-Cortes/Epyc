@@ -1,4 +1,3 @@
-```python
 """
 Django settings for Epyc project.
 
@@ -404,4 +403,3 @@ LOGGING = {
 DEFAULT_AUTO_FIELD = (
     "django.db.models.BigAutoField"
 )
-```
