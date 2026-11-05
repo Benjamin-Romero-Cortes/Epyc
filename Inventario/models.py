@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.db.models import Q, F
+from django.db.models.functions import Lower
 
 
 # NEGOCIO
@@ -53,6 +54,12 @@ class Categoria(models.Model):
 
     class Meta:
         db_table = "categoria"
+        constraints = [
+            # El nombre es único por negocio sin distinguir mayúsculas ("Iluminación" = "iluminación").
+            models.UniqueConstraint(
+                Lower("nombre"), "negocio", name="categoria_nombre_unico_por_negocio"
+            ),
+        ]
 
     def __str__(self):
         return self.nombre

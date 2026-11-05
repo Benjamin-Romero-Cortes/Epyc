@@ -92,6 +92,8 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 2.64-6.36L3 8"/><path d="M3 3v5h5"/></svg>
             Limpiar
           </button>
+          <button type="button" class="btn btn-outline btn-sm" id="btn-gestionar-categorias">Categorías</button>
+          <button type="button" class="btn btn-outline btn-sm" id="btn-nueva-categoria">+ Nueva categoría</button>
           <button type="button" class="btn btn-primary btn-sm" id="btn-nuevo-producto">+ Nuevo producto</button>
         </div>
       </form>
@@ -173,6 +175,61 @@
       </div>
       </div>
     </main>
+  </div>
+</div>
+
+<!-- Modal: nueva categoría -->
+<div class="modal-overlay" id="modal-nueva-categoria" hidden>
+  <div class="modal-panel" style="max-width:460px;">
+    <button class="modal-close" data-close-modal>✕</button>
+    <span class="eyebrow" style="color:var(--color-accent-dark);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;font-weight:700;">Inventario</span>
+    <h2 style="margin-top:0.2rem;">Nueva categoría</h2>
+    <form id="form-nueva-categoria" method="post" action="{% url 'gestion_categorias' %}">
+      {% csrf_token %}<input type="hidden" name="accion" value="crear">
+      <div class="form-grid" style="margin-top:1rem;">
+        <div class="form-field full"><label>Nombre</label><input type="text" name="nombre" maxlength="100" required placeholder="Ej.: Iluminación"></div>
+        <div class="form-field full"><label>Descripción <span class="optional">(opcional)</span></label><input type="text" name="descripcion" maxlength="255"></div>
+        <div class="form-field"><label><input type="checkbox" name="activo" checked> Activa</label></div>
+      </div>
+      <div class="modal-actions"><span class="spacer"></span><button type="button" class="btn btn-outline" data-close-modal>Cancelar</button><button type="submit" class="btn btn-primary">Guardar categoría</button></div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: gestionar categorías -->
+<div class="modal-overlay" id="modal-gestionar-categorias" hidden>
+  <div class="modal-panel" style="max-width:760px;">
+    <button class="modal-close" data-close-modal>✕</button>
+    <span class="eyebrow" style="color:var(--color-accent-dark);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;font-weight:700;">Inventario</span>
+    <h2 style="margin-top:0.2rem;">Categorías</h2>
+    <table class="data-table" id="tabla-categorias" style="margin-top:1rem;">
+      <thead><tr><th>Categoría</th><th>Productos</th><th>Estado</th><th>Acciones</th></tr></thead>
+      <tbody>
+        {% for c in categorias_gestion %}
+        <tr data-categoria-id="{{ c.id }}">
+          <td>
+            <form method="post" action="{% url 'gestion_categorias' %}" style="display:flex;gap:.4rem;align-items:center;">
+              {% csrf_token %}<input type="hidden" name="accion" value="editar"><input type="hidden" name="categoria_id" value="{{ c.id }}">
+              <input type="text" name="nombre" value="{{ c.etiqueta }}" maxlength="100" required aria-label="Nombre de la categoría {{ c.etiqueta }}">
+              <button type="submit" class="btn btn-ghost btn-sm">Editar</button>
+            </form>
+          </td>
+          <td>{{ c.total_productos }}</td>
+          <td>{% if c.activo %}Activa{% else %}Inactiva{% endif %}</td>
+          <td>
+            <form method="post" action="{% url 'gestion_categorias' %}" style="display:inline-flex;gap:.4rem;"
+                  {% if c.activo and c.productos_activos %}data-confirmar="Esta categoría contiene {{ c.productos_activos }} producto{{ c.productos_activos|pluralize }} activo{{ c.productos_activos|pluralize }}. Si la desactivas, dejará de mostrarse en el catálogo. ¿Deseas continuar?"{% endif %}>
+              {% csrf_token %}<input type="hidden" name="categoria_id" value="{{ c.id }}">
+              <button type="submit" name="accion" value="{% if c.activo %}desactivar{% else %}activar{% endif %}" class="btn btn-outline btn-sm">{% if c.activo %}Desactivar{% else %}Activar{% endif %}</button>
+              {% if not c.total_productos %}<button type="submit" name="accion" value="eliminar" class="btn btn-ghost btn-sm" data-confirmar-boton="¿Eliminar la categoría {{ c.etiqueta }}?">Eliminar</button>{% endif %}
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4">Aún no hay categorías.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 </div>
 

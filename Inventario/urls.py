@@ -63,6 +63,12 @@ urlpatterns = [
     ),
 
     path(
+        'gestion/inventario/categorias/',
+        views.gestion_categorias,
+        name='gestion_categorias'
+    ),
+
+    path(
         'gestion/inventario/<int:id>/',
         views.gestion_producto,
         name='gestion_producto'

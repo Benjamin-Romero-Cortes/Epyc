@@ -130,7 +130,7 @@ def index(request):
 def catalogo(request):
     productos = list(
         Articulo.objects
-        .filter(activo=True)
+        .filter(activo=True, categoria__activo=True)
         .select_related("categoria")
         .order_by("nombre")
     )
@@ -186,10 +186,12 @@ MENSAJE_ERROR_INTERNO = (
 
 
 def etiqueta_categoria(categoria):
-    return ETIQUETAS_CATEGORIA.get(
-        categoria.nombre,
-        categoria.nombre.replace("-", " ").capitalize(),
-    )
+    if categoria.nombre in ETIQUETAS_CATEGORIA:
+        return ETIQUETAS_CATEGORIA[categoria.nombre]
+    if "-" in categoria.nombre and categoria.nombre == categoria.nombre.lower():
+        return categoria.nombre.replace("-", " ").capitalize()
+    # Categorías creadas desde el panel: se muestra tal como las escribió el administrador.
+    return categoria.nombre
 
 
 def _quiere_json(request):
@@ -1399,7 +1401,9 @@ def inventario(request):
         return redirect("gestion_inventario")
 
     if request.method == "POST" and request.POST.get("accion") == "crear":
-        categoria = get_object_or_404(Categoria, id=request.POST.get("categoria_id"), negocio=negocio)
+        categoria = get_object_or_404(
+            Categoria, id=request.POST.get("categoria_id"), negocio=negocio, activo=True
+        )
         nombre = request.POST.get("nombre", "").strip()
         precio = _entero(request.POST.get("precio_arriendo"), -1)
         stock_total, stock_trabajable, error = _stock_desde_post(request.POST)
@@ -1510,11 +1514,23 @@ def inventario(request):
         .filter(negocio=negocio, activo=True)
         .order_by("nombre")
     )
+    categorias_gestion = list(
+        Categoria.objects
+        .filter(negocio=negocio)
+        .annotate(
+            total_productos=Count("articulos", distinct=True),
+            productos_activos=Count("articulos", filter=Q(articulos__activo=True), distinct=True),
+        )
+        .order_by("nombre")
+    )
+    for categoria in categorias_gestion:
+        categoria.etiqueta = etiqueta_categoria(categoria)
 
     return render(
         request,
         "inventario.html",
         {
+            "categorias_gestion": categorias_gestion,
             "inventario": inventario_qs,
             "categorias_inventario": categorias_inventario,
             "categorias": categorias,
@@ -1530,6 +1546,104 @@ def inventario(request):
     )
 
 
+def _normalizar_nombre_categoria(valor):
+    """Quita espacios sobrantes (inicio, fin y repetidos dentro del nombre)."""
+    return " ".join((valor or "").split())
+
+
+def _error_nombre_categoria(negocio, nombre, excluir_id=None):
+    if not nombre:
+        return "El nombre de la categoría es obligatorio."
+    if len(nombre) > 100:
+        return "El nombre de la categoría no puede superar los 100 caracteres."
+    # Se compara en Python con casefold para ignorar mayúsculas y tildes de mayúscula
+    # igual en SQLite y en PostgreSQL.
+    existentes = Categoria.objects.filter(negocio=negocio)
+    if excluir_id:
+        existentes = existentes.exclude(id=excluir_id)
+    if any(
+        _normalizar_nombre_categoria(n).casefold() == nombre.casefold()
+        or etiqueta_categoria(Categoria(nombre=n)).casefold() == nombre.casefold()
+        for n in existentes.values_list("nombre", flat=True)
+    ):
+        return f"Ya existe una categoría llamada «{nombre}» en tu negocio."
+    return ""
+
+
+@solo_administrador
+@require_POST
+def gestion_categorias(request):
+    """Crea, edita, activa/desactiva y elimina (solo si está vacía) categorías del negocio."""
+    negocio = request.usuario_panel.negocio
+    accion = request.POST.get("accion")
+
+    if accion == "crear":
+        nombre = _normalizar_nombre_categoria(request.POST.get("nombre"))
+        error = _error_nombre_categoria(negocio, nombre)
+        if error:
+            messages.error(request, f"No se creó la categoría: {error}")
+            return redirect("gestion_inventario")
+        try:
+            with transaction.atomic():
+                Categoria.objects.create(
+                    negocio=negocio,
+                    nombre=nombre,
+                    descripcion=request.POST.get("descripcion", "").strip()[:255],
+                    activo=request.POST.get("activo", "on") == "on",
+                )
+        except IntegrityError:
+            messages.error(request, f"No se creó la categoría: ya existe una llamada «{nombre}».")
+            return redirect("gestion_inventario")
+        messages.success(request, f"Categoría {nombre} creada.")
+        return redirect("gestion_inventario")
+
+    # Las demás acciones operan sobre una categoría existente del negocio del administrador.
+    categoria = get_object_or_404(Categoria, id=request.POST.get("categoria_id"), negocio=negocio)
+
+    if accion == "editar":
+        nombre = _normalizar_nombre_categoria(request.POST.get("nombre"))
+        # Las categorías originales se identifican por un código interno ("mesas-sillas"); si el
+        # nombre mostrado no cambió, se conserva ese código para no romper catálogo ni cotizador.
+        if nombre == etiqueta_categoria(categoria):
+            nombre = categoria.nombre
+        error = _error_nombre_categoria(negocio, nombre, excluir_id=categoria.id)
+        if error:
+            messages.error(request, f"No se guardaron los cambios: {error}")
+            return redirect("gestion_inventario")
+        try:
+            with transaction.atomic():
+                categoria.nombre = nombre
+                categoria.descripcion = request.POST.get("descripcion", categoria.descripcion).strip()[:255]
+                categoria.save(update_fields=["nombre", "descripcion"])
+        except IntegrityError:
+            messages.error(request, f"No se guardaron los cambios: ya existe una categoría llamada «{nombre}».")
+            return redirect("gestion_inventario")
+        messages.success(request, f"Categoría {categoria.nombre} actualizada.")
+
+    elif accion in ("activar", "desactivar"):
+        categoria.activo = accion == "activar"
+        categoria.save(update_fields=["activo"])
+        estado = "activada" if categoria.activo else "desactivada"
+        messages.success(request, f"Categoría {categoria.nombre} {estado}.")
+
+    elif accion == "eliminar":
+        if categoria.articulos.exists():
+            messages.error(
+                request,
+                "No se puede eliminar la categoría porque contiene productos. "
+                "Puedes desactivarla o reasignar previamente sus productos.",
+            )
+        else:
+            nombre = categoria.nombre
+            categoria.delete()
+            messages.success(request, f"Categoría {nombre} eliminada.")
+
+    else:
+        messages.error(request, "Acción no válida.")
+
+    return redirect("gestion_inventario")
+
+
 @solo_administrador
 def gestion_producto(request, id):
     articulo = get_object_or_404(
@@ -1541,7 +1655,8 @@ def gestion_producto(request, id):
         nombre = request.POST.get("nombre", "").strip()
         precio = _entero(request.POST.get("precio_arriendo"), -1)
         categoria = Categoria.objects.filter(
-            id=request.POST.get("categoria_id"), negocio=articulo.negocio
+            Q(activo=True) | Q(id=articulo.categoria_id),
+            id=request.POST.get("categoria_id"), negocio=articulo.negocio,
         ).first()
         stock_total, stock_trabajable, error = _stock_desde_post(
             request.POST, articulo.stock_total, articulo.stock_trabajable
@@ -1619,7 +1734,9 @@ def gestion_producto(request, id):
         {
             "articulo": articulo,
             "movimientos": movimientos,
-            "categorias": Categoria.objects.filter(negocio=articulo.negocio, activo=True).order_by("nombre"),
+            "categorias": Categoria.objects.filter(
+                Q(activo=True) | Q(id=articulo.categoria_id), negocio=articulo.negocio
+            ).order_by("nombre"),
             "comprometido": comprometido,
             "disponible": max(0, articulo.stock_trabajable - comprometido),
         },

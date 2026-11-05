@@ -3,7 +3,7 @@ import unittest
 from datetime import date, timedelta
 from unittest import mock
 
-from django.db import connection
+from django.db import IntegrityError, connection, transaction
 from django.core import mail
 from django.test import TestCase, TransactionTestCase, override_settings
 from django.urls import reverse
@@ -1813,3 +1813,225 @@ class RechazoCotizacionTests(TestCase):
         self.client.post(reverse("gestion_cotizacion", args=[reserva.id]), {"accion": "rechazar", "motivo_rechazo": "Precio"})
         reserva.refresh_from_db()
         self.assertEqual(reserva.estado, Servicio.Estado.CONFIRMADO)
+
+
+class GestionCategoriasTests(TestCase):
+    """Alta, edición, desactivación y borrado de categorías desde el panel de inventario."""
+
+    def setUp(self):
+        self.negocio, self.vajilla, self.cristaleria, self.plato = crear_base()
+        rol = Rol.objects.create(nombre="Administrador")
+        self.admin = Usuario.objects.create(
+            negocio=self.negocio, rol=rol, nombre="Helen", apellido="Cortés",
+            email="admin@ejemplo.cl", password="x",
+        )
+        self.url = reverse("gestion_categorias")
+
+    def iniciar_sesion(self, usuario=None):
+        sesion = self.client.session
+        sesion["usuario_id"] = (usuario or self.admin).id
+        sesion.save()
+
+    def crear(self, nombre, **extra):
+        return self.client.post(self.url, {"accion": "crear", "nombre": nombre, **extra})
+
+    def datos_producto(self, categoria, **extra):
+        return {
+            "accion": "crear", "categoria_id": categoria.id, "nombre": "Guirnalda LED",
+            "precio_arriendo": "3500", "stock_total": "10", "stock_trabajable": "10", "activo": "on",
+            **extra,
+        }
+
+    # --- permisos
+    def test_sin_sesion_no_crea_categorias(self):
+        respuesta = self.crear("Iluminación")
+        self.assertEqual(respuesta.status_code, 302)
+        self.assertIn(reverse("gestion_login"), respuesta["Location"])
+        self.assertFalse(Categoria.objects.filter(nombre="Iluminación").exists())
+
+    def test_usuario_que_no_es_administrador_recibe_403(self):
+        rol = Rol.objects.create(nombre="Operador")
+        operador = Usuario.objects.create(
+            negocio=self.negocio, rol=rol, nombre="Ana", apellido="Rojas", email="ana@ejemplo.cl", password="x",
+        )
+        self.iniciar_sesion(operador)
+        self.assertEqual(self.crear("Iluminación").status_code, 403)
+        self.assertFalse(Categoria.objects.filter(nombre="Iluminación").exists())
+
+    # --- creación y validaciones
+    def test_admin_crea_categoria_y_aparece_en_formulario_de_producto(self):
+        self.iniciar_sesion()
+        self.crear("  Iluminación  ")
+        categoria = Categoria.objects.get(nombre="Iluminación")
+        self.assertEqual(categoria.negocio, self.negocio)
+        self.assertTrue(categoria.activo)
+        pagina = self.client.get(reverse("gestion_inventario"))
+        self.assertIn(categoria, pagina.context["categorias"])
+
+    def test_nombre_vacio_se_rechaza(self):
+        self.iniciar_sesion()
+        total = Categoria.objects.count()
+        self.crear("    ")
+        self.assertEqual(Categoria.objects.count(), total)
+
+    def test_nombre_duplicado_ignora_mayusculas_y_espacios(self):
+        self.iniciar_sesion()
+        self.crear("Iluminación")
+        for variante in ("iluminación", " ILUMINACIÓN ", "Iluminación"):
+            self.crear(variante)
+        self.assertEqual(
+            [c.nombre for c in Categoria.objects.filter(negocio=self.negocio, nombre__icontains="lumin")],
+            ["Iluminación"],
+        )
+
+    def test_otro_negocio_puede_repetir_el_nombre(self):
+        otro = Negocio.objects.create(nombre="Otro negocio")
+        Categoria.objects.create(negocio=otro, nombre="Iluminación")
+        self.iniciar_sesion()
+        self.crear("Iluminación")
+        self.assertEqual(Categoria.objects.filter(nombre="Iluminación").count(), 2)
+
+    def test_restriccion_de_base_impide_duplicado_por_mayusculas(self):
+        Categoria.objects.create(negocio=self.negocio, nombre="Iluminacion")
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            Categoria.objects.create(negocio=self.negocio, nombre="ILUMINACION")
+
+    # --- edición
+    def test_editar_nombre_y_rechazar_duplicado(self):
+        self.iniciar_sesion()
+        self.crear("Iluminación")
+        categoria = Categoria.objects.get(nombre="Iluminación")
+        self.client.post(self.url, {"accion": "editar", "categoria_id": categoria.id, "nombre": "Luces"})
+        categoria.refresh_from_db()
+        self.assertEqual(categoria.nombre, "Luces")
+        self.client.post(self.url, {"accion": "editar", "categoria_id": categoria.id, "nombre": "VAJILLA"})
+        categoria.refresh_from_db()
+        self.assertEqual(categoria.nombre, "Luces")
+
+    def test_editar_sin_cambiar_el_nombre_mostrado_conserva_el_codigo_interno(self):
+        self.iniciar_sesion()
+        mesas = Categoria.objects.create(negocio=self.negocio, nombre="mesas-sillas")
+        self.client.post(self.url, {"accion": "editar", "categoria_id": mesas.id, "nombre": "Mesas y sillas"})
+        mesas.refresh_from_db()
+        self.assertEqual(mesas.nombre, "mesas-sillas")
+
+    def test_no_se_puede_modificar_categoria_de_otro_negocio(self):
+        otro = Negocio.objects.create(nombre="Otro negocio")
+        ajena = Categoria.objects.create(negocio=otro, nombre="Ajena")
+        self.iniciar_sesion()
+        for accion in ("editar", "desactivar", "eliminar"):
+            respuesta = self.client.post(self.url, {"accion": accion, "categoria_id": ajena.id, "nombre": "Hackeada"})
+            self.assertEqual(respuesta.status_code, 404)
+        ajena.refresh_from_db()
+        self.assertEqual((ajena.nombre, ajena.activo), ("Ajena", True))
+
+    # --- eliminación
+    def test_no_se_elimina_categoria_con_productos(self):
+        self.iniciar_sesion()
+        respuesta = self.client.post(self.url, {"accion": "eliminar", "categoria_id": self.vajilla.id}, follow=True)
+        self.assertTrue(Categoria.objects.filter(id=self.vajilla.id).exists())
+        self.assertContains(respuesta, "No se puede eliminar la categoría porque contiene productos.")
+
+    def test_se_elimina_categoria_vacia(self):
+        self.iniciar_sesion()
+        self.client.post(self.url, {"accion": "eliminar", "categoria_id": self.cristaleria.id})
+        self.assertFalse(Categoria.objects.filter(id=self.cristaleria.id).exists())
+
+    # --- productos
+    def test_producto_nuevo_en_categoria_nueva_conserva_stock_inicial(self):
+        self.iniciar_sesion()
+        self.crear("Iluminación")
+        categoria = Categoria.objects.get(nombre="Iluminación")
+        self.client.post(reverse("gestion_inventario"), self.datos_producto(categoria))
+        producto = Articulo.objects.get(nombre="Guirnalda LED")
+        self.assertEqual((producto.categoria, producto.stock_total, producto.stock_trabajable), (categoria, 10, 10))
+
+    def test_producto_nuevo_no_acepta_categoria_inactiva_ni_ajena(self):
+        self.iniciar_sesion()
+        self.cristaleria.activo = False
+        self.cristaleria.save()
+        otro = Negocio.objects.create(nombre="Otro negocio")
+        ajena = Categoria.objects.create(negocio=otro, nombre="Ajena")
+        for categoria in (self.cristaleria, ajena):
+            respuesta = self.client.post(reverse("gestion_inventario"), self.datos_producto(categoria))
+            self.assertEqual(respuesta.status_code, 404)
+        self.assertFalse(Articulo.objects.filter(nombre="Guirnalda LED").exists())
+
+    def test_selector_de_producto_nuevo_solo_muestra_categorias_activas(self):
+        self.iniciar_sesion()
+        self.cristaleria.activo = False
+        self.cristaleria.save()
+        pagina = self.client.get(reverse("gestion_inventario"))
+        self.assertIn(self.vajilla, pagina.context["categorias"])
+        self.assertNotIn(self.cristaleria, pagina.context["categorias"])
+
+    def test_cambiar_categoria_del_producto_no_altera_stock_ni_precio(self):
+        self.iniciar_sesion()
+        antes = (self.plato.stock_total, self.plato.stock_trabajable, self.plato.precio_arriendo)
+        self.client.post(reverse("gestion_producto", args=[self.plato.id]), {
+            "accion": "editar", "nombre": self.plato.nombre, "categoria_id": self.cristaleria.id,
+            "precio_arriendo": self.plato.precio_arriendo, "costo_reposicion": self.plato.costo_reposicion,
+            "stock_total": self.plato.stock_total, "stock_trabajable": self.plato.stock_trabajable, "activo": "on",
+        })
+        self.plato.refresh_from_db()
+        self.assertEqual(self.plato.categoria, self.cristaleria)
+        self.assertEqual((self.plato.stock_total, self.plato.stock_trabajable, self.plato.precio_arriendo), antes)
+        self.assertFalse(MovimientoInventario.objects.filter(articulo=self.plato).exists())
+
+    def test_producto_existente_conserva_categoria_desactivada_en_su_formulario(self):
+        self.iniciar_sesion()
+        self.vajilla.activo = False
+        self.vajilla.save()
+        pagina = self.client.get(reverse("gestion_producto", args=[self.plato.id]))
+        self.assertIn(self.vajilla, pagina.context["categorias"])
+
+    # --- desactivación y catálogo público
+    def test_desactivar_oculta_categoria_del_catalogo_y_conserva_productos(self):
+        self.iniciar_sesion()
+        self.client.post(self.url, {"accion": "desactivar", "categoria_id": self.vajilla.id})
+        self.vajilla.refresh_from_db()
+        self.assertFalse(self.vajilla.activo)
+        self.assertTrue(Articulo.objects.filter(id=self.plato.id).exists())
+        catalogo = self.client.get(reverse("catalogo"))
+        self.assertNotIn(self.vajilla, catalogo.context["categorias"])
+        self.assertNotIn(self.plato, catalogo.context["productos"])
+        self.client.post(self.url, {"accion": "activar", "categoria_id": self.vajilla.id})
+        catalogo = self.client.get(reverse("catalogo"))
+        self.assertIn(self.vajilla, catalogo.context["categorias"])
+        self.assertIn(self.plato, catalogo.context["productos"])
+
+    def test_catalogo_oculta_categoria_activa_sin_productos_activos(self):
+        catalogo = self.client.get(reverse("catalogo"))
+        self.assertIn(self.vajilla, catalogo.context["categorias"])
+        self.assertNotIn(self.cristaleria, catalogo.context["categorias"])
+
+    def test_categoria_nueva_con_producto_aparece_en_catalogo(self):
+        self.iniciar_sesion()
+        self.crear("Iluminación")
+        categoria = Categoria.objects.get(nombre="Iluminación")
+        self.client.post(reverse("gestion_inventario"), self.datos_producto(categoria))
+        catalogo = self.client.get(reverse("catalogo"))
+        self.assertIn(categoria, catalogo.context["categorias"])
+        self.assertContains(catalogo, "Guirnalda LED")
+
+    def test_desactivar_no_altera_reservas_ni_detalles_historicos(self):
+        servicio = crear_servicio(self.negocio, self.plato, 20, EN_10_DIAS)
+        self.iniciar_sesion()
+        self.client.post(self.url, {"accion": "desactivar", "categoria_id": self.vajilla.id})
+        servicio.refresh_from_db()
+        self.assertEqual(servicio.estado, Servicio.Estado.CONFIRMADO)
+        self.assertEqual(DetalleServicio.objects.get(servicio=servicio).cantidad, 20)
+
+    def test_panel_muestra_cantidad_de_productos_por_categoria(self):
+        self.iniciar_sesion()
+        pagina = self.client.get(reverse("gestion_inventario"))
+        filas = {c.id: c.total_productos for c in pagina.context["categorias_gestion"]}
+        self.assertEqual(filas[self.vajilla.id], 1)
+        self.assertEqual(filas[self.cristaleria.id], 0)
+
+    def test_cotizador_publico_solo_ofrece_categorias_activas(self):
+        self.cristaleria.activo = False
+        self.cristaleria.save()
+        cotizador = self.client.get(reverse("cotizador"))
+        self.assertIn(self.vajilla, cotizador.context["categorias"])
+        self.assertNotIn(self.cristaleria, cotizador.context["categorias"])
