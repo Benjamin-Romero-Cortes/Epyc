@@ -14,7 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const abrir = (modal) => {
     modal.hidden = false;
-    modal.querySelector('input:not([type=hidden]), select, textarea')?.focus();
+    // La tabla de categorías es de consulta: no se enfoca ningún campo al abrirla.
+    if (modal.id !== 'modal-gestionar-categorias') modal.querySelector('input:not([type=hidden]), select, textarea')?.focus();
   };
 
   Object.entries(MODALES).forEach(([botonId, modalId]) => {

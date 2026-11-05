@@ -7,7 +7,7 @@
 <title>Inventario · Panel Entre Platos y Copas</title>
 <link rel="icon" href="{% static 'images/logo.jpg' %}">
 <link rel="stylesheet" href="{% static 'css/admin.css' %}?v=inventario-4">
-<link rel="stylesheet" href="{% static 'css/inventario-categorias.css' %}?v=4">
+<link rel="stylesheet" href="{% static 'css/inventario-categorias.css' %}?v=5">
 </head>
 <body>
 
@@ -180,89 +180,118 @@
 
 <!-- Modal: nueva categoría -->
 <div class="modal-overlay" id="modal-nueva-categoria" hidden>
-  <div class="modal-panel" style="max-width:460px;">
-    <button class="modal-close" data-close-modal>✕</button>
-    <span class="eyebrow" style="color:var(--color-accent-dark);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;font-weight:700;">Inventario</span>
-    <h2 style="margin-top:0.2rem;">Nueva categoría</h2>
-    <form id="form-nueva-categoria" method="post" action="{% url 'gestion_categorias' %}">
+  <div class="modal-panel modal-elegante" role="dialog" aria-labelledby="titulo-nueva-categoria">
+    <button type="button" class="modal-close" data-close-modal aria-label="Cerrar">✕</button>
+    <div class="modal-cabecera">
+      <span class="eyebrow">Inventario</span>
+      <h2 id="titulo-nueva-categoria">Nueva categoría</h2>
+      <p>Agrupa tus productos para ordenarlos en el inventario y el catálogo.</p>
+    </div>
+    <form id="form-nueva-categoria" class="modal-formulario" method="post" action="{% url 'gestion_categorias' %}">
       {% csrf_token %}<input type="hidden" name="accion" value="crear">
-      <div class="form-grid" style="margin-top:1rem;">
-        <div class="form-field full"><label>Nombre</label><input type="text" name="nombre" maxlength="100" required placeholder="Ej.: Iluminación"></div>
-        <div class="form-field full"><label>Descripción <span class="optional">(opcional)</span></label><input type="text" name="descripcion" maxlength="255"></div>
-        <div class="form-field"><label><input type="checkbox" name="activo" checked> Activa</label></div>
+      <div class="modal-cuerpo">
+        <div class="form-field"><label for="cat-nombre">Nombre</label><input id="cat-nombre" type="text" name="nombre" maxlength="100" required placeholder="Ej.: Iluminación" autocomplete="off"></div>
+        <div class="form-field"><label for="cat-descripcion">Descripción <span class="optional">(opcional)</span></label><input id="cat-descripcion" type="text" name="descripcion" maxlength="255" autocomplete="off"></div>
       </div>
-      <div class="modal-actions"><span class="spacer"></span><button type="button" class="btn btn-outline" data-close-modal>Cancelar</button><button type="submit" class="btn btn-primary">Guardar categoría</button></div>
+      <div class="modal-pie">
+        <div class="modal-opciones"><label><input type="checkbox" name="activo" checked> Activa</label></div>
+        <span class="spacer"></span>
+        <button type="button" class="btn btn-outline btn-sm" data-close-modal>Cancelar</button>
+        <button type="submit" class="btn btn-primary btn-sm">Guardar categoría</button>
+      </div>
     </form>
   </div>
 </div>
 
 <!-- Modal: gestionar categorías -->
 <div class="modal-overlay" id="modal-gestionar-categorias" hidden>
-  <div class="modal-panel" style="max-width:760px;">
-    <button class="modal-close" data-close-modal>✕</button>
-    <span class="eyebrow" style="color:var(--color-accent-dark);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;font-weight:700;">Inventario</span>
-    <h2 style="margin-top:0.2rem;">Categorías</h2>
-    <table class="data-table" id="tabla-categorias" style="margin-top:1rem;">
-      <thead><tr><th>Categoría</th><th>Productos</th><th>Estado</th><th>Acciones</th></tr></thead>
-      <tbody>
-        {% for c in categorias_gestion %}
-        <tr data-categoria-id="{{ c.id }}">
-          <td>
-            <form method="post" action="{% url 'gestion_categorias' %}" style="display:flex;gap:.4rem;align-items:center;">
-              {% csrf_token %}<input type="hidden" name="accion" value="editar"><input type="hidden" name="categoria_id" value="{{ c.id }}">
-              <input type="text" name="nombre" value="{{ c.etiqueta }}" maxlength="100" required aria-label="Nombre de la categoría {{ c.etiqueta }}">
-              <button type="submit" class="btn btn-ghost btn-sm">Editar</button>
-            </form>
-          </td>
-          <td>{{ c.total_productos }}</td>
-          <td>{% if c.activo %}Activa{% else %}Inactiva{% endif %}</td>
-          <td>
-            <form method="post" action="{% url 'gestion_categorias' %}" style="display:inline-flex;gap:.4rem;"
-                  {% if c.activo and c.productos_activos %}data-confirmar="Esta categoría contiene {{ c.productos_activos }} producto{{ c.productos_activos|pluralize }} activo{{ c.productos_activos|pluralize }}. Si la desactivas, dejará de mostrarse en el catálogo. ¿Deseas continuar?"{% endif %}>
-              {% csrf_token %}<input type="hidden" name="categoria_id" value="{{ c.id }}">
-              <button type="submit" name="accion" value="{% if c.activo %}desactivar{% else %}activar{% endif %}" class="btn btn-outline btn-sm">{% if c.activo %}Desactivar{% else %}Activar{% endif %}</button>
-              {% if not c.total_productos %}<button type="submit" name="accion" value="eliminar" class="btn btn-ghost btn-sm" data-confirmar-boton="¿Eliminar la categoría {{ c.etiqueta }}?">Eliminar</button>{% endif %}
-            </form>
-          </td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="4">Aún no hay categorías.</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <div class="modal-panel modal-elegante modal-medio" role="dialog" aria-labelledby="titulo-gestionar-categorias">
+    <button type="button" class="modal-close" data-close-modal aria-label="Cerrar">✕</button>
+    <div class="modal-cabecera">
+      <span class="eyebrow">Inventario</span>
+      <h2 id="titulo-gestionar-categorias">Categorías</h2>
+      <p>Renombra, activa o desactiva categorías. Solo las categorías sin productos se pueden eliminar.</p>
+    </div>
+    <div class="cat-lista" id="tabla-categorias">
+      {% for c in categorias_gestion %}
+      <div class="cat-fila" data-categoria-id="{{ c.id }}">
+        <form method="post" action="{% url 'gestion_categorias' %}" class="cat-nombre">
+          {% csrf_token %}<input type="hidden" name="accion" value="editar"><input type="hidden" name="categoria_id" value="{{ c.id }}">
+          <input type="text" name="nombre" value="{{ c.etiqueta }}" maxlength="100" required aria-label="Nombre de la categoría {{ c.etiqueta }}">
+          <button type="submit" class="btn btn-ghost btn-sm cat-guardar">Guardar</button>
+        </form>
+        <div class="cat-meta">
+          <span>{{ c.total_productos }} producto{{ c.total_productos|pluralize }}</span>
+          <span class="cat-estado {% if c.activo %}is-activa{% else %}is-inactiva{% endif %}">{% if c.activo %}Activa{% else %}Inactiva{% endif %}</span>
+        </div>
+        <form method="post" action="{% url 'gestion_categorias' %}" class="cat-acciones"
+              {% if c.activo and c.productos_activos %}data-confirmar="Esta categoría contiene {{ c.productos_activos }} producto{{ c.productos_activos|pluralize }} activo{{ c.productos_activos|pluralize }}. Si la desactivas, dejará de mostrarse en el catálogo. ¿Deseas continuar?"{% endif %}>
+          {% csrf_token %}<input type="hidden" name="categoria_id" value="{{ c.id }}">
+          <button type="submit" name="accion" value="{% if c.activo %}desactivar{% else %}activar{% endif %}" class="btn btn-outline btn-sm">{% if c.activo %}Desactivar{% else %}Activar{% endif %}</button>
+          {% if not c.total_productos %}<button type="submit" name="accion" value="eliminar" class="btn btn-ghost btn-sm" data-confirmar-boton="¿Eliminar la categoría {{ c.etiqueta }}?">Eliminar</button>{% endif %}
+        </form>
+      </div>
+      {% empty %}
+      <p class="cat-vacia">Aún no hay categorías.</p>
+      {% endfor %}
+    </div>
   </div>
 </div>
 
 <!-- Modal: nuevo producto -->
 <div class="modal-overlay" id="modal-nuevo-producto" hidden>
-  <div class="modal-panel" style="max-width:560px;">
-    <button class="modal-close" data-close-modal>✕</button>
-    <span class="eyebrow" style="color:var(--color-accent-dark);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;font-weight:700;">Inventario</span>
-    <h2 style="margin-top:0.2rem;">Nuevo producto</h2>
-    <form id="form-nuevo-producto" method="post" action="{% url 'gestion_inventario' %}">
-{% csrf_token %}<input type="hidden" name="accion" value="crear">
-<div class="form-grid" style="margin-top:1rem;">
-  <div class="form-field"><label>Código <span class="optional">(opcional)</span></label><input type="text" name="codigo" placeholder="Se genera automáticamente"></div>
-  <div class="form-field"><label>Nombre</label><input type="text" name="nombre" required></div>
-  <div class="form-field"><label>Categoría</label><select name="categoria_id" required>{% for categoria in categorias %}<option value="{{ categoria.id }}">{{ categoria.nombre }}</option>{% endfor %}</select></div>
-  <div class="form-field"><label>Etiqueta de categoría</label><input type="text" name="categoria_label"></div>
-  <div class="form-field full"><label>Descripción</label><textarea name="descripcion"></textarea></div>
-  <div class="form-field full"><label>Descripción larga</label><textarea name="descripcion_larga"></textarea></div>
-  <div class="form-field"><label>Dimensiones</label><input type="text" name="dimensiones"></div>
-  <div class="form-field"><label>Material</label><input type="text" name="material"></div>
-  <div class="form-field"><label>Capacidad</label><input type="text" name="capacidad"></div>
-  <div class="form-field"><label>Color</label><input type="text" name="color"></div>
-  <div class="form-field"><label>Precio arriendo</label><input type="number" name="precio_arriendo" min="0" required></div>
-  <div class="form-field"><label>Costo de reposición por unidad</label><input type="number" name="costo_reposicion" min="0" value="0"></div>
-  <div class="form-field"><label>Unidad precio</label><input type="text" name="unidad_precio" placeholder="por unidad / evento"></div>
-  <div class="form-field"><label>Stock total</label><input type="number" name="stock_total" min="0" value="0" required></div>
-  <div class="form-field"><label>Stock trabajable (para arrendar)</label><input type="number" name="stock_trabajable" min="0" value="0" required></div>
-  <div class="form-field full"><label>Ruta imagen</label><input type="text" name="imagen" placeholder="/static/images/..."></div>
-  <div class="form-field"><label><input type="checkbox" name="destacado"> Destacado</label></div>
-  <div class="form-field"><label><input type="checkbox" name="activo" checked> Activo</label></div>
-</div>
-<div class="modal-actions"><span class="spacer"></span><button type="button" class="btn btn-outline" data-close-modal>Cancelar</button><button type="submit" class="btn btn-primary">Guardar artículo</button></div>
-</form>
+  <div class="modal-panel modal-elegante modal-ancho" role="dialog" aria-labelledby="titulo-nuevo-producto">
+    <button type="button" class="modal-close" data-close-modal aria-label="Cerrar">✕</button>
+    <div class="modal-cabecera">
+      <span class="eyebrow">Inventario</span>
+      <h2 id="titulo-nuevo-producto">Nuevo producto</h2>
+      <p>Completa los datos esenciales; el resto es opcional y puedes editarlo después.</p>
+    </div>
+    <form id="form-nuevo-producto" class="modal-formulario" method="post" action="{% url 'gestion_inventario' %}">
+      {% csrf_token %}<input type="hidden" name="accion" value="crear">
+      <div class="modal-cuerpo">
+        <section class="modal-seccion">
+          <h3>Información</h3>
+          <div class="form-grid">
+            <div class="form-field full"><label for="np-nombre">Nombre</label><input id="np-nombre" type="text" name="nombre" required></div>
+            <div class="form-field"><label for="np-categoria">Categoría</label><select id="np-categoria" name="categoria_id" required>{% for categoria in categorias %}<option value="{{ categoria.id }}">{{ categoria.etiqueta }}</option>{% endfor %}</select></div>
+            <div class="form-field"><label for="np-codigo">Código <span class="optional">(opcional)</span></label><input id="np-codigo" type="text" name="codigo" placeholder="Se genera automáticamente"></div>
+            <div class="form-field full"><label for="np-descripcion">Descripción</label><textarea id="np-descripcion" name="descripcion" rows="2"></textarea></div>
+          </div>
+        </section>
+        <section class="modal-seccion">
+          <h3>Precio y stock</h3>
+          <div class="form-grid">
+            <div class="form-field"><label for="np-precio">Precio de arriendo</label><input id="np-precio" type="number" name="precio_arriendo" min="0" required></div>
+            <div class="form-field"><label for="np-reposicion">Costo de reposición por unidad</label><input id="np-reposicion" type="number" name="costo_reposicion" min="0" value="0"></div>
+            <div class="form-field"><label for="np-stock">Stock total</label><input id="np-stock" type="number" name="stock_total" min="0" value="0" required></div>
+            <div class="form-field"><label for="np-trabajable">Stock trabajable (para arrendar)</label><input id="np-trabajable" type="number" name="stock_trabajable" min="0" value="0" required></div>
+          </div>
+        </section>
+        <details class="modal-mas">
+          <summary>Más detalles <span class="optional" style="font-weight:400;opacity:.6;margin-left:.4rem;">(opcional)</span></summary>
+          <div class="form-grid">
+            <div class="form-field"><label for="np-etiqueta">Etiqueta de categoría</label><input id="np-etiqueta" type="text" name="categoria_label"></div>
+            <div class="form-field"><label for="np-unidad">Unidad de precio</label><input id="np-unidad" type="text" name="unidad_precio" placeholder="por unidad / evento"></div>
+            <div class="form-field"><label for="np-dimensiones">Dimensiones</label><input id="np-dimensiones" type="text" name="dimensiones"></div>
+            <div class="form-field"><label for="np-material">Material</label><input id="np-material" type="text" name="material"></div>
+            <div class="form-field"><label for="np-capacidad">Capacidad</label><input id="np-capacidad" type="text" name="capacidad"></div>
+            <div class="form-field"><label for="np-color">Color</label><input id="np-color" type="text" name="color"></div>
+            <div class="form-field full"><label for="np-larga">Descripción larga</label><textarea id="np-larga" name="descripcion_larga" rows="2"></textarea></div>
+            <div class="form-field full"><label for="np-imagen">Ruta de la imagen</label><input id="np-imagen" type="text" name="imagen" placeholder="/static/images/..."></div>
+          </div>
+        </details>
+      </div>
+      <div class="modal-pie">
+        <div class="modal-opciones">
+          <label><input type="checkbox" name="activo" checked> Activo</label>
+          <label><input type="checkbox" name="destacado"> Destacado</label>
+        </div>
+        <span class="spacer"></span>
+        <button type="button" class="btn btn-outline btn-sm" data-close-modal>Cancelar</button>
+        <button type="submit" class="btn btn-primary btn-sm">Guardar producto</button>
+      </div>
+    </form>
   </div>
 </div>
 

@@ -1509,11 +1509,13 @@ def inventario(request):
         grupo["bajos"] = sum(1 for a in productos if a.activo and a.nivel_stock in NIVELES_ALERTA)
         grupo["slug"] = slugify(grupo["categoria"].nombre) or f"cat-{grupo['categoria'].id}"
 
-    categorias = (
+    categorias = list(
         Categoria.objects
         .filter(negocio=negocio, activo=True)
         .order_by("nombre")
     )
+    for categoria in categorias:
+        categoria.etiqueta = etiqueta_categoria(categoria)
     categorias_gestion = list(
         Categoria.objects
         .filter(negocio=negocio)
@@ -1719,6 +1721,14 @@ def gestion_producto(request, id):
         )
         return redirect("gestion_inventario")
 
+    categorias_producto = list(
+        Categoria.objects.filter(
+            Q(activo=True) | Q(id=articulo.categoria_id), negocio=articulo.negocio
+        ).order_by("nombre")
+    )
+    for categoria in categorias_producto:
+        categoria.etiqueta = etiqueta_categoria(categoria)
+
     comprometido = comprometido_vigente([articulo.id]).get(articulo.id, 0)
 
     movimientos = (
@@ -1734,9 +1744,7 @@ def gestion_producto(request, id):
         {
             "articulo": articulo,
             "movimientos": movimientos,
-            "categorias": Categoria.objects.filter(
-                Q(activo=True) | Q(id=articulo.categoria_id), negocio=articulo.negocio
-            ).order_by("nombre"),
+            "categorias": categorias_producto,
             "comprometido": comprometido,
             "disponible": max(0, articulo.stock_trabajable - comprometido),
         },

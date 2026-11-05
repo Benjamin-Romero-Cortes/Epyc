@@ -124,7 +124,7 @@
       {% csrf_token %}<input type="hidden" name="accion" value="editar">
       <div class="form-grid" style="margin-top:1rem;">
         <div class="form-field full"><label for="p-nombre">Nombre</label><input type="text" id="p-nombre" name="nombre" value="{{ articulo.nombre }}" required></div>
-        <div class="form-field"><label for="p-categoria">Categoría</label><select id="p-categoria" name="categoria_id">{% for categoria in categorias %}<option value="{{ categoria.id }}" {% if categoria.id == articulo.categoria_id %}selected{% endif %}>{{ categoria.nombre }}</option>{% endfor %}</select></div>
+        <div class="form-field"><label for="p-categoria">Categoría</label><select id="p-categoria" name="categoria_id">{% for categoria in categorias %}<option value="{{ categoria.id }}" {% if categoria.id == articulo.categoria_id %}selected{% endif %}>{{ categoria.etiqueta }}</option>{% endfor %}</select></div>
         <div class="form-field"><label for="p-precio">Precio de arriendo</label><input type="number" id="p-precio" name="precio_arriendo" min="0" value="{{ articulo.precio_arriendo|floatformat:0 }}" required></div>
         <div class="form-field"><label for="p-costo">Costo de reposición por unidad</label><input type="number" id="p-costo" name="costo_reposicion" min="0" value="{{ articulo.costo_reposicion }}" placeholder="Lo que cuesta reponer una unidad"></div>
         <div class="form-field"><label for="p-total">Stock total</label><input type="number" id="p-total" name="stock_total" min="0" value="{{ articulo.stock_total }}" required></div>
