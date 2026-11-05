@@ -92,7 +92,7 @@
     {% if articulo.imagen %}<img src="{{ articulo.imagen }}" alt="{{ articulo.nombre }}" class="product-admin-img">{% endif %}
     <div class="detail-grid">
       <div><span class="cell-muted">Categoría</span><strong>{{ articulo.categoria.nombre }}</strong></div>
-      <div><span class="cell-muted">Precio</span><strong>${{ articulo.precio_arriendo|floatformat:0 }} {{ articulo.unidad_precio }}</strong></div>
+      <div><span class="cell-muted">Precio</span><strong>${{ articulo.precio_arriendo|floatformat:"0g" }} {{ articulo.unidad_precio }}</strong></div>
       <div><span class="cell-muted">Costo de reposición</span><strong>{% if articulo.costo_reposicion %}${{ articulo.costo_reposicion|floatformat:"0g" }} por unidad{% else %}Sin cargar{% endif %}</strong></div>
       <div><span class="cell-muted">Material</span><strong>{{ articulo.material|default:"—" }}</strong></div>
       <div><span class="cell-muted">Dimensiones</span><strong>{{ articulo.dimensiones|default:"—" }}</strong></div>

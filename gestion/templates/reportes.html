@@ -92,9 +92,9 @@
           <div><dt>Cotizaciones</dt><dd>{{ metricas.cotizaciones_total }}</dd></div>
           <div><dt>Reservas confirmadas</dt><dd>{{ metricas.reservas_total }}</dd></div>
           <div><dt>Conversión</dt><dd>{{ metricas.tasa_conversion }}%</dd></div>
-          <div><dt>Monto cotizado</dt><dd>${{ metricas.monto_cotizado|floatformat:0 }}</dd></div>
-          <div class="is-destacado"><dt>Monto confirmado</dt><dd>${{ metricas.monto_confirmado|floatformat:0 }}</dd></div>
-          <div><dt>Ticket promedio</dt><dd>${{ metricas.ticket_promedio|floatformat:0 }}</dd></div>
+          <div><dt>Monto cotizado</dt><dd>${{ metricas.monto_cotizado|floatformat:"0g" }}</dd></div>
+          <div class="is-destacado"><dt>Monto confirmado</dt><dd>${{ metricas.monto_confirmado|floatformat:"0g" }}</dd></div>
+          <div><dt>Ticket promedio</dt><dd>${{ metricas.ticket_promedio|floatformat:"0g" }}</dd></div>
           <div><dt>Canceladas</dt><dd>{{ metricas.cotizaciones_rechazadas }}</dd></div>
         </dl>
       </section>
@@ -121,7 +121,7 @@
         <section class="ranking">
           <h3>Ingresos por categoría</h3>
           {% for x in ingresos_categoria %}
-          <div class="ranking__fila"><span class="ranking__nombre">{{ x.categoria }}</span><span class="ranking__barra"><span style="width:{{ x.pct }}%"></span></span><strong>${{ x.total|floatformat:0 }}</strong></div>
+          <div class="ranking__fila"><span class="ranking__nombre">{{ x.categoria }}</span><span class="ranking__barra"><span style="width:{{ x.pct }}%"></span></span><strong>${{ x.total|floatformat:"0g" }}</strong></div>
           {% empty %}<p class="ranking__vacio">Sin reservas en el período.</p>{% endfor %}
         </section>
         <section class="ranking">

@@ -118,7 +118,7 @@
         <td><span class="status-pill is-{{ servicio.clase_estado }}">{{ servicio.get_estado_display }}</span></td>
         <td>{{ servicio.tipo_servicio|default:"—" }}</td>
         <td>{{ servicio.fecha_evento|date:"d/m/Y"|default:"—" }}</td>
-        <td class="cell-num">${{ servicio.total|floatformat:0 }}</td>
+        <td class="cell-num">${{ servicio.total|floatformat:"0g" }}</td>
         <td>{% if servicio.preparacion %}<a href="{% url 'gestion_preparacion_documento' servicio.preparacion.id %}">{{ servicio.preparacion.get_estado_display }}</a>{% else %}—{% endif %}</td>
         <td>{% if servicio.despacho %}<a href="{% url 'gestion_despacho_documento' servicio.despacho.id %}">{{ servicio.despacho.fecha_despacho|date:"d/m/Y" }}</a>{% else %}—{% endif %}</td>
         <td>{% if servicio.total_despachado %}<a href="{% url 'gestion_devolucion_servicio' servicio.id %}">{% if servicio.total_pendiente %}{{ servicio.total_pendiente }} pendientes{% else %}Completa{% endif %}</a>{% if servicio.total_merma %}<div class="cell-muted">{{ servicio.total_merma }} en merma</div>{% endif %}{% else %}—{% endif %}</td>

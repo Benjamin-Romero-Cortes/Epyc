@@ -76,7 +76,7 @@
     <div class="detail-grid">
       <div><span class="cell-muted">Código</span><strong>{{ articulo.codigo }}</strong></div>
       <div><span class="cell-muted">Categoría</span><strong>{{ articulo.categoria.nombre }}</strong></div>
-      <div><span class="cell-muted">Precio</span><strong>${{ articulo.precio_arriendo|floatformat:0 }} {{ articulo.unidad_precio }}</strong></div>
+      <div><span class="cell-muted">Precio</span><strong>${{ articulo.precio_arriendo|floatformat:"0g" }} {{ articulo.unidad_precio }}</strong></div>
       <div><span class="cell-muted">Stock total</span><strong>{{ articulo.stock_total }}</strong></div>
       <div><span class="cell-muted">Stock trabajable</span><strong>{{ articulo.stock_trabajable }}</strong></div>
       <div><span class="cell-muted">Material</span><strong>{{ articulo.material|default:"—" }}</strong></div>

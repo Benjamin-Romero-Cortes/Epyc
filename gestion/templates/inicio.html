@@ -171,7 +171,7 @@
         </a>
         <a class="kpi-cell" href="{% url 'gestion_cotizaciones' %}">
           <span class="kpi-label">Monto cotizado del mes</span>
-          <span class="kpi-value">${{ monto_cotizado_mes|floatformat:0 }}</span>
+          <span class="kpi-value">${{ monto_cotizado_mes|floatformat:"0g" }}</span>
           <span class="kpi-delta">Total de las cotizaciones del mes</span>
         </a>
         <a class="kpi-cell" href="{% url 'gestion_inventario' %}">

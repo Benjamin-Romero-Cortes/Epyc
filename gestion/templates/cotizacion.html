@@ -157,8 +157,8 @@
           {% elif d.disponibilidad.faltante %}<span class="badge badge--danger">Faltan {{ d.disponibilidad.faltante }}</span>
           {% else %}<span class="badge badge--success">Disponible</span>{% endif %}
         </td>
-        <td class="cell-num">${{ d.precio_unitario|floatformat:0 }}</td>
-        <td class="cell-num">${{ d.subtotal|floatformat:0 }}</td>
+        <td class="cell-num">${{ d.precio_unitario|floatformat:"0g" }}</td>
+        <td class="cell-num">${{ d.subtotal|floatformat:"0g" }}</td>
         <td>
           {% if articulos_editables %}
           <form method="post" action="{% url 'gestion_cotizacion' servicio.id %}" class="no-print">
@@ -174,7 +174,7 @@
     </tbody>
     {% if detalles %}
     <tfoot>
-      <tr><td colspan="5" class="cell-num"><strong>Total</strong></td><td class="cell-num"><strong>${{ servicio.total|floatformat:0 }}</strong></td><td></td></tr>
+      <tr><td colspan="5" class="cell-num"><strong>Total</strong></td><td class="cell-num"><strong>${{ servicio.total|floatformat:"0g" }}</strong></td><td></td></tr>
     </tfoot>
     {% endif %}
   </table>
@@ -214,7 +214,7 @@
             {% if ep.medio != "Correo" and ep.email %}
             <form method="post" action="{% url 'enviar_cotizacion_email' servicio.id %}" data-un-envio>
               {% csrf_token %}
-              <button type="submit" class="flujo__opcion" data-texto-cargando="Enviando..." data-confirmar="Se enviará la cotización por ${{ servicio.total|floatformat:0 }} a {{ ep.email }} y la solicitud quedará como Contactado.">✉ Enviar por correo</button>
+              <button type="submit" class="flujo__opcion" data-texto-cargando="Enviando..." data-confirmar="Se enviará la cotización por ${{ servicio.total|floatformat:"0g" }} a {{ ep.email }} y la solicitud quedará como Contactado.">✉ Enviar por correo</button>
             </form>
             {% endif %}
             {% if ep.medio != "WhatsApp" and ep.whatsapp_url %}
@@ -239,7 +239,7 @@
         {% if ep.medio == "Correo" %}
         <form method="post" action="{% url 'enviar_cotizacion_email' servicio.id %}" data-un-envio>
           {% csrf_token %}
-          <button type="submit" class="btn btn-accent" data-texto-cargando="Enviando..." data-confirmar="Se enviará la cotización por ${{ servicio.total|floatformat:0 }} a {{ ep.email }} y la solicitud quedará como Contactado.">✉ Enviar cotización por correo</button>
+          <button type="submit" class="btn btn-accent" data-texto-cargando="Enviando..." data-confirmar="Se enviará la cotización por ${{ servicio.total|floatformat:"0g" }} a {{ ep.email }} y la solicitud quedará como Contactado.">✉ Enviar cotización por correo</button>
         </form>
         {% elif ep.medio == "WhatsApp" %}
         <form method="post" action="{% url 'gestion_cotizacion' servicio.id %}" data-un-envio data-abrir-url="{{ ep.whatsapp_url }}">
@@ -350,7 +350,7 @@
                 </div>
               </td>
               <td class="cell-num"><span class="catalogo__disp {% if a.disponible_fecha <= 0 %}is-cero{% elif a.disponible_fecha <= 10 %}is-bajo{% endif %}">{{ a.disponible_fecha }}</span></td>
-              <td class="cell-num">${{ a.precio_arriendo|floatformat:0 }}</td>
+              <td class="cell-num">${{ a.precio_arriendo|floatformat:"0g" }}</td>
               <td class="cell-num">
                 <input type="hidden" name="articulo_id" value="{{ a.id }}">
                 <div class="catalogo__cant">

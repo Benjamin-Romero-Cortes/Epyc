@@ -87,7 +87,7 @@
       <div class="ops-summary">
         <div><span>Registros vigentes</span><strong>{{ kpis.registros }}</strong></div>
         <div><span>Unidades en merma</span><strong>{{ kpis.unidades }}</strong></div>
-        <div><span>Valor de reposición</span><strong>${{ kpis.valor|floatformat:0 }}</strong></div>
+        <div><span>Valor de reposición</span><strong>${{ kpis.valor|floatformat:"0g" }}</strong></div>
       </div>
       {% if kpis.sin_costo %}
       <p class="admin-notice">{{ kpis.sin_costo }} producto{{ kpis.sin_costo|pluralize }} con merma no tiene{{ kpis.sin_costo|pluralize:"n" }} costo de reposición ni precio cargado y no suma{{ kpis.sin_costo|pluralize:"n" }} al valor. Cárgalo en la ficha del producto (Inventario → editar).</p>

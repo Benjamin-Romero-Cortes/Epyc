@@ -188,7 +188,7 @@
             <span class="kpi-label">Monto cotizado del mes</span>
           </div>
           <div class="kpi-value" style="font-size:1.6rem;">
-            ${{ monto_cotizado_mes|floatformat:0 }}
+            ${{ monto_cotizado_mes|floatformat:"0g" }}
           </div>
           <span class="kpi-delta is-positive">Total de cotizaciones del mes</span>
         </div>
@@ -306,7 +306,7 @@
             {% for item in ingresos_mensuales %}
             <div class="list-row">
               <span>{{ item.mes }}</span>
-              <strong>${{ item.total|floatformat:0 }}</strong>
+              <strong>${{ item.total|floatformat:"0g" }}</strong>
             </div>
             {% empty %}
             <p class="empty-state">Aún no hay datos de ingresos.</p>

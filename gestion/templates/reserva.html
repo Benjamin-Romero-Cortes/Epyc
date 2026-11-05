@@ -103,13 +103,13 @@
     <div><span class="cell-muted">Fecha evento</span><strong>{{ servicio.fecha_evento|date:"d/m/Y"|default:"—" }}</strong></div>
     <div><span class="cell-muted">Inicio</span><strong>{{ servicio.fecha_inicio|date:"d/m/Y"|default:"—" }}</strong></div>
     <div><span class="cell-muted">Término</span><strong>{{ servicio.fecha_termino|date:"d/m/Y"|default:"—" }}</strong></div>
-    <div><span class="cell-muted">Total</span><strong>${{ servicio.total|floatformat:0 }}</strong></div>
+    <div><span class="cell-muted">Total</span><strong>${{ servicio.total|floatformat:"0g" }}</strong></div>
     <div class="full"><span class="cell-muted">Dirección</span><strong>{{ servicio.direccion_evento|default:"—" }}{% if servicio.comuna_evento %}, {{ servicio.comuna_evento }}{% endif %}</strong></div>
   </div>
 </div>
 <div class="card" style="margin-top:1rem;">
 <table class="data-table"><thead><tr><th>Artículo</th><th class="cell-num">Cantidad</th><th class="cell-num">Precio</th></tr></thead><tbody>
-{% for d in detalles %}<tr><td>{{ d.articulo.nombre }}</td><td class="cell-num">{{ d.cantidad }}</td><td class="cell-num">${{ d.precio_unitario|floatformat:0 }}</td></tr>
+{% for d in detalles %}<tr><td>{{ d.articulo.nombre }}</td><td class="cell-num">{{ d.cantidad }}</td><td class="cell-num">${{ d.precio_unitario|floatformat:"0g" }}</td></tr>
 {% empty %}<tr><td colspan="3" class="empty-state">Sin artículos.</td></tr>{% endfor %}
 </tbody></table>
 </div>

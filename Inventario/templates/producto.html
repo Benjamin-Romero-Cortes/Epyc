@@ -26,7 +26,7 @@
         {% if articulo.material %}<p><strong>Material:</strong> {{ articulo.material }}</p>{% endif %}
         {% if articulo.capacidad %}<p><strong>Capacidad:</strong> {{ articulo.capacidad }}</p>{% endif %}
         {% if articulo.color %}<p><strong>Color:</strong> {{ articulo.color }}</p>{% endif %}
-        <p><strong>Precio:</strong> ${{ articulo.precio_arriendo|floatformat:0 }} {{ articulo.unidad_precio }}</p>
+        <p><strong>Precio:</strong> ${{ articulo.precio_arriendo|floatformat:"0g" }} {{ articulo.unidad_precio }}</p>
       </div>
       <a href="{% url 'cotizador' %}?articulo={{ articulo.id }}" class="btn btn-primary">Cotizar este artículo</a>
     </div>
