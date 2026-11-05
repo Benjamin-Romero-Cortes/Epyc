@@ -1,3 +1,4 @@
+from pathlib import Path
 import threading
 import unittest
 from datetime import date, timedelta
@@ -2035,3 +2036,16 @@ class GestionCategoriasTests(TestCase):
         cotizador = self.client.get(reverse("cotizador"))
         self.assertIn(self.vajilla, cotizador.context["categorias"])
         self.assertNotIn(self.cristaleria, cotizador.context["categorias"])
+
+    def test_botones_de_categorias_estan_conectados_a_sus_modales(self):
+        """Cada botón del panel debe existir en la página y estar registrado en el JS que abre los modales."""
+        self.iniciar_sesion()
+        pagina = self.client.get(reverse("gestion_inventario"))
+        script = (Path(__file__).resolve().parent / "static" / "js" / "gestion-django.js").read_text(encoding="utf-8")
+        for boton, modal in (
+            ("btn-nueva-categoria", "modal-nueva-categoria"),
+            ("btn-gestionar-categorias", "modal-gestionar-categorias"),
+        ):
+            self.assertContains(pagina, f'id="{boton}"')
+            self.assertContains(pagina, f'id="{modal}"')
+            self.assertIn(f"'{boton}': '{modal}'", script)

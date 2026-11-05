@@ -4,6 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
     'btn-nuevo-cliente': 'modal-nuevo-cliente',
     'btn-editar-cliente': 'modal-editar-cliente',
     'btn-nuevo-producto': 'modal-nuevo-producto',
+    'btn-nueva-categoria': 'modal-nueva-categoria',
+    'btn-gestionar-categorias': 'modal-gestionar-categorias',
     'btn-editar-producto': 'modal-editar-producto',
     'btn-nueva-cotizacion': 'modal-nueva-cotizacion',
     'btn-nueva-merma': 'modal-nueva-merma',
@@ -19,6 +21,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const boton = document.getElementById(botonId);
     const modal = document.getElementById(modalId);
     if (boton && modal) boton.addEventListener('click', () => abrir(modal));
+  });
+
+  // Confirmación antes de desactivar o eliminar una categoría.
+  document.querySelectorAll('form[data-confirmar]').forEach((formulario) => {
+    formulario.addEventListener('submit', (e) => {
+      if (e.submitter && e.submitter.value === 'desactivar' && !confirm(formulario.dataset.confirmar)) e.preventDefault();
+    });
+  });
+  document.querySelectorAll('[data-confirmar-boton]').forEach((boton) => {
+    boton.addEventListener('click', (e) => {
+      if (!confirm(boton.dataset.confirmarBoton)) e.preventDefault();
+    });
   });
 
   if (new URLSearchParams(window.location.search).has('editar')) {
