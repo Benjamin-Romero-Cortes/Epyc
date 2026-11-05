@@ -5,3 +5,6 @@ staticfiles/
 __pycache__/
 *.pyc
 test_local.sqlite3
+
+# Volcados de datos con información personal: no se suben al repositorio
+datos_supabase.json
