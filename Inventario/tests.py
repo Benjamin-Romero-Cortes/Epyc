@@ -88,7 +88,8 @@ class ValidacionesTests(TestCase):
         self.assertFalse(telefono_valido("hola"))
 
     def test_normaliza_celular_chileno(self):
-        for entrada in ("+56936243259", "56 9 3624 3259", "936243259", "+56 9 3624-3259"):
+        for entrada in ("+56936243259", "56 9 3624 3259", "936243259", "+56 9 3624-3259",
+                        "0056936243259", "0936243259", "+56 (9) 3624 3259"):
             self.assertEqual(normalizar_telefono(entrada), "+56 9 3624 3259")
         self.assertEqual(normalizar_telefono("22 345 6789"), "22 345 6789")
 
@@ -2049,3 +2050,41 @@ class GestionCategoriasTests(TestCase):
             self.assertContains(pagina, f'id="{boton}"')
             self.assertContains(pagina, f'id="{modal}"')
             self.assertIn(f"'{boton}': '{modal}'", script)
+
+    def test_producto_sin_foto_usa_imagen_predeterminada(self):
+        """Un producto sin fotografía no debe mostrar una imagen rota en el catálogo ni en su ficha."""
+        sin_foto = Articulo.objects.create(
+            negocio=self.negocio, categoria=self.vajilla, codigo="vaj-900", nombre="Fuente sin foto",
+            precio_arriendo=1000, stock_total=5, stock_trabajable=5,
+        )
+        self.plato.imagen = "/static/images/loza1.jpg"
+        self.plato.save()
+        catalogo = self.client.get(reverse("catalogo"))
+        self.assertContains(catalogo, "sin-imagen")
+        self.assertContains(catalogo, "/static/images/loza1.jpg")
+        self.assertNotContains(catalogo, 'src=""')
+        ficha = self.client.get(reverse("producto", args=[sin_foto.id]))
+        self.assertContains(ficha, "sin-imagen")
+
+
+class TelefonosGuardadosTests(TestCase):
+    """Los teléfonos se guardan siempre como +56 9 1234 5678, sin importar cómo se escriban."""
+
+    def setUp(self):
+        self.negocio = Negocio.objects.create(nombre="Entre Platos y Copas")
+
+    def test_migracion_ordena_los_telefonos_ya_guardados(self):
+        import importlib
+        from django.apps import apps
+        migracion = importlib.import_module("Inventario.migrations.0010_normalizar_telefonos")
+        datos = {"111111111": "+56936243259", "222222222": "936243259", "333333333": "+56 9 4827 1935",
+                 "444444444": "22 345 6789", "555555555": ""}
+        for rut, telefono in datos.items():
+            Cliente.objects.create(negocio=self.negocio, rut=rut, nombre="Cliente", telefono=telefono)
+        migracion.normalizar(apps, None)
+        guardados = {c.rut: c.telefono for c in Cliente.objects.all()}
+        self.assertEqual(guardados["111111111"], "+56 9 3624 3259")
+        self.assertEqual(guardados["222222222"], "+56 9 3624 3259")
+        self.assertEqual(guardados["333333333"], "+56 9 4827 1935")
+        self.assertEqual(guardados["444444444"], "22 345 6789")
+        self.assertEqual(guardados["555555555"], "")

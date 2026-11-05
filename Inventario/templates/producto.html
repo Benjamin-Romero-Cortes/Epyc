@@ -14,7 +14,7 @@
 
   <div class="product-detail">
     <div class="product-detail-image">
-      <img src="{{ articulo.imagen }}" alt="{{ articulo.nombre }}">
+      <img src="{{ articulo.imagen_visible }}" alt="{{ articulo.nombre }}">
     </div>
     <div class="product-detail-info">
       <span class="eyebrow">{{ articulo.categoria_label|default:articulo.categoria.nombre }}</span>
@@ -43,7 +43,7 @@
       <article class="product-card reveal is-visible">
         <a href="{% url 'producto' p.id %}" class="product-card-img">
           <span class="product-card-category">{{ p.categoria_label|default:p.categoria.nombre }}</span>
-          <img src="{{ p.imagen }}" alt="{{ p.nombre }}" loading="lazy">
+          <img src="{{ p.imagen_visible }}" alt="{{ p.nombre }}" loading="lazy">
         </a>
         <div class="product-card-body">
           <h3><a href="{% url 'producto' p.id %}">{{ p.nombre }}</a></h3>

@@ -149,7 +149,7 @@
           <tbody>
           {% for p in g.productos %}
           <tr data-producto data-codigo="{{ p.codigo }}" data-nombre="{{ p.nombre }}" data-categoria="{{ p.categoria.nombre }}" data-nivel="{{ p.nivel_stock }}" data-mermas="{{ p.mermas_vigentes }}" data-activo="{{ p.activo|yesno:'1,0' }}">
-            <td><div style="display:flex;align-items:center;gap:0.7rem;"><img src="{{ p.imagen }}" alt="" class="row-thumb"><div><a class="cell-strong" href="{% url 'gestion_producto' p.id %}">{{ p.nombre }}</a><div class="cell-muted">{{ p.codigo }}{% if not p.activo %} · inactivo{% endif %}{% if p.mermas_vigentes %} · {{ p.mermas_vigentes }} en merma{% endif %}</div></div></div></td>
+            <td><div style="display:flex;align-items:center;gap:0.7rem;"><img src="{{ p.imagen_visible }}" alt="" class="row-thumb"><div><a class="cell-strong" href="{% url 'gestion_producto' p.id %}">{{ p.nombre }}</a><div class="cell-muted">{{ p.codigo }}{% if not p.activo %} · inactivo{% endif %}{% if p.mermas_vigentes %} · {{ p.mermas_vigentes }} en merma{% endif %}</div></div></div></td>
             <td class="cell-num">{{ p.stock_total }}</td>
             <td class="cell-num">{{ p.stock_trabajable }}</td>
             <td>

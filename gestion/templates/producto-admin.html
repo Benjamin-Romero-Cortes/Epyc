@@ -89,7 +89,7 @@
   <p class="availability-note">Comprometido: unidades en reservas confirmadas cuyo evento es hoy o después. La disponibilidad exacta para una fecha se revisa en cada cotización.</p>
 
   <div class="product-admin-body">
-    {% if articulo.imagen %}<img src="{{ articulo.imagen }}" alt="{{ articulo.nombre }}" class="product-admin-img">{% endif %}
+    <img src="{{ articulo.imagen_visible }}" alt="{{ articulo.nombre }}" class="product-admin-img">
     <div class="detail-grid">
       <div><span class="cell-muted">Categoría</span><strong>{{ articulo.categoria.nombre }}</strong></div>
       <div><span class="cell-muted">Precio</span><strong>${{ articulo.precio_arriendo|floatformat:"0g" }} {{ articulo.unidad_precio }}</strong></div>

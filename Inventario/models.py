@@ -1,4 +1,5 @@
 from django.db import models
+from django.templatetags.static import static
 from django.utils import timezone
 from django.db.models import Q, F
 from django.db.models.functions import Lower
@@ -261,6 +262,11 @@ class Articulo(models.Model):
                 name="stock_trabajable_no_supera_total"
             )
         ]
+
+    @property
+    def imagen_visible(self):
+        """Foto del producto o, si no tiene, una imagen predeterminada para que nunca se vea rota."""
+        return self.imagen or static("images/sin-imagen.svg")
 
     def __str__(self):
         return f"{self.codigo} - {self.nombre}"

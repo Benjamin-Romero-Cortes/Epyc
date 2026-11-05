@@ -44,6 +44,11 @@ def normalizar_telefono(telefono):
     """Celulares chilenos en un formato único: +56 9 1234 5678. Otros números quedan como vienen."""
     telefono = (telefono or "").strip()
     digitos = re.sub(r"\D", "", telefono)
+    # Prefijo internacional de marcado (0056...) y cero inicial de marcación nacional (09...).
+    if digitos.startswith("00"):
+        digitos = digitos[2:]
+    elif len(digitos) == 10 and digitos.startswith("09"):
+        digitos = digitos[1:]
     if len(digitos) == 11 and digitos.startswith("569"):
         digitos = digitos[2:]
     if len(digitos) == 9 and digitos.startswith("9"):

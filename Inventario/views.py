@@ -511,6 +511,7 @@ def producto(request, id):
         "producto.html",
         {
             "producto": producto,
+            "articulo": producto,
             "relacionados": relacionados,
         },
     )
