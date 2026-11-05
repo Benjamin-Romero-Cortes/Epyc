@@ -1360,9 +1360,11 @@ def _articulos_en_uso(articulo_ids):
     if not ids:
         return set()
 
+    # Sin el orden por defecto de cada modelo: SQLite no acepta ORDER BY dentro de un UNION.
     consultas = [
         modelo.objects
         .filter(articulo_id__in=ids)
+        .order_by()
         .values_list("articulo_id", flat=True)
         for modelo in RELACIONES_ARTICULO_EN_USO
     ]
