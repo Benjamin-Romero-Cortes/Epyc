@@ -152,6 +152,7 @@ def cantidad_comprometida(articulo, fecha_inicio, fecha_fin, excluir_servicio=No
 
 
 def calcular_disponibilidad(articulo, fecha_inicio, fecha_fin, excluir_servicio=None, solicitado=0):
+    solicitado = solicitado or 0
     comprometido = cantidad_comprometida(articulo, fecha_inicio, fecha_fin, excluir_servicio)
     disponible = max(0, articulo.stock_trabajable - comprometido)
     return {

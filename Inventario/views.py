@@ -2220,11 +2220,7 @@ def _agregar_articulos(request, servicio):
                     inicio,
                     fin,
                     excluir_servicio=servicio,
-                    solicitado=(
-                        cantidad_actual + cantidad
-                        if servicio.estado in ESTADOS_QUE_BLOQUEAN
-                        else None
-                    ),
+                    solicitado=cantidad_actual + cantidad,
                 )
 
                 if servicio.estado in ESTADOS_QUE_BLOQUEAN:
